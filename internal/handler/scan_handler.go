@@ -18,31 +18,35 @@ func (h *Handler) StartScan(c *fiber.Ctx) error {
 
 	scan, err := h.scanSvc.StartScan(c.Context(), userID, targetID, &req)
 	if err != nil {
-		status := 500
-		if err.Error() == "plan limit reached" {
-			status = 403
-		} else if err.Error() == "target not found" {
-			status = 404
+		if err.Error() == "target not found" {
+			return respondNotFound(c, "target")
 		}
-		return c.Status(status).JSON(fiber.Map{"error": err.Error()})
+		return respondError(c, err)
 	}
 
-	target, _ := h.scanSvc.GetScan(c.Context(), scan.ID, userID)
-	_ = target
+	// A scan row with nothing behind it is worse than a failed request: the UI
+	// shows it queued forever. Resolve the target and enqueue before reporting
+	// success, and surface any failure instead of discarding it.
+	targetInfo, err := h.targetSvc.Get(c.Context(), targetID, userID)
+	if err != nil {
+		h.failScan(c, scan.ID, "could not resolve target URL")
+		return respondError(c, err)
+	}
 
 	q := GetQueue()
-	if q != nil {
-		targetInfo, terr := h.targetSvc.Get(c.Context(), targetID, userID)
-		targetURL := ""
-		if terr == nil {
-			targetURL = targetInfo.URL
-		}
-		_ = q.EnqueueScan(c.Context(), &queue.ScanPayload{
-			ScanID:   scan.ID,
-			TargetID: targetID,
-			URL:      targetURL,
-			Config:   scan.Config,
-		})
+	if q == nil {
+		h.failScan(c, scan.ID, "scan queue unavailable")
+		return c.Status(503).JSON(fiber.Map{"error": "scan queue unavailable, try again shortly"})
+	}
+
+	if err := q.EnqueueScan(c.Context(), &queue.ScanPayload{
+		ScanID:   scan.ID,
+		TargetID: targetID,
+		URL:      targetInfo.URL,
+		Config:   scan.Config,
+	}); err != nil {
+		h.failScan(c, scan.ID, "could not queue scan: "+err.Error())
+		return c.Status(503).JSON(fiber.Map{"error": "could not queue scan, try again shortly"})
 	}
 
 	return c.Status(201).JSON(scan)
@@ -69,7 +73,7 @@ func (h *Handler) ListScans(c *fiber.Ctx) error {
 
 	scans, err := h.scanSvc.ListScans(c.Context(), targetID, userID, limit, offset)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		return respondError(c, err)
 	}
 
 	return c.JSON(fiber.Map{"scans": scans})
@@ -85,7 +89,7 @@ func (h *Handler) GetScanVulnerabilities(c *fiber.Ctx) error {
 
 	vulns, err := h.scanSvc.GetVulnerabilities(c.Context(), scanID, userID, severity, limit, offset)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		return respondError(c, err)
 	}
 
 	return c.JSON(fiber.Map{"vulnerabilities": vulns})
@@ -101,7 +105,7 @@ func (h *Handler) GetTargetVulnerabilities(c *fiber.Ctx) error {
 
 	vulns, err := h.scanSvc.GetTargetVulnerabilities(c.Context(), targetID, userID, severity, limit, offset)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		return respondError(c, err)
 	}
 
 	return c.JSON(fiber.Map{"vulnerabilities": vulns})
@@ -119,7 +123,7 @@ func (h *Handler) UpdateVulnStatus(c *fiber.Ctx) error {
 	}
 
 	if err := h.scanSvc.UpdateVulnerabilityStatus(c.Context(), vulnID, userID, body.Status); err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		return respondError(c, err)
 	}
 
 	return c.JSON(fiber.Map{"message": "vulnerability updated"})
@@ -130,7 +134,7 @@ func (h *Handler) GetDashboard(c *fiber.Ctx) error {
 
 	stats, err := h.scanSvc.GetDashboard(c.Context(), userID)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		return respondError(c, err)
 	}
 
 	return c.JSON(stats)

@@ -272,3 +272,9 @@ func (s *ScanService) CompleteCLIScan(ctx context.Context, scanID string, pagesC
 	scan.StartedAt = &startedAt
 	return s.scanDB.CompleteScan(ctx, scan)
 }
+
+// FailScan marks a scan as failed. Used when the API creates the scan row but
+// cannot hand the job to the worker, so the scan does not sit queued forever.
+func (s *ScanService) FailScan(ctx context.Context, scanID, reason string) error {
+	return s.scanDB.FailScan(ctx, scanID, reason)
+}

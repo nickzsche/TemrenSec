@@ -4,12 +4,14 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha256"
+	"crypto/sha1"
+	"crypto/subtle"
 	"encoding/base32"
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
 	"math"
+	"net/url"
 	"strings"
 	"time"
 
@@ -184,32 +186,64 @@ func GenerateTOTPSecret() string {
 	return base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b)
 }
 
+// TOTPURI builds the otpauth:// URI the user scans.
+//
+// The parameters are stated explicitly rather than left to defaults so the
+// authenticator app and generateTOTPCode below cannot drift apart — they had,
+// and the mismatch made every enrolled code fail.
 func TOTPURI(email, secret string) string {
-	return fmt.Sprintf("otpauth://totp/Temren:%s?secret=%s&issuer=Temren", email, secret)
+	label := url.PathEscape("Temren:" + email)
+	q := url.Values{
+		"secret":    {secret},
+		"issuer":    {"Temren"},
+		"algorithm": {"SHA1"},
+		"digits":    {"6"},
+		"period":    {"30"},
+	}
+	return "otpauth://totp/" + label + "?" + q.Encode()
 }
 
+// ValidateTOTP accepts a code from the current 30-second step or either
+// neighbour, tolerating modest clock skew.
 func ValidateTOTP(secret, code string) bool {
-	now := time.Now().Unix() / 30
+	if len(code) != totpDigits {
+		return false
+	}
+	now := time.Now().Unix() / totpPeriod
+	match := false
 	for i := -1; i <= 1; i++ {
-		if generateTOTPCode(secret, now+int64(i)) == code {
-			return true
+		// Compare every candidate, without short-circuiting, so validation time
+		// does not reveal which step matched.
+		if subtle.ConstantTimeCompare([]byte(generateTOTPCode(secret, now+int64(i))), []byte(code)) == 1 {
+			match = true
 		}
 	}
-	return false
+	return match
 }
 
+const (
+	totpPeriod = 30
+	totpDigits = 6
+)
+
+// generateTOTPCode implements RFC 6238 with HMAC-SHA1 — the algorithm every
+// mainstream authenticator (Google Authenticator, Authy, 1Password) assumes
+// when the otpauth URI does not say otherwise.
 func generateTOTPCode(secret string, timestamp int64) string {
-	key, _ := base32.StdEncoding.WithPadding(base32.NoPadding).DecodeString(strings.ToUpper(secret))
+	key, err := base32.StdEncoding.WithPadding(base32.NoPadding).DecodeString(strings.ToUpper(secret))
+	if err != nil {
+		return ""
+	}
 	buf := make([]byte, 8)
 	binary.BigEndian.PutUint64(buf, uint64(timestamp))
 
-	mac := hmac.New(sha256.New, key)
+	mac := hmac.New(sha1.New, key)
 	mac.Write(buf)
 	hash := mac.Sum(nil)
 
 	offset := hash[len(hash)-1] & 0x0f
 	truncated := binary.BigEndian.Uint32(hash[offset:offset+4]) & 0x7fffffff
 
-	code := truncated % uint32(math.Pow10(6))
-	return fmt.Sprintf("%06d", code)
+	code := truncated % uint32(math.Pow10(totpDigits))
+	return fmt.Sprintf("%0*d", totpDigits, code)
 }

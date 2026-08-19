@@ -53,6 +53,10 @@ type Spider struct {
 	mu      sync.RWMutex
 	results chan Result
 	wg      sync.WaitGroup
+	// sem caps concurrent crawl goroutines. Config.Concurrency was declared and
+	// defaulted but never read, so a link-dense site spawned one goroutine per
+	// discovered link with no ceiling.
+	sem chan struct{}
 }
 
 // New creates a new Spider instance
@@ -60,11 +64,16 @@ func New(client *httpengine.Client, cfg *Config) *Spider {
 	if cfg == nil {
 		cfg = DefaultConfig()
 	}
+	concurrency := cfg.Concurrency
+	if concurrency <= 0 {
+		concurrency = DefaultConfig().Concurrency
+	}
 	return &Spider{
 		client:  client,
 		config:  cfg,
 		visited: make(map[string]bool),
 		results: make(chan Result, 100),
+		sem:     make(chan struct{}, concurrency),
 	}
 }
 
@@ -187,8 +196,17 @@ func (s *Spider) crawl(ctx context.Context, rawURL string, depth int) {
 
 			s.wg.Add(1)
 			go func(l string, d int) {
+				defer s.wg.Done()
+				// Acquire inside the goroutine: blocking here instead of in the
+				// parent keeps a saturated semaphore from stalling the walk over
+				// the remaining links, while still capping work in flight.
+				select {
+				case s.sem <- struct{}{}:
+				case <-ctx.Done():
+					return
+				}
+				defer func() { <-s.sem }()
 				s.crawl(ctx, l, d)
-				s.wg.Done()
 			}(link, depth+1)
 		}
 	}

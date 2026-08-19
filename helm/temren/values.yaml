@@ -79,3 +79,20 @@ config:
 serviceAccount:
   create: true
   name: temren
+
+# Containers run unprivileged with a read-only root filesystem; /tmp is mounted
+# as an emptyDir. Nothing in the images needs root, and the scanner handles
+# attacker-controlled responses, so this is the baseline containment.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]

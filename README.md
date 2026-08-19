@@ -12,7 +12,7 @@
   <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go&logoColor=white" alt="Go"></a>
   <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-15-black?logo=next.js&logoColor=white" alt="Next.js"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-blue" alt="License"></a>
-  <a href="https://owasp.org/Top10/"><img src="https://img.shields.io/badge/OWASP-Top%2010%202025-red" alt="OWASP"></a>
+  <a href="https://owasp.org/Top10/"><img src="https://img.shields.io/badge/OWASP-Top%2010%202021-red" alt="OWASP"></a>
 </p>
 
 <p align="center">
@@ -30,7 +30,7 @@
 ### Why Temren?
 
 - **Free & Open Source** - No per-scan pricing, no API limits
-- **26+ Scanners** - SQL Injection, XSS, SSRF, IDOR, and more
+- **76 Scanners** - SQL Injection, XSS, SSRF, IDOR, and more
 - **WAF Bypass** - Evades Cloudflare, Akamai, Imperva, AWS WAF
 - **Real-time Dashboard** - Watch scans live via WebSocket
 - **Integrations** - Jira, GitHub, Slack, Discord, Email alerts
@@ -62,8 +62,8 @@
 
 | Scanner | Description | Severity |
 |---------|-------------|----------|
-| SQL Injection | Error-based & time-based detection | Critical |
-| XSS | Reflected, DOM-based, stored | High |
+| SQL Injection | Error-based & time-based, both compared against a baseline | Critical |
+| XSS | Reflected, verified with a per-request marker | High |
 | Command Injection | OS command execution | Critical |
 | SSRF | Server-Side Request Forgery | High |
 | IDOR | Insecure Direct Object Reference | High |
@@ -105,16 +105,29 @@
 
 ## Quick Start
 
-### One-Line Install
+### Docker Compose
 
 ```bash
-# Clone & run with Docker Compose
 git clone https://github.com/nickzsche/TemrenSec.git
-cd temren
-docker-compose up -d
+cd TemrenSec
+
+make setup          # generates .env with a strong JWT secret and DB password
+docker compose up -d
 ```
 
-Visit `http://localhost:3000` and create your first scan.
+`make setup` is required: compose refuses to start without `JWT_SECRET` and
+`POSTGRES_PASSWORD`, and the API rejects a weak secret in production. The API
+applies database migrations on startup, so there is no separate migrate step.
+
+Then visit `http://localhost:8080/health` to confirm the API is up, and run the
+dashboard with `cd frontend && npm install && npm run dev`.
+
+`make up` runs both steps, and `make logs` tails the API and worker.
+
+**Scan targets that resolve to private, loopback or link-local addresses are
+refused by default** — otherwise anyone with an account could aim a shared
+install at your internal network. To scan internal hosts, set
+`ALLOW_PRIVATE_TARGETS=true` in `.env`.
 
 ### CLI
 
@@ -193,7 +206,9 @@ TemrenSec/
 
 ## Roadmap
 
-- [x] OWASP Top 10 2025 coverage (A01–A10, with 2021→2025 mapping for back-compat)
+- [x] OWASP Top 10 **2021** coverage (A01–A10) — findings are categorised against
+      the 2021 list, which is what the mapping in `internal/queue` implements.
+- [ ] OWASP Top 10 2025 mapping
 - [x] Real-time WebSocket updates with optional Redis pub/sub bridge for multi-replica HA (`TEMREN_WS_REDIS`)
 - [x] WAF Bypass techniques (payload mutation + Tor identity rotation on 3× consecutive 429s)
 - [x] Jira/GitHub/GitLab integration

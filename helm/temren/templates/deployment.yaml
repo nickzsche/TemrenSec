@@ -58,9 +58,13 @@ spec:
       labels:
         app: {{ include "temren.fullname" . }}-api
     spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: api
           image: {{ .Values.image.repository }}-api:{{ .Values.image.tag | default .Chart.AppVersion }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 8080
@@ -82,10 +86,15 @@ spec:
           volumeMounts:
             - name: migrations
               mountPath: /app/migrations
+            # readOnlyRootFilesystem needs a writable /tmp.
+            - name: tmp
+              mountPath: /tmp
       volumes:
         - name: migrations
           configMap:
             name: {{ include "temren.fullname" . }}-migrations
+        - name: tmp
+          emptyDir: {}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -102,9 +111,13 @@ spec:
       labels:
         app: {{ include "temren.fullname" . }}-worker
     spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: worker
           image: {{ .Values.image.repository }}-worker:{{ .Values.image.tag | default .Chart.AppVersion }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           envFrom:
             - configMapRef:
@@ -126,10 +139,15 @@ spec:
           volumeMounts:
             - name: migrations
               mountPath: /app/migrations
+            # readOnlyRootFilesystem needs a writable /tmp.
+            - name: tmp
+              mountPath: /tmp
       volumes:
         - name: migrations
           configMap:
             name: {{ include "temren.fullname" . }}-migrations
+        - name: tmp
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

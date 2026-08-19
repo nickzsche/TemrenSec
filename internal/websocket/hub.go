@@ -391,9 +391,18 @@ func (c *Client) writePump() {
 
 func HandleWebSocket(hub *Hub) func(*websocket.Conn) {
 	return func(c *websocket.Conn) {
+		// AuthRequiredWS runs before the upgrade, so user_id is set. Assert it
+		// safely anyway: this runs in the hijacked connection goroutine, where a
+		// panic is not covered by the app's recover middleware.
+		userID, ok := c.Locals("user_id").(string)
+		if !ok || userID == "" {
+			_ = c.Close()
+			return
+		}
+
 		client := &Client{
 			ID:     c.Query("client_id", generateClientID()),
-			UserID: c.Locals("user_id").(string),
+			UserID: userID,
 			hub:    hub,
 			conn:   c,
 			send:   make(chan []byte, 256),

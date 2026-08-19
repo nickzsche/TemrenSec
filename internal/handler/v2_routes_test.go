@@ -8,15 +8,43 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
-	"github.com/temren/pkg/scanner"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/temren/internal/config"
+	"github.com/temren/pkg/scanner"
 )
+
+const testJWTSecret = "test-only-secret-Aa1-with-enough-length-000000"
+
+// testToken mints a token the auth middleware accepts, so these tests exercise
+// the handlers rather than the 401 in front of them.
+func testToken(t *testing.T) string {
+	t.Helper()
+	if config.AppConfig == nil {
+		config.AppConfig = &config.Config{JWTSecret: testJWTSecret}
+	}
+	config.AppConfig.JWTSecret = testJWTSecret
+
+	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": "11111111-1111-1111-1111-111111111111",
+		"email":   "tester@example.com",
+		"plan":    "pro",
+		"exp":     time.Now().Add(time.Hour).Unix(),
+	})
+	signed, err := tok.SignedString([]byte(testJWTSecret))
+	if err != nil {
+		t.Fatalf("sign test token: %v", err)
+	}
+	return signed
+}
 
 // app fires up a Fiber instance with only the v2 routes mounted — keeps the test
 // blast-radius narrow and avoids depending on Postgres / Redis.
 func app(t *testing.T) *fiber.App {
 	t.Helper()
+	testToken(t) // ensure config.AppConfig carries the secret the middleware reads
 	a := fiber.New(fiber.Config{DisableStartupMessage: true})
 	RegisterV2(a)
 	return a
@@ -31,6 +59,7 @@ func do(t *testing.T, a *fiber.App, method, path string, body any) (int, []byte)
 	}
 	req := httptest.NewRequest(method, path, buf)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+testToken(t))
 	resp, err := a.Test(req, 30_000)
 	if err != nil {
 		t.Fatal(err)
@@ -143,6 +172,10 @@ func TestV2_AIChatDegradedWithoutProvider(t *testing.T) {
 }
 
 func TestV2_NotifyTestSlackHandlesBadURL(t *testing.T) {
+	// The stub server listens on loopback, which the SSRF guard refuses by
+	// design — opt in the same way an operator testing an internal endpoint would.
+	t.Setenv("ALLOW_PRIVATE_TARGETS", "true")
+
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 	}))
@@ -167,5 +200,80 @@ func TestV2_WorkspaceCRUD(t *testing.T) {
 	status, body := do(t, a, "GET", "/api/v1/workspaces", nil)
 	if status != 200 || !strings.Contains(string(body), "acme") {
 		t.Errorf("list returned %d %s", status, body)
+	}
+}
+
+// TestV2_RequiresAuthentication is the regression guard for the reason these
+// routes were locked down: they were mounted on an unauthenticated prefix, and
+// /ai/chat and /notify/test are not read-only — one spends the operator's LLM
+// key, the other posts to a caller-supplied URL from inside the network.
+func TestV2_RequiresAuthentication(t *testing.T) {
+	a := app(t)
+
+	cases := []struct {
+		method, path string
+		body         any
+	}{
+		{"GET", "/api/v1/profiles", nil},
+		{"POST", "/api/v1/ai/chat", map[string]string{"prompt": "hi"}},
+		{"POST", "/api/v1/notify/test", map[string]string{"channel": "slack", "url": "http://example.com"}},
+		{"GET", "/api/v1/workspaces", nil},
+		{"POST", "/api/v1/workspaces", map[string]string{"name": "x"}},
+		{"GET", "/api/v1/sbom", nil},
+		{"POST", "/api/v1/triage", nil},
+		{"GET", "/api/v1/mlbom", nil},
+	}
+
+	for _, tc := range cases {
+		var buf io.Reader
+		if tc.body != nil {
+			b, _ := json.Marshal(tc.body)
+			buf = bytes.NewReader(b)
+		}
+		req := httptest.NewRequest(tc.method, tc.path, buf)
+		req.Header.Set("Content-Type", "application/json")
+		// deliberately no Authorization header
+		resp, err := a.Test(req, 30_000)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+
+		if resp.StatusCode != http.StatusUnauthorized {
+			t.Errorf("%s %s without a token = %d, want 401", tc.method, tc.path, resp.StatusCode)
+		}
+	}
+}
+
+// TestV2_NotifyTestRefusesInternalDestinations — the endpoint takes the
+// destination from the request body, so an authenticated caller must still not
+// be able to aim it at the metadata service or loopback.
+func TestV2_NotifyTestRefusesInternalDestinations(t *testing.T) {
+	t.Setenv("ALLOW_PRIVATE_TARGETS", "")
+	a := app(t)
+
+	for _, target := range []string{
+		"http://169.254.169.254/latest/meta-data/",
+		"http://127.0.0.1:6379/",
+		"http://10.0.0.1/",
+	} {
+		status, body := do(t, a, "POST", "/api/v1/notify/test", map[string]any{
+			"channel": "webhook",
+			"url":     target,
+		})
+		if status != 400 {
+			t.Errorf("notify/test to %s = %d (body %s), want 400", target, status, body)
+		}
+	}
+}
+
+// TestV2_SBOMPathStaysInsideScanRoot — ?path= walks the server filesystem.
+func TestV2_SBOMPathStaysInsideScanRoot(t *testing.T) {
+	t.Setenv("SBOM_SCAN_ROOT", t.TempDir())
+	a := app(t)
+
+	status, _ := do(t, a, "GET", "/api/v1/sbom?path=../../../../etc", nil)
+	if status != 400 {
+		t.Errorf("traversal outside the scan root = %d, want 400", status)
 	}
 }

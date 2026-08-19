@@ -6,9 +6,11 @@ import (
 	"io"
 	"math"
 	"math/rand"
+	"net"
 	"net/http"
 	"strconv"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/temren/pkg/wafbypass"
@@ -88,6 +90,18 @@ type Config struct {
 	JitterMin   time.Duration
 	JitterMax   time.Duration
 	RotateUA    bool
+
+	// DialControl, when set, is consulted with the resolved address before each
+	// connection is established; returning an error aborts the dial.
+	//
+	// This is where a server-side deployment enforces which destinations a
+	// user-supplied target may reach. Checking the URL up front is not enough on
+	// its own: the name can resolve to something else by the time it is dialled,
+	// and a redirect can send a later hop somewhere entirely different. Both are
+	// visible here and nowhere else.
+	//
+	// Left nil for local CLI use, where scanning localhost is the point.
+	DialControl func(network, address string, c syscall.RawConn) error
 }
 
 func DefaultConfig() *Config {
@@ -112,6 +126,15 @@ func NewClient(cfg *Config) *Client {
 		IdleConnTimeout:     90 * time.Second,
 		DisableCompression:  false,
 		TLSHandshakeTimeout: 10 * time.Second,
+	}
+
+	if cfg.DialControl != nil {
+		dialer := &net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			Control:   cfg.DialControl,
+		}
+		transport.DialContext = dialer.DialContext
 	}
 
 	client := &http.Client{

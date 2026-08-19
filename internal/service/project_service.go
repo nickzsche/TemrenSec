@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/temren/internal/database"
 	"github.com/temren/internal/model"
+	"github.com/temren/internal/safeurl"
 )
 
 type ProjectService struct {
@@ -77,6 +79,7 @@ type TargetService struct {
 	targetDB  *database.TargetRepo
 	projectDB *database.ProjectRepo
 	scanDB    *database.ScanRepo
+	userDB    *database.UserRepo
 }
 
 func NewTargetService() *TargetService {
@@ -84,7 +87,18 @@ func NewTargetService() *TargetService {
 		targetDB:  database.NewTargetRepo(),
 		projectDB: database.NewProjectRepo(),
 		scanDB:    database.NewScanRepo(),
+		userDB:    database.NewUserRepo(),
 	}
+}
+
+// getUserPlan resolves the caller's plan, defaulting to the most restrictive
+// tier if the user cannot be read.
+func (s *TargetService) getUserPlan(ctx context.Context, userID string) string {
+	user, err := s.userDB.GetByID(ctx, userID)
+	if err != nil || user.Plan == "" {
+		return "free"
+	}
+	return user.Plan
 }
 
 func (s *TargetService) Create(ctx context.Context, userID string, req *model.CreateTargetRequest) (*model.Target, error) {
@@ -92,16 +106,30 @@ func (s *TargetService) Create(ctx context.Context, userID string, req *model.Cr
 	if err != nil {
 		return nil, err
 	}
-	_ = project
+	// Every other TargetService method checks this; Create fetched the project
+	// and then discarded it, letting any authenticated user add a target to
+	// somebody else's project.
+	if project.UserID != userID {
+		return nil, ErrForbidden
+	}
+
+	// The target URL is fetched later by the worker from inside the deployment's
+	// network, so it has to be checked before it is ever stored.
+	if err := safeurl.Validate(req.URL); err != nil {
+		return nil, fmt.Errorf("invalid target URL: %w", err)
+	}
 
 	targetCount, err := s.targetDB.CountByUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	limits := model.PlanConfig["free"]
-	if planLimits, ok := model.PlanConfig["pro"]; ok {
-		limits = planLimits
+	// Read the caller's actual plan. The previous form always overwrote the
+	// free-tier limits with the pro ones, because PlanConfig["pro"] always
+	// exists — so quotas were never enforced per plan.
+	limits, ok := model.PlanConfig[s.getUserPlan(ctx, userID)]
+	if !ok {
+		limits = model.PlanConfig["free"]
 	}
 	if targetCount >= limits.MaxTargets {
 		return nil, ErrPlanLimit
@@ -154,6 +182,9 @@ func (s *TargetService) Update(ctx context.Context, id, userID string, req *mode
 	}
 	if err := s.checkTargetOwnership(ctx, t, userID); err != nil {
 		return nil, err
+	}
+	if err := safeurl.Validate(req.URL); err != nil {
+		return nil, fmt.Errorf("invalid target URL: %w", err)
 	}
 	t.URL = req.URL
 	t.Name = req.Name

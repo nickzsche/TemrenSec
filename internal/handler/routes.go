@@ -6,27 +6,34 @@ import (
 	"os"
 	"time"
 
-	"github.com/temren/internal/config"
-	"github.com/temren/internal/middleware"
-	"github.com/temren/internal/model"
-	"github.com/temren/internal/queue"
-	"github.com/temren/internal/service"
-	"github.com/temren/internal/websocket"
 	wsfiber "github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/temren/internal/config"
+	"github.com/temren/internal/middleware"
+	"github.com/temren/internal/model"
+	"github.com/temren/internal/queue"
+	"github.com/temren/internal/scheduler"
+	"github.com/temren/internal/service"
+	"github.com/temren/internal/websocket"
 )
 
 var scanQueue *queue.Queue
 var rateLimiter *middleware.RateLimiter
 var wsHub *websocket.Hub
+var scanScheduler *scheduler.Scheduler
 
 func SetupRoutes(app *fiber.App) {
 	h := NewHandler()
 	scanQueue = queue.NewQueue()
-	rateLimiter, _ = middleware.NewRateLimiter()
+	var rlErr error
+	if rateLimiter, rlErr = middleware.NewRateLimiter(); rlErr != nil {
+		// Not fatal — the API still serves — but brute-force protection on the
+		// auth endpoints is gone until Redis is reachable, so make it visible.
+		log.Printf("[ratelimit] WARNING: rate limiting disabled: %v", rlErr)
+	}
 	wsHub = websocket.GetHub()
 	// Optional cross-instance bridge: when TEMREN_WS_REDIS is set, every
 	// broadcast also fans out to peer API replicas via Redis pub/sub.
@@ -58,7 +65,18 @@ func SetupRoutes(app *fiber.App) {
 		return c.JSON(fiber.Map{"status": "ok", "timestamp": time.Now().Format(time.RFC3339)})
 	})
 
-	app.Get("/ws", wsfiber.New(websocket.HandleWebSocket(wsHub)))
+	// /ws must authenticate: the hub keys subscriptions by user, and the handler
+	// reads user_id from Locals. Mounted without AuthRequired that local was nil
+	// and every upgrade panicked, so live scan progress never worked at all.
+	app.Get("/ws",
+		middleware.AuthRequiredWS(),
+		func(c *fiber.Ctx) error {
+			if !wsfiber.IsWebSocketUpgrade(c) {
+				return fiber.ErrUpgradeRequired
+			}
+			return c.Next()
+		},
+		wsfiber.New(websocket.HandleWebSocket(wsHub)))
 
 	api := app.Group("/api/v1")
 
@@ -66,7 +84,9 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("/auth/login", rateLimiter.LimitByIP(), h.Login)
 	api.Post("/auth/refresh", h.RefreshToken)
 
-	authed := api.Group("", middleware.AuthRequired())
+	// Plan quotas are advertised as a feature but LimitByUser was never attached
+	// to any route, so nothing enforced them.
+	authed := api.Group("", middleware.AuthRequired(), rateLimiter.LimitByUser())
 
 	authed.Post("/auth/logout", h.Logout)
 	authed.Get("/auth/me", h.GetMe)
@@ -120,4 +140,47 @@ func SetupRoutes(app *fiber.App) {
 
 func GetQueue() *queue.Queue {
 	return scanQueue
+}
+
+// GetScheduler returns the running scheduler, or nil if it could not start.
+func GetScheduler() *scheduler.Scheduler {
+	return scanScheduler
+}
+
+// StartScheduler brings up the cron scheduler and reloads persisted schedules.
+//
+// Called from cmd/api/main.go after the database is connected. Recurring scans
+// only exist because this runs: the schedule rows are stored, but nothing fires
+// them unless the in-memory cron is rehydrated on boot.
+func StartScheduler() {
+	if scanQueue == nil {
+		log.Println("[scheduler] queue unavailable; recurring scans disabled")
+		return
+	}
+
+	store := scheduler.NewPgxStorage()
+	scanScheduler = scheduler.NewScheduler(store, scanQueue)
+	scanScheduler.Start()
+
+	schedules, err := store.ListEnabled()
+	if err != nil {
+		log.Printf("[scheduler] could not reload schedules: %v", err)
+		return
+	}
+	restored := 0
+	for _, sc := range schedules {
+		if err := scanScheduler.Schedule(sc); err != nil {
+			log.Printf("[scheduler] skipping schedule %s: %v", sc.ID, err)
+			continue
+		}
+		restored++
+	}
+	log.Printf("[scheduler] restored %d schedule(s)", restored)
+}
+
+// StopScheduler stops the cron on shutdown.
+func StopScheduler() {
+	if scanScheduler != nil {
+		scanScheduler.Stop()
+	}
 }

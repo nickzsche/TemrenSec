@@ -3,9 +3,12 @@ package handler
 import (
 	"errors"
 	"log"
+	"os"
 
-	"github.com/temren/internal/service"
+	"github.com/temren/internal/config"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/temren/internal/service"
 )
 
 // respondError maps a service error to the right HTTP status.
@@ -48,4 +51,23 @@ func (h *Handler) failScan(c *fiber.Ctx, scanID, reason string) {
 	if err := h.scanSvc.FailScan(c.Context(), scanID, reason); err != nil {
 		log.Printf("[api] could not mark scan %s failed (%s): %v", scanID, reason, err)
 	}
+}
+
+// publicBaseURL is the externally visible base URL of the dashboard, used to
+// build links the caller can actually open.
+//
+// FRONTEND_URL already carries this (it is what CORS is configured against),
+// so that is the source of truth; PUBLIC_BASE_URL overrides it for deployments
+// where the API and dashboard sit on different hostnames.
+//
+// This replaces a hardcoded https://temren.sh — a domain no self-hosted
+// deployment controls.
+func publicBaseURL() string {
+	if v := os.Getenv("PUBLIC_BASE_URL"); v != "" {
+		return v
+	}
+	if cfg := config.AppConfig; cfg != nil && cfg.FrontendURL != "" {
+		return cfg.FrontendURL
+	}
+	return ""
 }

@@ -98,7 +98,9 @@
   Separate from scan quotas, which are Free 1 target / 5 scans, Pro 5 / 50, Team 20 / 200.
 - **2FA Authentication** - TOTP support
 - **Report Export** - SARIF, CycloneDX, JUnit, CSV, Markdown, JSONL, Jira, HTML, PDF
-- **Prometheus Metrics** - Full observability
+- **Prometheus Metrics** - API on `:8080/metrics`, worker on `:9090/metrics`
+  (`METRICS_PORT` to change). Scan counts, durations and findings-by-scanner
+  are recorded by the worker, so scrape both.
 - **Kubernetes Ready** - Helm chart included
 - **CI/CD Integration** - GitHub Actions ready
 

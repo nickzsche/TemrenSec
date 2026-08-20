@@ -97,6 +97,10 @@ services:
       # The API applies migrations on boot; the worker waits for it rather than
       # racing to apply them itself.
       SKIP_MIGRATIONS: "1"
+      METRICS_PORT: "9090"
+    ports:
+      # Scan metrics live in this process, not the API.
+      - "127.0.0.1:9090:9090"
     depends_on:
       postgres:
         condition: service_healthy

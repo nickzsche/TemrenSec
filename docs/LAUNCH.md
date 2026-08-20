@@ -96,11 +96,11 @@ not mockups. See **Verification**.
 - [ ] Tag a release (`v0.1.0`) and let goreleaser publish binaries
 - [ ] Confirm the Product Hunt badge `post_id` in `README.md` matches the real
       post — it is currently `post_id=temren`
-- [ ] Decide what `https://temren.sh` should be. The CLI prints
-      `https://temren.sh/report/<id>` after a scan
-      (`internal/handler/cli_handler.go`) and the API docs reference
-      `api.temren.sh`. If you don't own that domain, change or remove those
-      strings before launch — people will click them.
+- [x] ~~Decide what `https://temren.sh` should be~~ — removed. The CLI now
+      points at the results file and the integrations that exist; the API
+      derives report links from `FRONTEND_URL` (override with
+      `PUBLIC_BASE_URL`); the Helm and k8s ingress examples use
+      `temren.example.com`.
 - [ ] Turn on GitHub Discussions for launch-day questions
 - [ ] Have the "what do I do about a false positive" answer ready: open an
       issue with the URL pattern

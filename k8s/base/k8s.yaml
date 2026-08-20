@@ -174,10 +174,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - api.temren.sh
+        - temren.example.com
       secretName: temren-tls
   rules:
-    - host: api.temren.sh
+    - host: temren.example.com
       http:
         paths:
           - path: /

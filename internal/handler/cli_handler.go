@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"strings"
 	"time"
 
-	"github.com/temren/internal/middleware"
-	"github.com/temren/internal/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/temren/internal/middleware"
+	"github.com/temren/internal/model"
 )
 
 func (h *Handler) ReceiveCLIScan(c *fiber.Ctx) error {
@@ -79,10 +80,14 @@ func (h *Handler) ReceiveCLIScan(c *fiber.Ctx) error {
 	_ = h.scanSvc.CompleteCLIScan(c.Context(), body.ScanID, body.PagesCrawled, body.DurationSec,
 		criticalCount, highCount, mediumCount, lowCount, infoCount)
 
+	// Build the report URL from the request rather than hardcoding a hosted
+	// domain: this is self-hosted software, and the previous value pointed at a
+	// address the deployment does not control.
 	return c.JSON(fiber.Map{
-		"message":    "scan results received",
-		"report_id":  body.ScanID,
-		"report_url": "https://temren.sh/report/" + body.ScanID,
+		"message":   "scan results received",
+		"report_id": body.ScanID,
+		"report_url": strings.TrimRight(publicBaseURL(), "/") +
+			"/dashboard/scans/" + body.ScanID,
 	})
 }
 

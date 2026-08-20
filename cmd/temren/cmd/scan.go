@@ -35,6 +35,7 @@ var (
 	outputFormat  string
 	outputFile    string
 	enableCrawl   bool
+	noCrawl       bool
 	timeout       int
 	sameDomain    bool
 	activeScans   bool
@@ -122,6 +123,9 @@ func init() {
 	scanCmd.Flags().StringVarP(&outputFormat, "format", "f", "text", "Output format (text, json, sarif, junit)")
 	scanCmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file (default: stdout)")
 	scanCmd.Flags().BoolVar(&enableCrawl, "crawl", true, "Enable web crawling")
+	// The command's own examples advertised --no-crawl, which did not exist, so
+	// the documented invocation exited with "unknown flag".
+	scanCmd.Flags().BoolVar(&noCrawl, "no-crawl", false, "Scan only the target URL (opposite of --crawl)")
 	scanCmd.Flags().BoolVar(&sameDomain, "same-domain", true, "Only crawl pages on the same domain")
 	scanCmd.Flags().IntVar(&timeout, "timeout", 30, "Request timeout in seconds")
 	scanCmd.Flags().BoolVar(&activeScans, "active", true, "Enable active vulnerability scanning")
@@ -339,6 +343,10 @@ func runScan(cmd *cobra.Command, args []string) {
 		if !silent {
 			fmt.Println("[*] Headless browser enabled for SPA/JS rendering")
 		}
+	}
+
+	if noCrawl {
+		enableCrawl = false
 	}
 
 	if enableCrawl {
@@ -784,7 +792,6 @@ func runScan(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	// Growth hack: show cloud link
 	criticalCount := 0
 	for _, f := range findings {
 		if f.Severity == scanner.SeverityCritical {
@@ -795,11 +802,23 @@ func runScan(cmd *cobra.Command, args []string) {
 		fmt.Println()
 		fmt.Printf("\033[1;31m  %d critical vulnerabilities found\033[0m\n", criticalCount)
 		fmt.Println()
-		fmt.Println("  => View full report:")
-		fmt.Println("     https://temren.sh/report (login required)")
+
+		// Point at things that exist. This block used to advertise a hosted
+		// report at a domain the project does not run, and tell the user to
+		// re-run with "--cloud" — which is not a flag on this command, so the
+		// suggested command exits with "unknown flag".
+		if outputFile != "" {
+			fmt.Println("  => Full results written to:")
+			fmt.Println("     " + outputFile)
+		} else {
+			fmt.Println("  => Write the full results to a file:")
+			fmt.Println("     temren scan -t " + targetURL + " --output results.json --format json")
+		}
 		fmt.Println()
-		fmt.Println("  => Run with --cloud to sync:")
-		fmt.Println("     temren scan -t " + targetURL + " --cloud")
+		fmt.Println("  => Or route them somewhere your team already reads:")
+		fmt.Println("     --defectdojo-url / --defectdojo-token   push to DefectDojo")
+		fmt.Println("     --github-token / --gitlab-token         open issues")
+		fmt.Println("     --notify-slack / --notify-discord       post a summary")
 		fmt.Println()
 	}
 

@@ -20,7 +20,7 @@ api:
   ingress:
     enabled: false
     className: nginx
-    host: api.temren.sh
+    host: temren.example.com
     tls: true
   resources:
     limits:

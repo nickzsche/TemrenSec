@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/spf13/cobra"
 	"github.com/temren/pkg/analyzer"
 	"github.com/temren/pkg/httpengine"
 	"github.com/temren/pkg/integration/defectdojo"
@@ -23,7 +24,6 @@ import (
 	"github.com/temren/pkg/sbom"
 	"github.com/temren/pkg/scanner"
 	"github.com/temren/pkg/spider"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -55,12 +55,12 @@ var (
 	authUser         string
 	authPass         string
 
-	proxyList   string
-	proxyType   string
+	proxyList  string
+	proxyType  string
 	torEnabled bool
-	customUA    string
-	jitterMin   int
-	jitterMax   int
+	customUA   string
+	jitterMin  int
+	jitterMax  int
 
 	pluginsDir string
 	noBatch    bool
@@ -86,7 +86,7 @@ var (
 
 	verifyFindings bool
 
-	notifySlackWebhook    string
+	notifySlackWebhook   string
 	notifyDiscordWebhook string
 	notifyTeamsWebhook   string
 
@@ -139,7 +139,7 @@ func init() {
 	scanCmd.Flags().StringVar(&authHeader, "auth-header", "Authorization", "Custom header name for bearer token")
 	scanCmd.Flags().StringArrayVar(&authCookies, "auth-cookie", nil, "Cookie string (name=value, repeatable)")
 	scanCmd.Flags().StringArrayVar(&authHeaderCustom, "auth-header-custom", nil, "Custom header (Key:Value, repeatable)")
-scanCmd.Flags().StringVar(&authUser, "auth-user", "", "Basic auth username")
+	scanCmd.Flags().StringVar(&authUser, "auth-user", "", "Basic auth username")
 	scanCmd.Flags().StringVar(&authPass, "auth-pass", "", "Basic auth password")
 
 	scanCmd.Flags().StringVar(&proxyList, "proxy-list", "", "Proxy list file or comma-separated proxies (user:pass@host:port)")
@@ -163,7 +163,10 @@ scanCmd.Flags().StringVar(&authUser, "auth-user", "", "Basic auth username")
 	scanCmd.Flags().StringVar(&upstreamProxy, "proxy", "", "Upstream proxy URL (e.g., http://127.0.0.1:8080 for Burp Suite)")
 
 	scanCmd.Flags().StringVar(&complianceFilter, "compliance", "", "Compliance frameworks to show (comma-separated: pci,soc2,iso27001)")
-	scanCmd.Flags().BoolVar(&verifyFindings, "verify", false, "Verify findings with proof-based exploitation (reduces false positives)")
+	// Default on: the queue/dashboard path always verifies, so leaving the CLI
+	// unverified made the same scan report different results depending on how it
+	// was run. Use --verify=false to see raw detector output.
+	scanCmd.Flags().BoolVar(&verifyFindings, "verify", true, "Verify findings with proof-based exploitation (reduces false positives)")
 
 	scanCmd.Flags().StringVar(&remediationProvider, "remediation", "none", "Remediation provider: openai, anthropic, ollama, none")
 	scanCmd.Flags().StringVar(&remediationAPIKey, "remediation-key", "", "API key for remediation provider")
@@ -701,10 +704,10 @@ func runScan(cmd *cobra.Command, args []string) {
 		}
 
 		advisor := remediation.NewAdvisor(remediation.AdvisorConfig{
-			Provider:    remediationProvider,
-			APIKey:      remediationAPIKey,
-			Model:       remediationModel,
-			BaseURL:     remediationBaseURL,
+			Provider: remediationProvider,
+			APIKey:   remediationAPIKey,
+			Model:    remediationModel,
+			BaseURL:  remediationBaseURL,
 		})
 		remediations := advisor.Suggest(ctx, findings)
 
@@ -860,11 +863,11 @@ type ScanReport struct {
 
 // ComplianceEntry represents a compliance mapping entry for JSON output
 type ComplianceEntry struct {
-	Scanner    string   `json:"scanner"`
-	Title      string   `json:"title"`
-	Framework  string   `json:"framework"`
-	ControlID  string   `json:"control_id"`
-	Control    string   `json:"control_name"`
+	Scanner   string `json:"scanner"`
+	Title     string `json:"title"`
+	Framework string `json:"framework"`
+	ControlID string `json:"control_id"`
+	Control   string `json:"control_name"`
 }
 
 // printResults prints findings to stdout

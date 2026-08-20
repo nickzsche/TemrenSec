@@ -3,7 +3,6 @@ package scanner
 import (
 	"context"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/temren/internal/payloads"
@@ -66,7 +65,7 @@ func (s *NoSQLInjectionScanner) Scan(ctx context.Context, target string, client 
 
 			bodyStr := string(body)
 
-			if s.detectNoSQLError(bodyStr) {
+			if s.detectNoSQLError(bodyStr, payload, normalStr) {
 				findings = append(findings, Finding{
 					URL:           testURL,
 					Title:         "NoSQL Injection",
@@ -105,18 +104,23 @@ func (s *NoSQLInjectionScanner) Scan(ctx context.Context, target string, client 
 	return findings, nil
 }
 
-func (s *NoSQLInjectionScanner) detectNoSQLError(body string) bool {
+// detectNoSQLError reports a driver error attributable to the payload.
+//
+// "$gt" used to be on this list, and it is a substring of the payload
+// {"$gt": ""} — so any endpoint that reflected input reported a critical NoSQL
+// injection. baseline is the unmodified response for the same URL.
+func (s *NoSQLInjectionScanner) detectNoSQLError(body, payload, baseline string) bool {
 	patterns := []string{
-		"MongoError",
-		"MongoServerError",
-		"$gt",
-		"BSON",
-		"not authorized",
+		"mongoerror",
+		"mongoservererror",
+		"mongodb.driver",
+		"bsonerror",
+		"e11000 duplicate key",
+		"failed to parse query",
 	}
 
-	lowerBody := strings.ToLower(body)
 	for _, pattern := range patterns {
-		if strings.Contains(lowerBody, strings.ToLower(pattern)) {
+		if MarkerIsEvaluated(body, payload, pattern, baseline) {
 			return true
 		}
 	}

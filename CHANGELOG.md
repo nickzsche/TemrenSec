@@ -6,6 +6,53 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed — launch readiness
+
+Everything in this section was found by running the stack end-to-end against a
+real Postgres, Redis and a deliberately-vulnerable local test app. Most of it
+had never been exercised before.
+
+- **The documented quickstart could not start.** A weak default JWT secret
+  combined with `ENVIRONMENT=production` made the API exit on boot; nothing
+  ever applied the migrations; and the rate limiter passed a `redis://` URL
+  where go-redis wanted `host:port`, so login and register returned 500.
+- **`migrations/004_perf_indexes.sql` was invalid.** A partial index predicate
+  used `NOW()`, which Postgres rejects as non-IMMUTABLE. The file had never
+  been executed, so nobody had hit it.
+- **`PUT /targets/:id` returned 500** when `scan_settings` was omitted: the
+  empty string was written into a `jsonb` column.
+- **The dashboard fabricated a severity trend.** With no timeline from the API
+  — which is always, until a target is scanned on more than one day — it drew a
+  hardcoded week of invented critical/high/medium counts. Now shows an empty
+  state.
+- **Scanner false positives.** Several detectors matched markers contained in
+  their own payloads, so any endpoint that reflected input produced Critical
+  findings:
+  - SSTI reported on any page containing the string `49`, or any HTTP 500
+  - `{{config.SECRET_KEY}}` matched on the marker `SECRET_KEY`
+  - SSI matched `document_name`, part of its own `<!--#echo -->` directive
+  - Prototype pollution matched `__proto__`, part of its own payload
+  - SSRF matched `computeMetadata`, part of its own payload, and treated *any*
+    non-empty response to a `file://` payload as confirmed
+  - Dev-tool probes appended absolute paths to a URL that already had a query
+    string, producing `/search?q=x/__cypress/` and matching their own input
+
+  All now go through `MarkerIsEvaluated`, which requires the marker to survive
+  with the reflected payload removed and to be absent from the baseline
+  response. Against the test fixture this took critical findings from 5 to 1
+  and high from 12 to 2 — leaving exactly the three bugs that were planted.
+- **Counts and badges corrected.** The project advertised "26+", "36+" and
+  "76" scanners across the README, landing page and onboarding, and an OWASP
+  Top 10 **2025** badge over a mapping that is entirely 2021.
+
+### Added
+
+- `docs/LAUNCH.md` — Product Hunt copy, gallery order, and the commands that
+  verify each claim in it
+- `docs/screenshots/` — real captures of the dashboard, taken against an actual
+  scan rather than mocked
+
+
 ### Added
 
 - **13 new active scanners**

@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/temren/pkg/httpengine"
@@ -15,7 +14,9 @@ import (
 // AdvancedTemplateInjectionScanner extends SSTI coverage with engine-specific identifiers.
 type AdvancedTemplateInjectionScanner struct{}
 
-func NewAdvancedTemplateInjectionScanner() *AdvancedTemplateInjectionScanner { return &AdvancedTemplateInjectionScanner{} }
+func NewAdvancedTemplateInjectionScanner() *AdvancedTemplateInjectionScanner {
+	return &AdvancedTemplateInjectionScanner{}
+}
 
 func (s *AdvancedTemplateInjectionScanner) Name() string { return "SSTI — Engine Fingerprint" }
 
@@ -46,6 +47,10 @@ func (s *AdvancedTemplateInjectionScanner) Scan(ctx context.Context, target stri
 	if len(q) == 0 {
 		return nil, nil
 	}
+	// Baseline for the unmodified URL: a marker the page already contains is not
+	// evidence that anything was evaluated.
+	baseline := fetchBaselineBody(ctx, client, target)
+
 	var findings []Finding
 	for param := range q {
 		for _, p := range advancedSSTI {
@@ -65,11 +70,11 @@ func (s *AdvancedTemplateInjectionScanner) Scan(ctx context.Context, target stri
 			}
 			body, _ := io.ReadAll(io.LimitReader(resp.Body, 256*1024))
 			resp.Body.Close()
-			if strings.Contains(string(body), p.expect) {
+			if MarkerIsEvaluated(string(body), p.payload, p.expect, baseline) {
 				findings = append(findings, Finding{
 					URL: u.String(), Title: fmt.Sprintf("Server-Side Template Injection (%s)", p.engine),
 					Description: "Template engine evaluated injected expression. RCE may be trivial depending on engine.",
-					Severity: p.sev, Confidence: ConfidenceHigh, Scanner: s.Name(),
+					Severity:    p.sev, Confidence: ConfidenceHigh, Scanner: s.Name(),
 					Parameter: param, Payload: p.payload, Evidence: p.expect,
 					Timestamp: time.Now(), OWASPCategory: "A03:2021-Injection", CVSSScore: p.score,
 				})

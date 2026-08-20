@@ -33,6 +33,8 @@ func (s *SSTIScanner) Scan(ctx context.Context, target string, client *httpengin
 		return findings, nil
 	}
 
+	baseline := fetchBaselineBody(ctx, client, target)
+
 	for param, values := range query {
 		originalValue := values[0]
 
@@ -58,7 +60,7 @@ func (s *SSTIScanner) Scan(ctx context.Context, target string, client *httpengin
 
 			bodyStr := string(body)
 
-			if s.detectSSTI(bodyStr, payload) {
+			if s.detectSSTI(bodyStr, payload, baseline) {
 				findings = append(findings, Finding{
 					URL:           testURL,
 					Title:         "Server-Side Template Injection (SSTI)",
@@ -81,20 +83,34 @@ func (s *SSTIScanner) Scan(ctx context.Context, target string, client *httpengin
 	return findings, nil
 }
 
-func (s *SSTIScanner) detectSSTI(body, payload string) bool {
-	if strings.Contains(body, "49") {
+// detectSSTI reports whether the template expression was evaluated.
+//
+// It takes the baseline so an arithmetic result the page already contains does
+// not count. The previous version returned true whenever the body contained the
+// bare string "49" anywhere — a price, an identifier, part of a hash — which
+// made any such page a Critical finding. "Internal Server Error" was also
+// treated as proof, so any 500 counted.
+func (s *SSTIScanner) detectSSTI(body, payload, baseline string) bool {
+	// 7*7 evaluated: the result must be attributable to the payload and must not
+	// already be on the page.
+	if MarkerIsEvaluated(body, payload, "49", baseline) {
 		return true
 	}
 
-	sstiErrorPatterns := []string{
-		"Jinja2",
-		"TemplateSyntaxError",
-		"Internal Server Error",
+	// A template error naming a specific engine is good evidence, provided the
+	// baseline was not already producing it.
+	engineErrors := []string{
+		"jinja2",
+		"templatesyntaxerror",
+		"freemarker.core",
+		"org.apache.velocity",
+		"twig\\error",
 	}
 
+	lowerBaseline := strings.ToLower(baseline)
 	lowerBody := strings.ToLower(body)
-	for _, pattern := range sstiErrorPatterns {
-		if strings.Contains(lowerBody, strings.ToLower(pattern)) && strings.Contains(body, payload) {
+	for _, pattern := range engineErrors {
+		if strings.Contains(lowerBody, pattern) && !strings.Contains(lowerBaseline, pattern) {
 			return true
 		}
 	}

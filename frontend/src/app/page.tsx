@@ -5,20 +5,20 @@ import Link from 'next/link'
 import { Shield, Zap, Globe, Lock, BarChart3, Clock, Bell, Code, Sparkles, CheckCircle, FileCheck, GitBranch, FileText } from 'lucide-react'
 
 const features = [
-  { icon: Shield, title: '36+ Security Scanners', desc: 'Full OWASP Top 10 2025 coverage: SQL Injection, XSS, SSRF, IDOR, SSTI, NoSQL, CORS, Secret Scanning, Proof-Based Verification, and more.' },
+  { icon: Shield, title: '76 Security Scanners', desc: 'Full OWASP Top 10 2021 coverage: SQL Injection, XSS, SSRF, IDOR, SSTI, NoSQL, CORS, Secret Scanning, Proof-Based Verification, and more.' },
   { icon: Globe, title: 'WAF Bypass & Anti-Detection', desc: 'Advanced evasion for Cloudflare, Akamai, Imperva, AWS WAF. Proxy rotation, Tor, jitter, and user-agent rotation built in.' },
   { icon: BarChart3, title: 'Real-time Dashboard', desc: 'Watch scans live with WebSocket-powered updates. Interactive charts, severity analytics, and vulnerability timeline.' },
   { icon: Zap, title: 'AI-Powered Remediation', desc: 'Get fix suggestions for every finding powered by OpenAI, Anthropic, or Ollama. Code examples included.' },
   { icon: Lock, title: 'Proof-Based Verification', desc: 'Automatically confirms vulnerabilities with safe exploitation proof. Drastically reduces false positives.' },
   { icon: Code, title: 'Source Code API Discovery', desc: 'Automatically discovers API endpoints from your codebase and generates OpenAPI specs.' },
-  { icon: FileText, title: '8 Report Formats', desc: 'HTML, CSV, XML, SARIF, JUnit, PDF, Compliance (PCI-DSS/SOC2/ISO27001), and CycloneDX SBOM.' },
+  { icon: FileText, title: '9 Report Formats', desc: 'SARIF, CycloneDX, JUnit, CSV, Markdown, JSONL, Jira, HTML and PDF — plus compliance summaries for PCI-DSS, SOC2 and ISO 27001.' },
   { icon: Bell, title: '10+ Integrations', desc: 'GitHub, GitLab, Slack, Discord, Teams, DefectDojo, Jira, Email, and custom webhooks.' },
 ]
 
 const stats = [
-  { label: 'Scanners', value: '36+' },
+  { label: 'Scanners', value: '76' },
   { label: 'Integrations', value: '10+' },
-  { label: 'Report Formats', value: '8' },
+  { label: 'Report Formats', value: '9' },
   { label: 'CVE Coverage', value: 'OWASP Top 10' },
 ]
 
@@ -68,7 +68,7 @@ export default function LandingPage() {
             <span className="text-blue-500"> before hackers do</span>
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-            Self-hosted OWASP Top 10 security scanner. 26+ detectors, WAF bypass, real-time dashboard, and enterprise integrations — all open source.
+            Self-hosted OWASP Top 10 security scanner. 76 detectors, WAF bypass, real-time dashboard, and enterprise integrations — all open source.
           </p>
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <Link href="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl text-lg font-semibold transition shadow-lg shadow-blue-600/25">

@@ -1,15 +1,26 @@
 package handler
 
-// v2_routes wires the new packages added under pkg/* into the API surface that
-// the new dashboard pages call. Everything here is read-mostly and stateless,
-// so we deliberately keep it on the unauthenticated /api/v1 prefix to ease
-// frontend iteration. Lock down with middleware.AuthRequired() when going to prod.
+// v2_routes wires the packages added under pkg/* into the API surface the
+// dashboard pages call.
+//
+// Every route here sits behind middleware.AuthRequired(). These endpoints are
+// not as read-only as they look: /ai/chat spends the operator's LLM API key,
+// /notify/test sends to a caller-supplied destination, /sbom reads the server's
+// filesystem and /workspaces mutates shared state. Leaving them open let any
+// unauthenticated caller use a Temren install as an LLM proxy and an SSRF
+// primitive against its own network.
 
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/temren/internal/middleware"
+	"github.com/temren/internal/safeurl"
 	"github.com/temren/pkg/ai"
 	"github.com/temren/pkg/compliance"
 	"github.com/temren/pkg/depscan"
@@ -38,7 +49,7 @@ var (
 
 // RegisterV2 mounts the new endpoints. Called from cmd/api/main.go after SetupRoutes.
 func RegisterV2(app *fiber.App) {
-	api := app.Group("/api/v1")
+	api := app.Group("/api/v1", middleware.AuthRequired())
 
 	// Compliance
 	api.Post("/compliance/summary", func(c *fiber.Ctx) error {
@@ -118,7 +129,13 @@ func RegisterV2(app *fiber.App) {
 
 	// SBOM (local lockfile inventory)
 	api.Get("/sbom", func(c *fiber.Ctx) error {
-		root := c.Query("path", ".")
+		// path is caller-supplied and walks the server's filesystem, so confine
+		// it to SBOM_SCAN_ROOT (default: the working directory) instead of
+		// letting any authenticated user inventory arbitrary directories.
+		root, err := resolveScanRoot(c.Query("path", "."))
+		if err != nil {
+			return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+		}
 		s := depscan.New(root)
 		s.Offline = true
 		pkgs, err := s.Inventory()
@@ -280,6 +297,16 @@ func RegisterV2(app *fiber.App) {
 		if err := c.BodyParser(&body); err != nil {
 			return c.Status(400).JSON(fiber.Map{"error": err.Error()})
 		}
+		// The destination comes straight from the request body, so this endpoint
+		// is a request-forging primitive unless the target is checked. Channels
+		// that post to a fixed vendor endpoint (telegram/pagerduty/opsgenie) take
+		// only a token and need no URL check.
+		if body.URL != "" {
+			if err := safeurl.Validate(body.URL); err != nil {
+				return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+			}
+		}
+
 		var ch notify.Channel
 		switch body.Channel {
 		case "slack":
@@ -350,6 +377,34 @@ func configuredAIModels() []sbom.MLModelComponent {
 		out = append(out, sbom.AIModelFromProvider("ollama", model, "local-vulnerability-triage"))
 	}
 	return out
+}
+
+// resolveScanRoot confines a caller-supplied path to SBOM_SCAN_ROOT (default:
+// the process working directory), so ?path= cannot walk the server's disk.
+func resolveScanRoot(requested string) (string, error) {
+	base := os.Getenv("SBOM_SCAN_ROOT")
+	if base == "" {
+		base = "."
+	}
+	baseAbs, err := filepath.Abs(base)
+	if err != nil {
+		return "", fmt.Errorf("invalid scan root")
+	}
+
+	target := requested
+	if !filepath.IsAbs(target) {
+		target = filepath.Join(baseAbs, target)
+	}
+	targetAbs, err := filepath.Abs(target)
+	if err != nil {
+		return "", fmt.Errorf("invalid path")
+	}
+
+	rel, err := filepath.Rel(baseAbs, targetAbs)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return "", fmt.Errorf("path must stay within the configured scan root")
+	}
+	return targetAbs, nil
 }
 
 // jsonResponseBuffer is a tiny io.Writer that collects bytes for c.Send().

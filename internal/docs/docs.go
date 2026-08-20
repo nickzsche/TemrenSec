@@ -5,7 +5,7 @@
 //	Schemes: https
 //	BasePath: /api/v1
 //	Version: 1.0.0
-//	Host: api.temren.sh
+//	Host: <your-temren-host>   // self-hosted; set per deployment
 //
 //	Consumes:
 //	- application/json

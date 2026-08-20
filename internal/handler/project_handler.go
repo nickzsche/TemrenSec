@@ -20,7 +20,7 @@ func (h *Handler) CreateProject(c *fiber.Ctx) error {
 
 	project, err := h.projectSvc.Create(c.Context(), userID, req.Name, req.Description)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		return respondError(c, err)
 	}
 
 	return c.Status(201).JSON(project)
@@ -43,7 +43,7 @@ func (h *Handler) ListProjects(c *fiber.Ctx) error {
 
 	projects, err := h.projectSvc.List(c.Context(), userID)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		return respondError(c, err)
 	}
 
 	return c.JSON(fiber.Map{"projects": projects})
@@ -60,7 +60,7 @@ func (h *Handler) UpdateProject(c *fiber.Ctx) error {
 
 	project, err := h.projectSvc.Update(c.Context(), id, userID, req.Name, req.Description)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		return respondError(c, err)
 	}
 
 	return c.JSON(project)
@@ -71,7 +71,7 @@ func (h *Handler) DeleteProject(c *fiber.Ctx) error {
 	id := c.Params("id")
 
 	if err := h.projectSvc.Delete(c.Context(), id, userID); err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		return respondError(c, err)
 	}
 
 	return c.JSON(fiber.Map{"message": "project deleted"})

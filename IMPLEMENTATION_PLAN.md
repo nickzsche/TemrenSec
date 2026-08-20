@@ -1,39 +1,36 @@
-# Durum: Proje OWASP Top 10 2025 Kapsamında Tamamlandı!
+# Implementation status
 
-## Tamamlananlar
-- [x] `pkg/scanner/scanner.go`: SQL Injection tarayıcısı
-- [x] `pkg/scanner/scanner.go`: XSS tarayıcısı
-- [x] `pkg/scanner/scanner.go`: Command Injection tarayıcısı
-- [x] `pkg/scanner/scanner.go`: SSRF tarayıcısı
-- [x] `pkg/scanner/scanner.go`: IDOR tarayıcısı
-- [x] `pkg/scanner/scanner.go`: Path Traversal tarayıcısı
-- [x] `pkg/scanner/scanner.go`: XXE tarayıcısı
-- [x] `pkg/scanner/scanner.go`: Auth Failures tarayıcısı
-- [x] `pkg/scanner/scanner.go`: Vulnerable Components tarayıcısı
-- [x] `pkg/scanner/scanner.go`: Logging & Monitoring tarayıcısı
-- [x] `pkg/scanner/scanner.go`: Insecure Design tarayıcısı
-- [x] `pkg/scanner/scanner.go`: Error Handling (Mishandling of Exceptions) tarayıcısı - OWASP 2025 A10
-- [x] `pkg/scanner/scanner.go`: Software Supply Chain Failures tarayıcısı - OWASP 2025 A03
-- [x] `pkg/scanners/passive/headers.go`: Header güvenlik analizcisi
-- [x] `pkg/analyzer/analyzer.go`: Pasif analizciler
-- [x] `cmd/temren/main.go`: CLI entry point
-- [x] `pkg/httpengine/client.go`: Rate-limited HTTP client
-- [x] `pkg/spider/spider.go`: Web crawler
-- [x] README.md: Proje dokumantasyonu
+This file previously declared the project "completed under OWASP Top 10 2025".
+Neither half was accurate: the mapping the code implements is the **2021** list,
+and at the time it was written the documented quickstart could not start, the
+dashboard fabricated its trend chart, and several scanners reported findings by
+matching their own payloads. It also pointed at `pkg/scanner/scanner.go` for
+detectors that live in their own files.
 
-## OWASP Top 10 (2025) Kapsam
-| ID | Category | Status |
-|----|----------|--------|
-| A01 | Broken Access Control | ✅ |
-| A02 | Security Misconfiguration | ✅ |
-| A03 | Software Supply Chain Failures | ✅ (YENİ) |
-| A04 | Insecure Design | ✅ |
-| A05 | Cryptographic Failures | ✅ |
-| A06 | Injection | ✅ |
-| A07 | Vulnerable & Outdated Components | ✅ |
-| A08 | Authentication Failures | ✅ |
-| A09 | Integrity Failures | ✅ |
-| A10 | Mishandling of Exceptional Conditions | ✅ (YENİ) |
+A checklist that disagrees with the code is worse than no checklist, so the
+authoritative sources are now:
 
-## Yapılacaklar
-- Yok (Proje tamamlandı)
+| Question | Where to look |
+|---|---|
+| What changed and why | [`CHANGELOG.md`](CHANGELOG.md) |
+| What ships today, and how each claim is verified | [`docs/LAUNCH.md`](docs/LAUNCH.md) |
+| Which scanners exist | `pkg/scanner/registry.go` — `AllScanners()` |
+| Which OWASP category each maps to | `internal/queue/owasp_test.go` walks the registry and fails on any gap |
+| Whether it builds and passes | `go build ./... && go vet ./... && go test ./...` |
+
+## Known gaps
+
+These are open, and deliberately listed rather than marked done:
+
+- **`benchmarks/accuracy/` is not populated.** Detection accuracy is currently
+  evidenced by a single local fixture with three planted bugs, not a benchmark.
+- **~4,300 lines are unreachable.** `pkg/auth` (SAML/OIDC), `pkg/scanners`,
+  `pkg/orchestrator`, `pkg/sandbox`, `pkg/discovery` and others have no
+  non-test importer. Each needs a wire-it-up-or-delete decision.
+- **The CLI cannot push results to a self-hosted dashboard.** The server
+  exposes `POST /api/v1/cli/scan-results`, but no CLI flag calls it.
+- **The scan engine's baseline cache is unused.** `ScanEngine` fetches a
+  baseline per target and discards it, because the `Scanner` interface does not
+  carry one; scanners that need it fetch their own.
+- **OWASP Top 10 2025 mapping** is not implemented. The 2025 list is real and
+  finalised; the code maps to 2021 throughout.

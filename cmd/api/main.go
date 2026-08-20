@@ -9,13 +9,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/adaptor"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/temren/internal/config"
 	"github.com/temren/internal/database"
 	"github.com/temren/internal/handler"
 	"github.com/temren/pkg/ai"
-	"github.com/gofiber/fiber/v2/middleware/adaptor"
-	"github.com/gofiber/fiber/v2"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -30,18 +30,24 @@ func run() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	_, err := database.Connect(ctx, cfg)
+	pool, err := database.Connect(ctx, cfg)
 	if err != nil {
 		return fmt.Errorf("database connection failed: %w", err)
 	}
 	defer database.Close()
 	log.Println("[api] database connected")
 
+	if os.Getenv("SKIP_MIGRATIONS") == "" {
+		if err := database.RunMigrations(ctx, pool, database.MigrationsDir()); err != nil {
+			return fmt.Errorf("migrations failed: %w", err)
+		}
+	}
+
 	app := fiber.New(fiber.Config{
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  120 * time.Second,
-		BodyLimit:   10 * 1024 * 1024,
+		BodyLimit:    10 * 1024 * 1024,
 	})
 
 	app.Get("/health", func(c *fiber.Ctx) error {
@@ -56,6 +62,11 @@ func run() error {
 
 	handler.SetupRoutes(app)
 	handler.RegisterV2(app)
+
+	// Recurring scans only run if the cron is started and persisted schedules
+	// are reloaded.
+	handler.StartScheduler()
+	defer handler.StopScheduler()
 
 	// Optionally wire an AI provider from env. First match wins.
 	switch {

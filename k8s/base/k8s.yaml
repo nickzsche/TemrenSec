@@ -10,10 +10,16 @@ metadata:
   namespace: temren
 data:
   PORT: "8080"
-  ENVIRONMENT: "development"
+  ENVIRONMENT: "production"
   DATABASE_URL: "postgres://temren:temren@postgres:5432/temren?sslmode=disable"
   REDIS_URL: "redis://redis:6379"
   FRONTEND_URL: "http://localhost:3000"
+  # The API runs with replicas: 2, so WebSocket broadcasts must fan out across
+  # pods — without this each client only sees events from the pod it landed on.
+  TEMREN_WS_REDIS: "redis:6379"
+  # Refuse scan targets that resolve to private/loopback/link-local addresses.
+  # Set to "true" only if this install is meant to scan internal hosts.
+  ALLOW_PRIVATE_TARGETS: "false"
 ---
 apiVersion: v1
 kind: Secret
@@ -22,6 +28,8 @@ metadata:
   namespace: temren
 type: Opaque
 stringData:
+  # Must be 32+ chars with upper, lower and digits, or the API refuses to start
+  # in production. Generate with: openssl rand -base64 48
   JWT_SECRET: ""
 ---
 apiVersion: apps/v1
@@ -39,6 +47,16 @@ spec:
       labels:
         app: temren-api
     spec:
+      # Nothing in these images needs root or a writable root filesystem. The
+      # scanner processes attacker-controlled responses, so this is the minimum
+      # blast-radius containment.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: api
           image: ghcr.io/nickzsche/TemrenSec:latest-api
@@ -49,6 +67,14 @@ spec:
                 name: temren-config
             - secretRef:
                 name: temren-secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           resources:
             requests:
               memory: "256Mi"
@@ -68,6 +94,9 @@ spec:
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 10
+      volumes:
+        - name: tmp
+          emptyDir: {}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -84,6 +113,16 @@ spec:
       labels:
         app: temren-worker
     spec:
+      # Nothing in these images needs root or a writable root filesystem. The
+      # scanner processes attacker-controlled responses, so this is the minimum
+      # blast-radius containment.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: worker
           image: ghcr.io/nickzsche/TemrenSec:latest-worker
@@ -92,6 +131,14 @@ spec:
                 name: temren-config
             - secretRef:
                 name: temren-secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           resources:
             requests:
               memory: "512Mi"
@@ -99,6 +146,9 @@ spec:
             limits:
               memory: "1Gi"
               cpu: "1000m"
+      volumes:
+        - name: tmp
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
@@ -124,10 +174,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - api.temren.sh
+        - temren.example.com
       secretName: temren-tls
   rules:
-    - host: api.temren.sh
+    - host: temren.example.com
       http:
         paths:
           - path: /
@@ -166,6 +216,11 @@ spec:
       labels:
         app: postgres
     spec:
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: postgres
           image: postgres:15
@@ -179,6 +234,10 @@ spec:
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               memory: "256Mi"
@@ -223,12 +282,21 @@ spec:
       labels:
         app: redis
     spec:
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: redis
           image: redis:7-alpine
           volumeMounts:
             - name: redis-data
               mountPath: /data
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               memory: "128Mi"

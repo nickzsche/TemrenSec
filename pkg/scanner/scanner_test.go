@@ -15,7 +15,12 @@ func TestSQLiScanner_Scan(t *testing.T) {
 		id := r.URL.Query().Get("id")
 		if id == "'" {
 			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte("SQL syntax error"))
+			// A realistic driver error. The fixture used to return the bare
+			// phrase "SQL syntax error", which is no longer a signature —
+			// it matches ordinary pages too, so it was dropped as a false
+			// positive source.
+			_, _ = w.Write([]byte("You have an error in your SQL syntax; " +
+				"check the manual that corresponds to your MySQL server version"))
 			return
 		}
 		w.WriteHeader(http.StatusOK)
@@ -256,7 +261,16 @@ func TestSQLiScanner_DetectSQLError(t *testing.T) {
 		{"Oracle error", "ORA-01756: quoted string", true},
 		{"SQLite error", "sqlite3.OperationalError", true},
 		{"No error", "Normal response without errors", false},
-		{"Case insensitive", "SQL SYNTAX error", true},
+		{"Case insensitive", "you HAVE an ERROR in your SQL syntax", true},
+
+		// Signatures below are deliberately NOT matched. Each appears on
+		// ordinary pages, and matching them made any page that mentioned a
+		// database a critical finding at high confidence.
+		{"Product name alone", "Powered by PostgreSQL 15", false},
+		{"Tech stack listing", "Our stack: Go, PostgreSQL, Redis, MySQL", false},
+		{"Generic syntax error", "Syntax error: unexpected token in main.js", false},
+		{"Generic SQL error phrase", "An SQL error occurred, please retry", false},
+		{"Docs mentioning mysql", "See the mysql documentation for details", false},
 	}
 
 	for _, tt := range tests {
@@ -281,6 +295,33 @@ func TestXSSScanner_IsPayloadReflected(t *testing.T) {
 		{"Direct reflection", "<script>alert(1)</script>", "<html><script>alert(1)</script></html>", true},
 		{"No reflection", "<script>alert(1)</script>", "<html><body>Safe</body></html>", false},
 		{"Event handler", "<img src=x onerror=alert(1)>", "<html><img src=x onerror=alert(1)></html>", true},
+
+		// The cases below are why detection is nonce-based. Each one used to
+		// produce a high-confidence finding for every parameter on the page.
+		{
+			"Encoded reflection is the server behaving correctly",
+			"<script>alert(1)</script>",
+			"<html><body>You searched for &lt;script&gt;alert(1)&lt;/script&gt;</body></html>",
+			false,
+		},
+		{
+			"WAF block page echoing the attack",
+			"<script>alert(1)</script>",
+			"<html><body>Request blocked. Detected pattern: &lt;script&gt;alert(1)&lt;/script&gt;</body></html>",
+			false,
+		},
+		{
+			"Unrelated alert elsewhere on the page",
+			"<svg onload=alert(1)>",
+			"<html><script>function help(){alert(1)}</script><body>no reflection here</body></html>",
+			false,
+		},
+		{
+			"Security tutorial text mentioning the pattern",
+			"<img src=x onerror=alert(1)>",
+			"<html><body><p>An attacker might submit onerror=alert(1) to test for XSS.</p></body></html>",
+			false,
+		},
 	}
 
 	for _, tt := range tests {

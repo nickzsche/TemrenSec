@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -33,10 +34,19 @@ var devToolPaths = []struct {
 }
 
 func (s *StorybookExposureScanner) Scan(ctx context.Context, target string, client *httpengine.Client) ([]Finding, error) {
-	target = strings.TrimRight(target, "/")
+	// These are absolute paths, so they belong on the origin — appending them to
+	// the full URL produced "/search?q=shoes/__cypress/", where the path lands
+	// inside the query string. The server then answered 200 with the probe text
+	// reflected back, and the scanner matched its own input.
+	u, err := url.Parse(target)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return nil, nil
+	}
+	origin := u.Scheme + "://" + u.Host
+
 	var findings []Finding
 	for _, d := range devToolPaths {
-		req, _ := http.NewRequestWithContext(ctx, http.MethodGet, target+d.path, nil)
+		req, _ := http.NewRequestWithContext(ctx, http.MethodGet, origin+d.path, nil)
 		resp, err := client.Do(ctx, req)
 		if err != nil {
 			continue
@@ -45,9 +55,9 @@ func (s *StorybookExposureScanner) Scan(ctx context.Context, target string, clie
 		resp.Body.Close()
 		if resp.StatusCode == 200 && strings.Contains(strings.ToLower(string(body)), strings.ToLower(d.contains)) {
 			findings = append(findings, Finding{
-				URL: target + d.path, Title: d.title,
+				URL: origin + d.path, Title: d.title,
 				Description: "Development tooling reachable in production. Components may leak internal API names, fixtures, or credentials.",
-				Severity: d.sev, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Severity:    d.sev, Confidence: ConfidenceHigh, Scanner: s.Name(),
 				Timestamp: time.Now(), OWASPCategory: "A05:2021-Security Misconfiguration",
 			})
 		}

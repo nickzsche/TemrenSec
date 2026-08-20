@@ -133,15 +133,11 @@ export default function DashboardPage() {
     { name: 'Info', value: data.info_count, color: SEVERITY_COLORS.INFO },
   ].filter(d => d.value > 0)
 
-  const timelineData = data.severity_timeline || [
-    { date: 'Mon', critical: 2, high: 5, medium: 8 },
-    { date: 'Tue', critical: 1, high: 3, medium: 6 },
-    { date: 'Wed', critical: 3, high: 7, medium: 4 },
-    { date: 'Thu', critical: 0, high: 2, medium: 5 },
-    { date: 'Fri', critical: 1, high: 4, medium: 3 },
-    { date: 'Sat', critical: 0, high: 1, medium: 2 },
-    { date: 'Sun', critical: 2, high: 6, medium: 7 },
-  ]
+  // No placeholder series here. This chart previously fell back to a hardcoded
+  // week of invented numbers whenever the API had no timeline — which is always,
+  // until a target has been scanned on more than one day. A security dashboard
+  // inventing vulnerability counts is worse than showing nothing.
+  const timelineData = data.severity_timeline ?? []
 
   return (
     <div className="p-4 sm:p-6 md:p-8">
@@ -240,6 +236,14 @@ export default function DashboardPage() {
 
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
           <h2 className="text-lg font-semibold text-white mb-4">Severity Trend (7 Days)</h2>
+          {timelineData.length === 0 ? (
+            <div className="flex h-[250px] flex-col items-center justify-center text-center">
+              <p className="text-sm text-gray-400">Not enough history yet</p>
+              <p className="mt-1 text-xs text-gray-500">
+                The trend appears once this target has been scanned on more than one day.
+              </p>
+            </div>
+          ) : (
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={timelineData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -255,6 +259,7 @@ export default function DashboardPage() {
               <Bar dataKey="medium" fill={SEVERITY_COLORS.MEDIUM} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
+          )}
         </div>
       </div>
 

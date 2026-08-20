@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/temren/internal/database"
 	"github.com/temren/internal/model"
+	"github.com/temren/internal/safeurl"
 )
 
 type ProjectService struct {
@@ -73,10 +75,15 @@ func (s *ProjectService) Delete(ctx context.Context, id, userID string) error {
 	return s.projectDB.Delete(ctx, id)
 }
 
+// defaultScanSettings is written when a caller supplies none. scan_settings is
+// a jsonb column, so it can never be the empty string.
+const defaultScanSettings = `{"depth":2,"max_pages":50,"rate_limit":10,"concurrency":5}`
+
 type TargetService struct {
 	targetDB  *database.TargetRepo
 	projectDB *database.ProjectRepo
 	scanDB    *database.ScanRepo
+	userDB    *database.UserRepo
 }
 
 func NewTargetService() *TargetService {
@@ -84,7 +91,18 @@ func NewTargetService() *TargetService {
 		targetDB:  database.NewTargetRepo(),
 		projectDB: database.NewProjectRepo(),
 		scanDB:    database.NewScanRepo(),
+		userDB:    database.NewUserRepo(),
 	}
+}
+
+// getUserPlan resolves the caller's plan, defaulting to the most restrictive
+// tier if the user cannot be read.
+func (s *TargetService) getUserPlan(ctx context.Context, userID string) string {
+	user, err := s.userDB.GetByID(ctx, userID)
+	if err != nil || user.Plan == "" {
+		return "free"
+	}
+	return user.Plan
 }
 
 func (s *TargetService) Create(ctx context.Context, userID string, req *model.CreateTargetRequest) (*model.Target, error) {
@@ -92,16 +110,30 @@ func (s *TargetService) Create(ctx context.Context, userID string, req *model.Cr
 	if err != nil {
 		return nil, err
 	}
-	_ = project
+	// Every other TargetService method checks this; Create fetched the project
+	// and then discarded it, letting any authenticated user add a target to
+	// somebody else's project.
+	if project.UserID != userID {
+		return nil, ErrForbidden
+	}
+
+	// The target URL is fetched later by the worker from inside the deployment's
+	// network, so it has to be checked before it is ever stored.
+	if err := safeurl.Validate(req.URL); err != nil {
+		return nil, fmt.Errorf("invalid target URL: %w", err)
+	}
 
 	targetCount, err := s.targetDB.CountByUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	limits := model.PlanConfig["free"]
-	if planLimits, ok := model.PlanConfig["pro"]; ok {
-		limits = planLimits
+	// Read the caller's actual plan. The previous form always overwrote the
+	// free-tier limits with the pro ones, because PlanConfig["pro"] always
+	// exists — so quotas were never enforced per plan.
+	limits, ok := model.PlanConfig[s.getUserPlan(ctx, userID)]
+	if !ok {
+		limits = model.PlanConfig["free"]
 	}
 	if targetCount >= limits.MaxTargets {
 		return nil, ErrPlanLimit
@@ -109,7 +141,7 @@ func (s *TargetService) Create(ctx context.Context, userID string, req *model.Cr
 
 	scanSettings := req.ScanSettings
 	if scanSettings == "" {
-		scanSettings = `{"depth":2,"max_pages":50,"rate_limit":10,"concurrency":5}`
+		scanSettings = defaultScanSettings
 	}
 
 	t := &model.Target{
@@ -155,10 +187,25 @@ func (s *TargetService) Update(ctx context.Context, id, userID string, req *mode
 	if err := s.checkTargetOwnership(ctx, t, userID); err != nil {
 		return nil, err
 	}
+	if err := safeurl.Validate(req.URL); err != nil {
+		return nil, fmt.Errorf("invalid target URL: %w", err)
+	}
+	// Only overwrite what the request actually supplied. Assigning blindly meant
+	// an update that omitted scan_settings wrote "" into a jsonb column and the
+	// request failed with a 500 — Create defaults this field, Update did not.
 	t.URL = req.URL
-	t.Name = req.Name
-	t.ScanSettings = req.ScanSettings
-	t.Schedule = req.Schedule
+	if req.Name != "" {
+		t.Name = req.Name
+	}
+	if req.ScanSettings != "" {
+		t.ScanSettings = req.ScanSettings
+	}
+	if t.ScanSettings == "" {
+		t.ScanSettings = defaultScanSettings
+	}
+	if req.Schedule != "" {
+		t.Schedule = req.Schedule
+	}
 	if err := s.targetDB.Update(ctx, t); err != nil {
 		return nil, err
 	}

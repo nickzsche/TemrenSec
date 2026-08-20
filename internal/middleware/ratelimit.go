@@ -3,12 +3,13 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
-	"github.com/temren/internal/config"
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
+	"github.com/temren/internal/config"
 )
 
 type RateLimiter struct {
@@ -16,15 +17,13 @@ type RateLimiter struct {
 }
 
 func NewRateLimiter() (*RateLimiter, error) {
-	cfg := config.AppConfig
-	
-	client := redis.NewClient(&redis.Options{
-		Addr: cfg.RedisURL,
-	})
+	client := redis.NewClient(config.RedisOptions())
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	if err := client.Ping(ctx).Err(); err != nil {
-		return nil, err
+		_ = client.Close()
+		return nil, fmt.Errorf("connect redis for rate limiting: %w", err)
 	}
 
 	return &RateLimiter{redis: client}, nil
@@ -54,26 +53,32 @@ func (r *RateLimiter) LimitByIP() fiber.Handler {
 	})
 }
 
+// LimitByUser applies the caller's plan quota. It reads the plan from the same
+// local AuthRequired writes ("plan"); reading a different key here silently
+// demoted every caller to the free tier.
+//
+// Handlers for each plan are built once at setup rather than per request.
 func (r *RateLimiter) LimitByUser() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		userID := GetUserID(c)
-		if userID == "" {
-			return r.LimitByIP()(c)
-		}
-
-		userPlan := c.Locals("user_plan")
-		plan := "free"
-		if userPlan != nil {
-			plan = userPlan.(string)
-		}
-
+	byIP := r.LimitByIP()
+	byPlan := map[string]fiber.Handler{}
+	for _, plan := range []string{"free", "pro", "team"} {
 		limits := r.getPlanLimits(plan)
-
-		return r.Limit(&RateLimitConfig{
+		byPlan[plan] = r.Limit(&RateLimitConfig{
 			MaxRequests: limits.MaxRequests,
 			Window:      limits.Window,
 			KeyPrefix:   "ratelimit:user",
-		})(c)
+		})
+	}
+
+	return func(c *fiber.Ctx) error {
+		if GetUserID(c) == "" {
+			return byIP(c)
+		}
+		h, ok := byPlan[GetPlan(c)]
+		if !ok {
+			h = byPlan["free"]
+		}
+		return h(c)
 	}
 }
 
@@ -82,16 +87,25 @@ type PlanLimits struct {
 	Window      time.Duration
 }
 
+// getPlanLimits returns the per-plan HTTP request budget.
+//
+// These bound abuse, not product usage — how much a plan may actually scan is
+// enforced separately by model.PlanConfig (MaxTargets, MaxScans).
+//
+// The previous values (free 10/min) read like a scan quota and were harmless
+// only because LimitByUser was never attached to a route. Applied for real they
+// make the product unusable: opening the dashboard issues more than ten
+// requests, so the first page load 429s.
 func (r *RateLimiter) getPlanLimits(plan string) PlanLimits {
 	switch plan {
-	case "free":
-		return PlanLimits{MaxRequests: 10, Window: time.Minute}
 	case "pro":
-		return PlanLimits{MaxRequests: 100, Window: time.Minute}
+		return PlanLimits{MaxRequests: 600, Window: time.Minute}
 	case "team":
-		return PlanLimits{MaxRequests: 1000, Window: time.Minute}
+		return PlanLimits{MaxRequests: 2000, Window: time.Minute}
+	case "free":
+		return PlanLimits{MaxRequests: 120, Window: time.Minute}
 	default:
-		return PlanLimits{MaxRequests: 10, Window: time.Minute}
+		return PlanLimits{MaxRequests: 120, Window: time.Minute}
 	}
 }
 
@@ -109,6 +123,14 @@ func (r *RateLimiter) GetUserLimitInfo(userID, plan string) (limit, remaining in
 }
 
 func (r *RateLimiter) Limit(cfg *RateLimitConfig) fiber.Handler {
+	// A nil limiter means NewRateLimiter failed. The returned handler used to
+	// dereference r.redis on every request, so login and register answered 500
+	// instead of degrading. Serve without limiting, and say so loudly.
+	if r == nil || r.redis == nil {
+		log.Printf("[ratelimit] WARNING: no Redis connection — rate limiting is disabled for %s", cfg.KeyPrefix)
+		return func(c *fiber.Ctx) error { return c.Next() }
+	}
+
 	return func(c *fiber.Ctx) error {
 		var key string
 
@@ -194,7 +216,7 @@ func (r *RateLimiter) LimitByEndpoint() fiber.Handler {
 func (r *RateLimiter) GetUserUsage(userID string, window time.Duration) (int64, error) {
 	ctx := context.Background()
 	key := fmt.Sprintf("ratelimit:user:%s", userID)
-	
+
 	count, err := r.redis.Get(ctx, key).Int64()
 	if err == redis.Nil {
 		return 0, nil

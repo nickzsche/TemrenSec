@@ -2,15 +2,31 @@ package webhook
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
-	"database/sql"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"time"
+
+	"github.com/temren/internal/database"
+	"github.com/temren/internal/safeurl"
+	"github.com/jackc/pgx/v5"
 )
+
+// ctxTimeout bounds each webhook query; these run on request paths and must not
+// hang if the database is slow.
+func ctxTimeout() context.Context {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// The pool call completes before the caller returns, so cancelling on a
+	// timer rather than deferring is sufficient here.
+	time.AfterFunc(10*time.Second, cancel)
+	return ctx
+}
 
 type WebhookEndpoint struct {
 	ID          string    `json:"id"`
@@ -36,14 +52,27 @@ type Delivery struct {
 }
 
 type CustomWebhookManager struct {
-	db         *sql.DB
 	httpClient *http.Client
 }
 
-func NewCustomWebhookManager(db *sql.DB) *CustomWebhookManager {
+// NewCustomWebhookManager returns a manager backed by the application's pgx
+// pool (database.Pool).
+//
+// This previously took a *sql.DB while the rest of the app runs on pgxpool,
+// which is why it was never wired up — the HTTP handlers invented in-memory
+// responses instead of calling it, so creating a webhook returned 201 and
+// stored nothing.
+func NewCustomWebhookManager() *CustomWebhookManager {
 	return &CustomWebhookManager{
-		db: db,
 		httpClient: &http.Client{
+			// Deliveries go to a user-supplied URL, so refuse internal
+			// destinations for the same reason scan targets are checked.
+			Transport: &http.Transport{
+				DialContext: (&net.Dialer{
+					Timeout: 10 * time.Second,
+					Control: safeurl.DialControl,
+				}).DialContext,
+			},
 			Timeout: 30 * time.Second,
 		},
 	}
@@ -65,7 +94,7 @@ func (m *CustomWebhookManager) CreateEndpoint(endpoint *WebhookEndpoint) error {
 	
 	eventsJSON, _ := json.Marshal(endpoint.Events)
 	
-	_, err := m.db.Exec(query,
+	_, err := database.Pool.Exec(ctxTimeout(), query,
 		endpoint.ID,
 		endpoint.UserID,
 		endpoint.URL,
@@ -82,7 +111,7 @@ func (m *CustomWebhookManager) CreateEndpoint(endpoint *WebhookEndpoint) error {
 func (m *CustomWebhookManager) GetEndpoint(id string) (*WebhookEndpoint, error) {
 	query := `SELECT id, user_id, url, secret, events, active, created_at, updated_at FROM webhook_endpoints WHERE id = $1`
 	
-	row := m.db.QueryRow(query, id)
+	row := database.Pool.QueryRow(ctxTimeout(), query, id)
 	endpoint := &WebhookEndpoint{}
 	
 	var eventsJSON []byte
@@ -98,7 +127,7 @@ func (m *CustomWebhookManager) GetEndpoint(id string) (*WebhookEndpoint, error) 
 	)
 	
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("webhook not found")
 		}
 		return nil, err
@@ -111,7 +140,7 @@ func (m *CustomWebhookManager) GetEndpoint(id string) (*WebhookEndpoint, error) 
 func (m *CustomWebhookManager) ListEndpoints(userID string) ([]*WebhookEndpoint, error) {
 	query := `SELECT id, user_id, url, secret, events, active, created_at, updated_at FROM webhook_endpoints WHERE user_id = $1`
 	
-	rows, err := m.db.Query(query, userID)
+	rows, err := database.Pool.Query(ctxTimeout(), query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +176,7 @@ func (m *CustomWebhookManager) ListEndpoints(userID string) ([]*WebhookEndpoint,
 
 func (m *CustomWebhookManager) DeleteEndpoint(id string) error {
 	query := `DELETE FROM webhook_endpoints WHERE id = $1`
-	_, err := m.db.Exec(query, id)
+	_, err := database.Pool.Exec(ctxTimeout(), query, id)
 	return err
 }
 
@@ -161,7 +190,7 @@ func (m *CustomWebhookManager) UpdateEndpoint(endpoint *WebhookEndpoint) error {
 	endpoint.UpdatedAt = time.Now()
 	eventsJSON, _ := json.Marshal(endpoint.Events)
 	
-	_, err := m.db.Exec(query,
+	_, err := database.Pool.Exec(ctxTimeout(), query,
 		endpoint.URL,
 		endpoint.Secret,
 		eventsJSON,
@@ -244,7 +273,7 @@ func (m *CustomWebhookManager) saveDelivery(delivery *Delivery) {
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
 	
-	m.db.Exec(query,
+	_, _ = database.Pool.Exec(ctxTimeout(), query,
 		delivery.ID,
 		delivery.EndpointID,
 		delivery.Event,
@@ -266,7 +295,7 @@ func (m *CustomWebhookManager) GetDeliveries(endpointID string, limit int) ([]*D
 		LIMIT $2
 	`
 	
-	rows, err := m.db.Query(query, endpointID, limit)
+	rows, err := database.Pool.Query(ctxTimeout(), query, endpointID, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -306,39 +335,10 @@ func (m *CustomWebhookManager) TestEndpoint(endpoint *WebhookEndpoint) (*Deliver
 	return m.SendEvent(endpoint, "test", testPayload)
 }
 
-func InitSchema(db *sql.DB) error {
-	query := `
-	CREATE TABLE IF NOT EXISTS webhook_endpoints (
-		id VARCHAR(255) PRIMARY KEY,
-		user_id VARCHAR(255) NOT NULL,
-		url TEXT NOT NULL,
-		secret TEXT,
-		events JSONB,
-		active BOOLEAN DEFAULT true,
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-	);
-
-	CREATE TABLE IF NOT EXISTS webhook_deliveries (
-		id VARCHAR(255) PRIMARY KEY,
-		endpoint_id VARCHAR(255) NOT NULL,
-		event VARCHAR(100) NOT NULL,
-		payload TEXT,
-		status_code INTEGER,
-		response TEXT,
-		duration INTEGER,
-		success BOOLEAN,
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-	);
-
-	CREATE INDEX IF NOT EXISTS idx_webhook_endpoints_user ON webhook_endpoints(user_id);
-	CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_endpoint ON webhook_deliveries(endpoint_id);
-	`
-	
-	_, err := db.Exec(query)
-	return err
-}
-
+// InitSchema is retained for compatibility. The webhook tables are created by
+// migration 002 and applied by database.RunMigrations at startup, so this no
+// longer maintains a competing copy of the schema.
+func InitSchema() error { return nil }
 func generateWebhookID() string {
 	return fmt.Sprintf("wh_%d", time.Now().UnixNano())
 }

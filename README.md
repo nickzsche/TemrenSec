@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/nickzsche/TemrenSec/main/frontend/public/temren-logo.svg" width="120" alt="Temren Logo">
+  <img src="frontend/public/temren-logo.svg" width="120" alt="Temren Logo">
 </p>
 
 <h1 align="center">TemrenSec</h1>
@@ -9,10 +9,10 @@
 </p>
 
 <p align="center">
-  <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go&logoColor=white" alt="Go"></a>
+  <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go&logoColor=white" alt="Go"></a>
   <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-15-black?logo=next.js&logoColor=white" alt="Next.js"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-blue" alt="License"></a>
-  <a href="https://owasp.org/Top10/"><img src="https://img.shields.io/badge/OWASP-Top%2010%202025-red" alt="OWASP"></a>
+  <a href="https://owasp.org/Top10/"><img src="https://img.shields.io/badge/OWASP-Top%2010%202021-red" alt="OWASP"></a>
 </p>
 
 <p align="center">
@@ -30,7 +30,7 @@
 ### Why Temren?
 
 - **Free & Open Source** - No per-scan pricing, no API limits
-- **26+ Scanners** - SQL Injection, XSS, SSRF, IDOR, and more
+- **76 Scanners** - SQL Injection, XSS, SSRF, IDOR, and more
 - **WAF Bypass** - Evades Cloudflare, Akamai, Imperva, AWS WAF
 - **Real-time Dashboard** - Watch scans live via WebSocket
 - **Integrations** - Jira, GitHub, Slack, Discord, Email alerts
@@ -43,14 +43,14 @@
 
 <p align="center">
   <a href="https://github.com/nickzsche/TemrenSec">
-    <img src="https://raw.githubusercontent.com/nickzsche/TemrenSec/main/docs/screenshots/dashboard.png" width="800" alt="Temren Dashboard">
+    <img src="docs/screenshots/dashboard.png" width="800" alt="Temren Dashboard">
   </a>
 </p>
 
 <p align="center">
   <a href="https://github.com/nickzsche/TemrenSec">
-    <img src="https://raw.githubusercontent.com/nickzsche/TemrenSec/main/docs/screenshots/scan-progress.png" width="400" alt="Scan Progress">
-    <img src="https://raw.githubusercontent.com/nickzsche/TemrenSec/main/docs/screenshots/vulnerability-detail.png" width="400" alt="Vulnerability Detail">
+    <img src="docs/screenshots/scan-progress.png" width="400" alt="Scan Progress">
+    <img src="docs/screenshots/vulnerability-detail.png" width="400" alt="Vulnerability Detail">
   </a>
 </p>
 
@@ -62,8 +62,8 @@
 
 | Scanner | Description | Severity |
 |---------|-------------|----------|
-| SQL Injection | Error-based & time-based detection | Critical |
-| XSS | Reflected, DOM-based, stored | High |
+| SQL Injection | Error-based & time-based, both compared against a baseline | Critical |
+| XSS | Reflected, verified with a per-request marker | High |
 | Command Injection | OS command execution | Critical |
 | SSRF | Server-Side Request Forgery | High |
 | IDOR | Insecure Direct Object Reference | High |
@@ -94,10 +94,13 @@
 ### Enterprise Features
 
 - **Scheduled Scans** - Cron-based automation (hourly, daily, weekly, monthly)
-- **Plan-based Rate Limiting** - Free (10 req/min), Pro (100 req/min), Team (1000 req/min)
+- **Plan-based Rate Limiting** - Free (120 req/min), Pro (600 req/min), Team (2000 req/min).
+  Separate from scan quotas, which are Free 1 target / 5 scans, Pro 5 / 50, Team 20 / 200.
 - **2FA Authentication** - TOTP support
-- **Report Export** - PDF, HTML, CSV formats
-- **Prometheus Metrics** - Full observability
+- **Report Export** - SARIF, CycloneDX, JUnit, CSV, Markdown, JSONL, Jira, HTML, PDF
+- **Prometheus Metrics** - API on `:8080/metrics`, worker on `:9090/metrics`
+  (`METRICS_PORT` to change). Scan counts, durations and findings-by-scanner
+  are recorded by the worker, so scrape both.
 - **Kubernetes Ready** - Helm chart included
 - **CI/CD Integration** - GitHub Actions ready
 
@@ -105,16 +108,29 @@
 
 ## Quick Start
 
-### One-Line Install
+### Docker Compose
 
 ```bash
-# Clone & run with Docker Compose
 git clone https://github.com/nickzsche/TemrenSec.git
-cd temren
-docker-compose up -d
+cd TemrenSec
+
+make setup          # generates .env with a strong JWT secret and DB password
+docker compose up -d
 ```
 
-Visit `http://localhost:3000` and create your first scan.
+`make setup` is required: compose refuses to start without `JWT_SECRET` and
+`POSTGRES_PASSWORD`, and the API rejects a weak secret in production. The API
+applies database migrations on startup, so there is no separate migrate step.
+
+Then visit `http://localhost:8080/health` to confirm the API is up, and run the
+dashboard with `cd frontend && npm install && npm run dev`.
+
+`make up` runs both steps, and `make logs` tails the API and worker.
+
+**Scan targets that resolve to private, loopback or link-local addresses are
+refused by default** — otherwise anyone with an account could aim a shared
+install at your internal network. To scan internal hosts, set
+`ALLOW_PRIVATE_TARGETS=true` in `.env`.
 
 ### CLI
 
@@ -157,7 +173,7 @@ TemrenSec/
 ├── API         # REST API server (Go + Fiber)
 ├── Worker      # Background job processor (Asynq + Redis)
 ├── Frontend    # Next.js dashboard
-└── Scanner     # 26+ vulnerability detectors
+└── Scanner     # 76 vulnerability detectors
 ```
 
 **Stack:** Go 1.21+ | Next.js 15 | PostgreSQL | Redis | Docker | Kubernetes
@@ -182,18 +198,20 @@ TemrenSec/
 ## Screenshots
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/nickzsche/TemrenSec/main/docs/screenshots/landing.png" width="800" alt="Landing Page">
+  <img src="docs/screenshots/landing.png" width="800" alt="Landing Page">
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/nickzsche/TemrenSec/main/docs/screenshots/dashboard-charts.png" width="800" alt="Dashboard with Charts">
+  <img src="docs/screenshots/dashboard-charts.png" width="800" alt="Dashboard with Charts">
 </p>
 
 ---
 
 ## Roadmap
 
-- [x] OWASP Top 10 2025 coverage (A01–A10, with 2021→2025 mapping for back-compat)
+- [x] OWASP Top 10 **2021** coverage (A01–A10) — findings are categorised against
+      the 2021 list, which is what the mapping in `internal/queue` implements.
+- [ ] OWASP Top 10 2025 mapping
 - [x] Real-time WebSocket updates with optional Redis pub/sub bridge for multi-replica HA (`TEMREN_WS_REDIS`)
 - [x] WAF Bypass techniques (payload mutation + Tor identity rotation on 3× consecutive 429s)
 - [x] Jira/GitHub/GitLab integration

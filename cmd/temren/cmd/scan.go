@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/spf13/cobra"
 	"github.com/temren/pkg/analyzer"
 	"github.com/temren/pkg/httpengine"
 	"github.com/temren/pkg/integration/defectdojo"
@@ -23,7 +24,6 @@ import (
 	"github.com/temren/pkg/sbom"
 	"github.com/temren/pkg/scanner"
 	"github.com/temren/pkg/spider"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -35,6 +35,7 @@ var (
 	outputFormat  string
 	outputFile    string
 	enableCrawl   bool
+	noCrawl       bool
 	timeout       int
 	sameDomain    bool
 	activeScans   bool
@@ -55,12 +56,12 @@ var (
 	authUser         string
 	authPass         string
 
-	proxyList   string
-	proxyType   string
+	proxyList  string
+	proxyType  string
 	torEnabled bool
-	customUA    string
-	jitterMin   int
-	jitterMax   int
+	customUA   string
+	jitterMin  int
+	jitterMax  int
 
 	pluginsDir string
 	noBatch    bool
@@ -86,7 +87,7 @@ var (
 
 	verifyFindings bool
 
-	notifySlackWebhook    string
+	notifySlackWebhook   string
 	notifyDiscordWebhook string
 	notifyTeamsWebhook   string
 
@@ -122,6 +123,9 @@ func init() {
 	scanCmd.Flags().StringVarP(&outputFormat, "format", "f", "text", "Output format (text, json, sarif, junit)")
 	scanCmd.Flags().StringVarP(&outputFile, "output", "o", "", "Output file (default: stdout)")
 	scanCmd.Flags().BoolVar(&enableCrawl, "crawl", true, "Enable web crawling")
+	// The command's own examples advertised --no-crawl, which did not exist, so
+	// the documented invocation exited with "unknown flag".
+	scanCmd.Flags().BoolVar(&noCrawl, "no-crawl", false, "Scan only the target URL (opposite of --crawl)")
 	scanCmd.Flags().BoolVar(&sameDomain, "same-domain", true, "Only crawl pages on the same domain")
 	scanCmd.Flags().IntVar(&timeout, "timeout", 30, "Request timeout in seconds")
 	scanCmd.Flags().BoolVar(&activeScans, "active", true, "Enable active vulnerability scanning")
@@ -139,7 +143,7 @@ func init() {
 	scanCmd.Flags().StringVar(&authHeader, "auth-header", "Authorization", "Custom header name for bearer token")
 	scanCmd.Flags().StringArrayVar(&authCookies, "auth-cookie", nil, "Cookie string (name=value, repeatable)")
 	scanCmd.Flags().StringArrayVar(&authHeaderCustom, "auth-header-custom", nil, "Custom header (Key:Value, repeatable)")
-scanCmd.Flags().StringVar(&authUser, "auth-user", "", "Basic auth username")
+	scanCmd.Flags().StringVar(&authUser, "auth-user", "", "Basic auth username")
 	scanCmd.Flags().StringVar(&authPass, "auth-pass", "", "Basic auth password")
 
 	scanCmd.Flags().StringVar(&proxyList, "proxy-list", "", "Proxy list file or comma-separated proxies (user:pass@host:port)")
@@ -163,7 +167,10 @@ scanCmd.Flags().StringVar(&authUser, "auth-user", "", "Basic auth username")
 	scanCmd.Flags().StringVar(&upstreamProxy, "proxy", "", "Upstream proxy URL (e.g., http://127.0.0.1:8080 for Burp Suite)")
 
 	scanCmd.Flags().StringVar(&complianceFilter, "compliance", "", "Compliance frameworks to show (comma-separated: pci,soc2,iso27001)")
-	scanCmd.Flags().BoolVar(&verifyFindings, "verify", false, "Verify findings with proof-based exploitation (reduces false positives)")
+	// Default on: the queue/dashboard path always verifies, so leaving the CLI
+	// unverified made the same scan report different results depending on how it
+	// was run. Use --verify=false to see raw detector output.
+	scanCmd.Flags().BoolVar(&verifyFindings, "verify", true, "Verify findings with proof-based exploitation (reduces false positives)")
 
 	scanCmd.Flags().StringVar(&remediationProvider, "remediation", "none", "Remediation provider: openai, anthropic, ollama, none")
 	scanCmd.Flags().StringVar(&remediationAPIKey, "remediation-key", "", "API key for remediation provider")
@@ -336,6 +343,10 @@ func runScan(cmd *cobra.Command, args []string) {
 		if !silent {
 			fmt.Println("[*] Headless browser enabled for SPA/JS rendering")
 		}
+	}
+
+	if noCrawl {
+		enableCrawl = false
 	}
 
 	if enableCrawl {
@@ -701,10 +712,10 @@ func runScan(cmd *cobra.Command, args []string) {
 		}
 
 		advisor := remediation.NewAdvisor(remediation.AdvisorConfig{
-			Provider:    remediationProvider,
-			APIKey:      remediationAPIKey,
-			Model:       remediationModel,
-			BaseURL:     remediationBaseURL,
+			Provider: remediationProvider,
+			APIKey:   remediationAPIKey,
+			Model:    remediationModel,
+			BaseURL:  remediationBaseURL,
 		})
 		remediations := advisor.Suggest(ctx, findings)
 
@@ -781,7 +792,6 @@ func runScan(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	// Growth hack: show cloud link
 	criticalCount := 0
 	for _, f := range findings {
 		if f.Severity == scanner.SeverityCritical {
@@ -792,11 +802,23 @@ func runScan(cmd *cobra.Command, args []string) {
 		fmt.Println()
 		fmt.Printf("\033[1;31m  %d critical vulnerabilities found\033[0m\n", criticalCount)
 		fmt.Println()
-		fmt.Println("  => View full report:")
-		fmt.Println("     https://temren.sh/report (login required)")
+
+		// Point at things that exist. This block used to advertise a hosted
+		// report at a domain the project does not run, and tell the user to
+		// re-run with "--cloud" — which is not a flag on this command, so the
+		// suggested command exits with "unknown flag".
+		if outputFile != "" {
+			fmt.Println("  => Full results written to:")
+			fmt.Println("     " + outputFile)
+		} else {
+			fmt.Println("  => Write the full results to a file:")
+			fmt.Println("     temren scan -t " + targetURL + " --output results.json --format json")
+		}
 		fmt.Println()
-		fmt.Println("  => Run with --cloud to sync:")
-		fmt.Println("     temren scan -t " + targetURL + " --cloud")
+		fmt.Println("  => Or route them somewhere your team already reads:")
+		fmt.Println("     --defectdojo-url / --defectdojo-token   push to DefectDojo")
+		fmt.Println("     --github-token / --gitlab-token         open issues")
+		fmt.Println("     --notify-slack / --notify-discord       post a summary")
 		fmt.Println()
 	}
 
@@ -860,11 +882,11 @@ type ScanReport struct {
 
 // ComplianceEntry represents a compliance mapping entry for JSON output
 type ComplianceEntry struct {
-	Scanner    string   `json:"scanner"`
-	Title      string   `json:"title"`
-	Framework  string   `json:"framework"`
-	ControlID  string   `json:"control_id"`
-	Control    string   `json:"control_name"`
+	Scanner   string `json:"scanner"`
+	Title     string `json:"title"`
+	Framework string `json:"framework"`
+	ControlID string `json:"control_id"`
+	Control   string `json:"control_name"`
 }
 
 // printResults prints findings to stdout

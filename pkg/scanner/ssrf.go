@@ -5,7 +5,6 @@ import (
 	"github.com/temren/internal/payloads"
 	"github.com/temren/pkg/httpengine"
 	"net/url"
-	"strings"
 	"time"
 )
 
@@ -34,6 +33,8 @@ func (s *SSRFScanner) Scan(ctx context.Context, target string, client *httpengin
 		return findings, nil
 	}
 
+	baseline := fetchBaselineBody(ctx, client, target)
+
 	for param, vals := range query {
 		_ = vals
 		for _, payload := range payloads.SSRF {
@@ -56,7 +57,7 @@ func (s *SSRFScanner) Scan(ctx context.Context, target string, client *httpengin
 			body, _ := readBody(resp)
 			resp.Body.Close()
 
-			if s.detectSSRFResponse(string(body), payload) {
+			if s.detectSSRFResponse(string(body), payload, baseline) {
 				findings = append(findings, Finding{
 					URL:         testURL,
 					Title:       "Server-Side Request Forgery",
@@ -77,10 +78,22 @@ func (s *SSRFScanner) Scan(ctx context.Context, target string, client *httpengin
 }
 
 // detectSSRFResponse checks for SSRF indicators
-func (s *SSRFScanner) detectSSRFResponse(body, payload string) bool {
-	// Check for file content indicators
+// detectSSRFResponse reports whether the response contains content that could
+// only have come from the server fetching the injected URL.
+//
+// Two earlier rules made this fire on any endpoint that echoed its input:
+//
+//   - "computeMetadata" and "metadata.google" are substrings of the payloads
+//     themselves, so a reflected payload supplied its own evidence;
+//   - a file:// payload returning any non-empty body at all was treated as a
+//     confirmed finding, which is every endpoint that returns anything.
+//
+// Now a marker counts only when the payload's own reflection cannot explain it
+// and the unmodified response did not already contain it.
+func (s *SSRFScanner) detectSSRFResponse(body, payload, baseline string) bool {
+	// Content that indicates the server actually retrieved something internal.
 	indicators := []string{
-		"root:",
+		"root:x:",
 		"/bin/bash",
 		"[fonts]",
 		"[extensions]",
@@ -88,21 +101,15 @@ func (s *SSRFScanner) detectSSRFResponse(body, payload string) bool {
 		"instance-id",
 		"local-hostname",
 		"local-ipv4",
-		"computeMetadata",
-		"metadata.google",
+		"iam/security-credentials",
+		"\"accessKeyId\"",
 	}
 
 	for _, ind := range indicators {
-		if strings.Contains(body, ind) {
+		if MarkerIsEvaluated(body, payload, ind, baseline) {
 			return true
 		}
 	}
 
-	// If payload is file:// and we got content
-	if strings.HasPrefix(payload, "file://") && len(body) > 0 {
-		return true
-	}
-
 	return false
 }
-

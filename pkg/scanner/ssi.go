@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/temren/pkg/httpengine"
@@ -35,6 +34,8 @@ func (s *SSIInjectionScanner) Scan(ctx context.Context, target string, client *h
 	if len(q) == 0 {
 		return nil, nil
 	}
+	baseline := fetchBaselineBody(ctx, client, target)
+
 	var findings []Finding
 	for param := range q {
 		for _, p := range ssiPayloads {
@@ -54,14 +55,23 @@ func (s *SSIInjectionScanner) Scan(ctx context.Context, target string, client *h
 			}
 			body, _ := io.ReadAll(io.LimitReader(resp.Body, 128*1024))
 			resp.Body.Close()
-			low := strings.ToLower(string(body))
-			if strings.Contains(low, "uid=") || strings.Contains(low, "document_name") ||
-				strings.Contains(low, "root:") || strings.Contains(low, "path=") && strings.Contains(low, "remote_addr") {
+			// Each marker must be attributable to evaluation, not to the payload
+			// being echoed back — "document_name" is part of the payload itself.
+			matched := ""
+			for _, marker := range []string{"uid=", "document_name", "root:", "remote_addr"} {
+				if MarkerIsEvaluated(string(body), p, marker, baseline) {
+					matched = marker
+					break
+				}
+			}
+			if matched != "" {
 				findings = append(findings, Finding{
 					URL: u.String(), Title: "Server-Side Include Injection",
 					Description: "SSI directive evaluated by the server. Often grants command execution on legacy Apache deployments.",
-					Severity: SeverityCritical, Confidence: ConfidenceHigh, Scanner: s.Name(),
-					Parameter: param, Payload: p, Timestamp: time.Now(),
+					Severity:    SeverityCritical, Confidence: ConfidenceHigh, Scanner: s.Name(),
+					Parameter: param, Payload: p, Evidence: "SSI output marker " + matched +
+						" present after injection and absent from the unmodified response",
+					Timestamp:     time.Now(),
 					OWASPCategory: "A03:2021-Injection", CVSSScore: 9.8,
 				})
 				return findings, nil

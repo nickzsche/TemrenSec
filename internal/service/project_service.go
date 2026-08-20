@@ -75,6 +75,10 @@ func (s *ProjectService) Delete(ctx context.Context, id, userID string) error {
 	return s.projectDB.Delete(ctx, id)
 }
 
+// defaultScanSettings is written when a caller supplies none. scan_settings is
+// a jsonb column, so it can never be the empty string.
+const defaultScanSettings = `{"depth":2,"max_pages":50,"rate_limit":10,"concurrency":5}`
+
 type TargetService struct {
 	targetDB  *database.TargetRepo
 	projectDB *database.ProjectRepo
@@ -137,7 +141,7 @@ func (s *TargetService) Create(ctx context.Context, userID string, req *model.Cr
 
 	scanSettings := req.ScanSettings
 	if scanSettings == "" {
-		scanSettings = `{"depth":2,"max_pages":50,"rate_limit":10,"concurrency":5}`
+		scanSettings = defaultScanSettings
 	}
 
 	t := &model.Target{
@@ -186,10 +190,22 @@ func (s *TargetService) Update(ctx context.Context, id, userID string, req *mode
 	if err := safeurl.Validate(req.URL); err != nil {
 		return nil, fmt.Errorf("invalid target URL: %w", err)
 	}
+	// Only overwrite what the request actually supplied. Assigning blindly meant
+	// an update that omitted scan_settings wrote "" into a jsonb column and the
+	// request failed with a 500 — Create defaults this field, Update did not.
 	t.URL = req.URL
-	t.Name = req.Name
-	t.ScanSettings = req.ScanSettings
-	t.Schedule = req.Schedule
+	if req.Name != "" {
+		t.Name = req.Name
+	}
+	if req.ScanSettings != "" {
+		t.ScanSettings = req.ScanSettings
+	}
+	if t.ScanSettings == "" {
+		t.ScanSettings = defaultScanSettings
+	}
+	if req.Schedule != "" {
+		t.Schedule = req.Schedule
+	}
 	if err := s.targetDB.Update(ctx, t); err != nil {
 		return nil, err
 	}

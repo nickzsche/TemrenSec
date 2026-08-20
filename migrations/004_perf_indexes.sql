@@ -51,10 +51,16 @@ CREATE INDEX IF NOT EXISTS brin_scans_created_at
 
 -- ── refresh_tokens ──────────────────────────────────────────────────────────
 
--- Janitor job that purges expired tokens.
+-- Janitor job that purges expired tokens, and the expiry check on every token
+-- lookup.
+--
+-- No partial predicate here: NOW() is not IMMUTABLE, so Postgres rejects it in
+-- an index predicate outright (SQLSTATE 42P17). It would also be the wrong
+-- thing even if it were allowed — the predicate is evaluated once when the
+-- index is built, so a moving time window goes stale immediately. A plain index
+-- on expires_at serves both the janitor and the lookup.
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires
-    ON refresh_tokens (expires_at)
-    WHERE expires_at < NOW() + INTERVAL '7 days';
+    ON refresh_tokens (expires_at);
 
 -- ── scan_alerts ─────────────────────────────────────────────────────────────
 

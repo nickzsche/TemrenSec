@@ -245,7 +245,7 @@ export function OnboardingWizard({ isOpen, onClose }: OnboardingWizardProps) {
                         Full Scan
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500">All 26+ scanners enabled</p>
+                    <p className="text-xs text-gray-500">All 76 scanners enabled</p>
                   </button>
                 </div>
 

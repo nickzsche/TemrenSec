@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Shield, Zap, Globe, Lock, BarChart3, Clock, Bell, Code, Sparkles, CheckCircle, FileCheck, GitBranch, FileText } from 'lucide-react'
 
 const features = [
-  { icon: Shield, title: '36+ Security Scanners', desc: 'Full OWASP Top 10 2025 coverage: SQL Injection, XSS, SSRF, IDOR, SSTI, NoSQL, CORS, Secret Scanning, Proof-Based Verification, and more.' },
+  { icon: Shield, title: '76 Security Scanners', desc: 'Full OWASP Top 10 2021 coverage: SQL Injection, XSS, SSRF, IDOR, SSTI, NoSQL, CORS, Secret Scanning, Proof-Based Verification, and more.' },
   { icon: Globe, title: 'WAF Bypass & Anti-Detection', desc: 'Advanced evasion for Cloudflare, Akamai, Imperva, AWS WAF. Proxy rotation, Tor, jitter, and user-agent rotation built in.' },
   { icon: BarChart3, title: 'Real-time Dashboard', desc: 'Watch scans live with WebSocket-powered updates. Interactive charts, severity analytics, and vulnerability timeline.' },
   { icon: Zap, title: 'AI-Powered Remediation', desc: 'Get fix suggestions for every finding powered by OpenAI, Anthropic, or Ollama. Code examples included.' },
@@ -16,7 +16,7 @@ const features = [
 ]
 
 const stats = [
-  { label: 'Scanners', value: '36+' },
+  { label: 'Scanners', value: '76' },
   { label: 'Integrations', value: '10+' },
   { label: 'Report Formats', value: '8' },
   { label: 'CVE Coverage', value: 'OWASP Top 10' },
@@ -68,7 +68,7 @@ export default function LandingPage() {
             <span className="text-blue-500"> before hackers do</span>
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-            Self-hosted OWASP Top 10 security scanner. 26+ detectors, WAF bypass, real-time dashboard, and enterprise integrations — all open source.
+            Self-hosted OWASP Top 10 security scanner. 76 detectors, WAF bypass, real-time dashboard, and enterprise integrations — all open source.
           </p>
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <Link href="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl text-lg font-semibold transition shadow-lg shadow-blue-600/25">

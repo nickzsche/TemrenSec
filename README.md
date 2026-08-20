@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/nickzsche/TemrenSec/main/frontend/public/temren-logo.svg" width="120" alt="Temren Logo">
+  <img src="frontend/public/temren-logo.svg" width="120" alt="Temren Logo">
 </p>
 
 <h1 align="center">TemrenSec</h1>
@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go&logoColor=white" alt="Go"></a>
+  <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go&logoColor=white" alt="Go"></a>
   <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-15-black?logo=next.js&logoColor=white" alt="Next.js"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-blue" alt="License"></a>
   <a href="https://owasp.org/Top10/"><img src="https://img.shields.io/badge/OWASP-Top%2010%202021-red" alt="OWASP"></a>
@@ -43,14 +43,14 @@
 
 <p align="center">
   <a href="https://github.com/nickzsche/TemrenSec">
-    <img src="https://raw.githubusercontent.com/nickzsche/TemrenSec/main/docs/screenshots/dashboard.png" width="800" alt="Temren Dashboard">
+    <img src="docs/screenshots/dashboard.png" width="800" alt="Temren Dashboard">
   </a>
 </p>
 
 <p align="center">
   <a href="https://github.com/nickzsche/TemrenSec">
-    <img src="https://raw.githubusercontent.com/nickzsche/TemrenSec/main/docs/screenshots/scan-progress.png" width="400" alt="Scan Progress">
-    <img src="https://raw.githubusercontent.com/nickzsche/TemrenSec/main/docs/screenshots/vulnerability-detail.png" width="400" alt="Vulnerability Detail">
+    <img src="docs/screenshots/scan-progress.png" width="400" alt="Scan Progress">
+    <img src="docs/screenshots/vulnerability-detail.png" width="400" alt="Vulnerability Detail">
   </a>
 </p>
 
@@ -170,7 +170,7 @@ TemrenSec/
 ├── API         # REST API server (Go + Fiber)
 ├── Worker      # Background job processor (Asynq + Redis)
 ├── Frontend    # Next.js dashboard
-└── Scanner     # 26+ vulnerability detectors
+└── Scanner     # 76 vulnerability detectors
 ```
 
 **Stack:** Go 1.21+ | Next.js 15 | PostgreSQL | Redis | Docker | Kubernetes
@@ -195,11 +195,11 @@ TemrenSec/
 ## Screenshots
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/nickzsche/TemrenSec/main/docs/screenshots/landing.png" width="800" alt="Landing Page">
+  <img src="docs/screenshots/landing.png" width="800" alt="Landing Page">
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/nickzsche/TemrenSec/main/docs/screenshots/dashboard-charts.png" width="800" alt="Dashboard with Charts">
+  <img src="docs/screenshots/dashboard-charts.png" width="800" alt="Dashboard with Charts">
 </p>
 
 ---

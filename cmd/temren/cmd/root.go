@@ -47,15 +47,15 @@ func init() {
 }
 
 func printBanner() {
+	// The art here used to spell "Xegenek", left over from an earlier name,
+	// so every CLI user was greeted by a different product.
 	banner := `
-__  __                          _
-\ \/ /__  __ _  ___ _ __   ___ | | __
- \  // _ \/ _' |/ _ \ '_ \ / _ \| |/ /
- /  \  __/ (_| |  __/ | | |  __/|   <
-/_/\_\___|\__, |\___|_| |_|\___||_|\_\
-          |___/
+ _____ ___ __  __ ___ ___ _  _ 
+|_   _| __|  \/  | _ \ __| \| |
+  | | | _|| |\/| |   / _|| .' |
+  |_| |___|_|  |_|_|_\___|_|\_|
 
-TemrenSec — OWASP Top 10 2025 Security Scanner v%s
+TemrenSec — OWASP Top 10 2021 Security Scanner v%s
 Build: %s
 `
 	fmt.Printf(banner, Version, Build)

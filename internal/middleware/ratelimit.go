@@ -87,16 +87,25 @@ type PlanLimits struct {
 	Window      time.Duration
 }
 
+// getPlanLimits returns the per-plan HTTP request budget.
+//
+// These bound abuse, not product usage — how much a plan may actually scan is
+// enforced separately by model.PlanConfig (MaxTargets, MaxScans).
+//
+// The previous values (free 10/min) read like a scan quota and were harmless
+// only because LimitByUser was never attached to a route. Applied for real they
+// make the product unusable: opening the dashboard issues more than ten
+// requests, so the first page load 429s.
 func (r *RateLimiter) getPlanLimits(plan string) PlanLimits {
 	switch plan {
-	case "free":
-		return PlanLimits{MaxRequests: 10, Window: time.Minute}
 	case "pro":
-		return PlanLimits{MaxRequests: 100, Window: time.Minute}
+		return PlanLimits{MaxRequests: 600, Window: time.Minute}
 	case "team":
-		return PlanLimits{MaxRequests: 1000, Window: time.Minute}
+		return PlanLimits{MaxRequests: 2000, Window: time.Minute}
+	case "free":
+		return PlanLimits{MaxRequests: 120, Window: time.Minute}
 	default:
-		return PlanLimits{MaxRequests: 10, Window: time.Minute}
+		return PlanLimits{MaxRequests: 120, Window: time.Minute}
 	}
 }
 

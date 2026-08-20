@@ -94,9 +94,10 @@
 ### Enterprise Features
 
 - **Scheduled Scans** - Cron-based automation (hourly, daily, weekly, monthly)
-- **Plan-based Rate Limiting** - Free (10 req/min), Pro (100 req/min), Team (1000 req/min)
+- **Plan-based Rate Limiting** - Free (120 req/min), Pro (600 req/min), Team (2000 req/min).
+  Separate from scan quotas, which are Free 1 target / 5 scans, Pro 5 / 50, Team 20 / 200.
 - **2FA Authentication** - TOTP support
-- **Report Export** - PDF, HTML, CSV formats
+- **Report Export** - SARIF, CycloneDX, JUnit, CSV, Markdown, JSONL, Jira, HTML, PDF
 - **Prometheus Metrics** - Full observability
 - **Kubernetes Ready** - Helm chart included
 - **CI/CD Integration** - GitHub Actions ready

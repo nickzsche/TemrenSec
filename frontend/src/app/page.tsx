@@ -11,14 +11,14 @@ const features = [
   { icon: Zap, title: 'AI-Powered Remediation', desc: 'Get fix suggestions for every finding powered by OpenAI, Anthropic, or Ollama. Code examples included.' },
   { icon: Lock, title: 'Proof-Based Verification', desc: 'Automatically confirms vulnerabilities with safe exploitation proof. Drastically reduces false positives.' },
   { icon: Code, title: 'Source Code API Discovery', desc: 'Automatically discovers API endpoints from your codebase and generates OpenAPI specs.' },
-  { icon: FileText, title: '8 Report Formats', desc: 'HTML, CSV, XML, SARIF, JUnit, PDF, Compliance (PCI-DSS/SOC2/ISO27001), and CycloneDX SBOM.' },
+  { icon: FileText, title: '9 Report Formats', desc: 'SARIF, CycloneDX, JUnit, CSV, Markdown, JSONL, Jira, HTML and PDF — plus compliance summaries for PCI-DSS, SOC2 and ISO 27001.' },
   { icon: Bell, title: '10+ Integrations', desc: 'GitHub, GitLab, Slack, Discord, Teams, DefectDojo, Jira, Email, and custom webhooks.' },
 ]
 
 const stats = [
   { label: 'Scanners', value: '76' },
   { label: 'Integrations', value: '10+' },
-  { label: 'Report Formats', value: '8' },
+  { label: 'Report Formats', value: '9' },
   { label: 'CVE Coverage', value: 'OWASP Top 10' },
 ]
 

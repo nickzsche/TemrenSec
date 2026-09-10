@@ -38,6 +38,9 @@ func AllScanners() []Scanner {
 		NewMassAssignmentScanner(),
 		NewPasswordResetEnumScanner(),
 		NewServerSidePrototypePollutionScanner(),
+		NewCSRFScanner(),
+		NewSessionFixationScanner(),
+		NewDefaultCredentialsScanner(),
 
 		// Deserialization / supply chain
 		NewDeserializationScanner(),
@@ -103,6 +106,7 @@ func AllScanners() []Scanner {
 		NewWAFDetector(),
 		NewHoneypotDetector(),
 		NewDanglingDNSScanner(),
+		NewSubdomainTakeoverScanner(),
 		NewDSNLeakScanner(),
 		NewCloudLeakScanner(),
 		NewPrototypePollutionScanner(),
@@ -119,6 +123,7 @@ func AllScanners() []Scanner {
 		NewFormParameterScanner(),
 		NewSecretScanner(),
 		NewLLMScanner(),
+		NewSourceMapLeakScanner(),
 	}
 }
 

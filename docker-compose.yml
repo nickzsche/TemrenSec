@@ -5,10 +5,8 @@ services:
     image: postgres:15-alpine
     environment:
       POSTGRES_USER: temren
-      POSTGRES_PASSWORD: temren
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD gerekli (.env)}
       POSTGRES_DB: temren
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,8 +17,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -38,9 +34,9 @@ services:
       - "8080:8080"
     environment:
       PORT: "8080"
-      DATABASE_URL: postgres://temren:temren@postgres:5432/temren?sslmode=disable
+      DATABASE_URL: postgres://temren:${POSTGRES_PASSWORD}@postgres:5432/temren?sslmode=disable
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET gerekli (openssl rand -hex 32)}
       ENVIRONMENT: ${ENVIRONMENT:-production}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       SMTP_HOST: ${SMTP_HOST:-}
@@ -62,9 +58,9 @@ services:
       dockerfile: Dockerfile
     command: temren-worker
     environment:
-      DATABASE_URL: postgres://temren:temren@postgres:5432/temren?sslmode=disable
+      DATABASE_URL: postgres://temren:${POSTGRES_PASSWORD}@postgres:5432/temren?sslmode=disable
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_SECRET: ${JWT_SECRET}
       WORKER_CONCURRENCY: "5"
       SCAN_TIMEOUT: "30"
     depends_on:
@@ -74,6 +70,18 @@ services:
         condition: service_healthy
     volumes:
       - ./migrations:/app/migrations
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      API_URL: http://api:8080
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    depends_on:
+      - api
 
 volumes:
   postgres_data:

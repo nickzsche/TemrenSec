@@ -29,6 +29,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: api
     command: temren-api
     ports:
       - "8080:8080"
@@ -56,6 +57,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: worker
     command: temren-worker
     environment:
       DATABASE_URL: postgres://temren:${POSTGRES_PASSWORD}@postgres:5432/temren?sslmode=disable

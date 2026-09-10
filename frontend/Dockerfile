@@ -4,6 +4,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+ARG API_URL=http://api:8080
+ENV API_URL=$API_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 

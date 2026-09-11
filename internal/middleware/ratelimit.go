@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/temren/internal/config"
@@ -17,9 +18,9 @@ type RateLimiter struct {
 
 func NewRateLimiter() (*RateLimiter, error) {
 	cfg := config.AppConfig
-	
+
 	client := redis.NewClient(&redis.Options{
-		Addr: cfg.RedisURL,
+		Addr: strings.TrimPrefix(cfg.RedisURL, "redis://"),
 	})
 
 	ctx := context.Background()

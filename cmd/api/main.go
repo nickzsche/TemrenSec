@@ -37,6 +37,10 @@ func run() error {
 	defer database.Close()
 	log.Println("[api] database connected")
 
+	if err := database.RunMigrations(ctx); err != nil {
+		return fmt.Errorf("database migration failed: %w", err)
+	}
+
 	app := fiber.New(fiber.Config{
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,

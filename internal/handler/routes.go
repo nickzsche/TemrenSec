@@ -26,7 +26,11 @@ var wsHub *websocket.Hub
 func SetupRoutes(app *fiber.App) {
 	h := NewHandler()
 	scanQueue = queue.NewQueue()
-	rateLimiter, _ = middleware.NewRateLimiter()
+	var err error
+	rateLimiter, err = middleware.NewRateLimiter()
+	if err != nil {
+		log.Fatalf("[api] rate limiter (redis) unavailable: %v", err)
+	}
 	wsHub = websocket.GetHub()
 	// Optional cross-instance bridge: when TEMREN_WS_REDIS is set, every
 	// broadcast also fans out to peer API replicas via Redis pub/sub.
@@ -45,7 +49,7 @@ func SetupRoutes(app *fiber.App) {
 		}
 	}
 
-	app.Use(recover.New())
+	app.Use(recover.New(recover.Config{EnableStackTrace: true}))
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     config.AppConfig.FrontendURL,

@@ -8,6 +8,36 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Nuclei tarzı YAML şablon motoru** (`pkg/templates`) — request + matcher
+  (status/word/regex/header, and/or, negative) ve extractor (regex capture +
+  header kval) destekli YAML tespit şablonları. 38 gömülü şablon (.git/.env/SSH
+  key/actuator heapdump/Firebase-Rails-Vault sırları/phpMyAdmin/Jenkins/...) +
+  `~/.temren/templates`'ten kullanıcı şablonları. Registry'ye "Template Engine
+  (YAML)" scanner olarak bağlı (artık 89 scanner).
+- **Workspaces kalıcılığı** — in-memory yerine Postgres (`WorkspaceRepo`,
+  migration 003), yeniden başlatmayı atlatıyor.
+
+### Fixed
+
+- **Worker tüm kayıtlı scanner'ları çalıştırıyor** — 26 hardcode yerine registry
+  (88→ artık 89). Kalan 62 scanner derlenmiş ama çalışmıyordu.
+- **OWASP kategorisi tek tip 2025** — pasif bulgular + bozuk etiketler dahil
+  normalize; keyword tahmini; A00 yalnız gerçek bilgilendirmeye kalıyor.
+- **Canlı ilerleme** — worker tarama olaylarını Redis köprüsüyle WebSocket
+  hub'ına yayınlıyor; REST `/scans/:id/progress` cross-process çalışıyor.
+- **Scanner başına 60sn timeout + panic izolasyonu** — tek yavaş/asılı scanner
+  artık taramayı 30dk dış timeout'a kadar kilitlemiyor; bozuk scanner worker'ı
+  çökertmiyor.
+- **Remediation** — `pkg/remediation` kural motoru + OWASP kategori-bazlı yedek;
+  taramaların bulgularında anlamlı çözüm oranı ~%90'a çıktı.
+
+### Security
+
+- **v2 uçları JWT ile kilitlendi** — ai/chat, export, intel/lookup, sbom,
+  compliance, risk, triage, workspaces vb. artık kimlik doğrulaması istiyor.
+
+### Added
+
 - **13 new active scanners**
   - HTTP Request Smuggling (CL.TE / TE.CL / TE.TE-obf)
   - Web Cache Poisoning (unkeyed header reflection)

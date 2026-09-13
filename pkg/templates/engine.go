@@ -96,11 +96,15 @@ func (e *Engine) Run(ctx context.Context, target string, client *httpengine.Clie
 					continue
 				}
 				if req.Matches(*resp) {
+					ev := "Template " + t.ID + " matched (" + method + " " + url + ")"
+					if extracted := req.Extract(*resp); len(extracted) > 0 {
+						ev += " → " + strings.Join(extracted, ", ")
+					}
 					out = append(out, Match{
 						TemplateID: t.ID, Name: t.Info.Name, Severity: strings.ToUpper(defSev(t.Info.Severity)),
 						Description: t.Info.Description, Remediation: t.Info.Remediation, OWASP: t.Info.OWASP,
 						References: t.Info.Reference, Tags: t.Info.Tags, URL: url,
-						Evidence: "Template " + t.ID + " matched (" + method + " " + url + ")",
+						Evidence: ev,
 					})
 					break // one hit per template is enough
 				}

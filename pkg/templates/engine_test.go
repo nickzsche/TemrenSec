@@ -93,3 +93,16 @@ func TestEngineRunAgainstServer(t *testing.T) {
 		t.Fatalf("expected exposed-git-config to match, got %d matches", len(matches))
 	}
 }
+
+func TestExtractorRegexAndKval(t *testing.T) {
+	r := Response{Body: "nginx version: nginx/1.18.0", Header: "Server: Apache/2.4.41\nX-Powered-By: PHP/8.1.2\n"}
+	reg := Extractor{Type: "regex", Part: "body", Regex: []string{`nginx/[0-9.]+`}}
+	if got := reg.extract(r); len(got) != 1 || got[0] != "nginx/1.18.0" {
+		t.Fatalf("regex extractor: %v", got)
+	}
+	kv := Extractor{Type: "kval", KVal: []string{"Server", "X-Powered-By"}}
+	got := kv.extract(r)
+	if len(got) != 2 || got[0] != "Apache/2.4.41" || got[1] != "PHP/8.1.2" {
+		t.Fatalf("kval extractor: %v", got)
+	}
+}

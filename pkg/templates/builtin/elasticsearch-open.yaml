@@ -1,0 +1,19 @@
+id: elasticsearch-open
+info:
+  name: Elasticsearch Exposed
+  severity: high
+  description: Elasticsearch REST arayüzü kimlik doğrulamasız erişilebilir.
+  tags: exposure,elastic
+  owasp: "A05:2021"
+  remediation: Elasticsearch'e erişimi güvenlik duvarı + kimlik doğrulamayla kısıtlayın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/_cat/indices", "{{BaseURL}}/_cluster/health"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["cluster_name", "number_of_nodes", "green", "yellow"]
+        condition: or

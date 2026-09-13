@@ -1,0 +1,19 @@
+id: prometheus-metrics-exposed
+info:
+  name: Prometheus /metrics Exposed
+  severity: low
+  description: /metrics uç noktası iç ölçümleri ve olası hassas etiketleri ifşa ediyor.
+  tags: exposure,metrics
+  owasp: "A05:2021"
+  remediation: /metrics erişimini iç ağa/kimlik doğrulamaya kısıtlayın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/metrics"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["# HELP", "# TYPE"]
+        condition: and

@@ -1,0 +1,14 @@
+id: exposed-svn-entries
+info:
+  name: Exposed .svn/entries
+  severity: medium
+  description: Subversion meta verisi erişilebilir; kaynak kod sızabilir.
+  tags: exposure,svn
+  owasp: "A05:2021"
+  remediation: .svn dizinine erişimi engelleyin.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/.svn/entries", "{{BaseURL}}/.svn/wc.db"]
+    matchers:
+      - type: status
+        status: [200]

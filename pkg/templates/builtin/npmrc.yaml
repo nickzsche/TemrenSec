@@ -1,0 +1,18 @@
+id: exposed-npmrc-pypirc
+info:
+  name: Exposed .npmrc / .pypirc
+  severity: high
+  description: Paket yöneticisi kimlik dosyaları erişilebilir; kayıt defteri tokenları sızabilir.
+  tags: exposure,secret
+  owasp: "A05:2021"
+  remediation: Bu dosyaları web kökünden kaldırın, tokenları döndürün.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/.npmrc", "{{BaseURL}}/.pypirc"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: regex
+        part: body
+        regex: ["(?i)(_authToken|_password|\\[pypi\\]|registry=)"]

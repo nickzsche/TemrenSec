@@ -1,0 +1,16 @@
+id: tomcat-manager
+info:
+  name: Apache Tomcat Manager Exposed
+  severity: high
+  description: Tomcat Manager/host-manager arayüzü erişilebilir; WAR yükleyip RCE riski.
+  tags: exposure,tomcat
+  owasp: "A05:2021"
+  remediation: Manager uygulamasını kaldırın veya güçlü kimlik doğrulama + IP kısıtı uygulayın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/manager/html", "{{BaseURL}}/host-manager/html"]
+    matchers:
+      - type: word
+        part: all
+        words: ["Tomcat Web Application Manager", "401 Unauthorized", "Apache Tomcat"]
+        condition: or

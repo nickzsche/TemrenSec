@@ -1,0 +1,18 @@
+id: permissive-crossdomain
+info:
+  name: Permissive crossdomain.xml
+  severity: low
+  description: crossdomain.xml tüm alan adlarına izin veriyor (allow-access-from domain="*").
+  tags: misconfig
+  owasp: "A05:2021"
+  remediation: crossdomain.xml'de izinli alan adlarını daraltın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/crossdomain.xml"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["allow-access-from domain=\"*\""]

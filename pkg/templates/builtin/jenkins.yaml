@@ -1,0 +1,17 @@
+id: jenkins-exposed
+info:
+  name: Jenkins Instance Exposed
+  severity: medium
+  description: Jenkins arayüzü erişilebilir; yapılandırmaya göre script konsolu RCE riski.
+  tags: exposure,ci
+  owasp: "A05:2021"
+  remediation: Jenkins'e erişimi kısıtlayın, anonim izinleri kaldırın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/", "{{BaseURL}}/login"]
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: all
+        words: ["X-Jenkins", "Dashboard [Jenkins]", "Jenkins-Agent"]
+        condition: or

@@ -336,7 +336,7 @@ func guessOWASP(f scanner.Finding) string {
 		return "A05:2021"
 	case containsAny(s, "component", "supply", "dependency", "outdated", "vulnerable"):
 		return "A06:2021"
-	case containsAny(s, "log", "monitor", "alert"):
+	case containsAny(s, "logging", "monitor", "alerting", "audit log"):
 		return "A09:2021"
 	case containsAny(s, "error", "exception", "stack trace"):
 		return "A10:2021"

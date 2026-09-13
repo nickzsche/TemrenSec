@@ -290,13 +290,22 @@ func runPassiveAnalysis(ctx context.Context, target string, resp *httpengine.Res
 // tag — or a keyword guess — through the same 2021→2025 map. No more mixed
 // "A05:2021" vs "A02:2025" labels in one report.
 func owaspCategory(f scanner.Finding) string {
-	if f.OWASPCategory2025 != "" {
+	if isCanonicalOWASP(f.OWASPCategory2025) {
 		return f.OWASPCategory2025
 	}
 	if f.OWASPCategory != "" {
-		return scanner.MapOWASP2021To2025(f.OWASPCategory)
+		if m := scanner.MapOWASP2021To2025(f.OWASPCategory); isCanonicalOWASP(m) {
+			return m
+		}
 	}
+	// Empty or malformed (some scanners emit "A08 Authentication Failures" with
+	// no year and the wrong number) → derive a clean tag from keywords.
 	return scanner.MapOWASP2021To2025(guessOWASP(f))
+}
+
+// isCanonicalOWASP is true for a proper "A0x:20xx-Title" tag.
+func isCanonicalOWASP(s string) bool {
+	return strings.Contains(s, ":20") && strings.Contains(s, "-")
 }
 
 func containsAny(s string, subs ...string) bool {

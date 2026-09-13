@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/temren/internal/database"
 	"github.com/temren/internal/middleware"
 	"github.com/temren/pkg/ai"
 	"github.com/temren/pkg/compliance"
@@ -144,8 +145,15 @@ func RegisterV2(app *fiber.App) {
 		return c.JSON(out)
 	})
 
-	// Workspaces
-	api.Get("/workspaces", func(c *fiber.Ctx) error { return c.JSON(workspaceStore.List()) })
+	// Workspaces — persisted in Postgres (survives restarts).
+	wsRepo := database.NewWorkspaceRepo()
+	api.Get("/workspaces", func(c *fiber.Ctx) error {
+		list, err := wsRepo.List(c.Context())
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		}
+		return c.JSON(list)
+	})
 	api.Post("/workspaces", func(c *fiber.Ctx) error {
 		var body struct {
 			Name        string `json:"name"`
@@ -154,7 +162,10 @@ func RegisterV2(app *fiber.App) {
 		if err := c.BodyParser(&body); err != nil {
 			return c.Status(400).JSON(fiber.Map{"error": err.Error()})
 		}
-		w, err := workspaceStore.Create(body.Name, body.Description)
+		if body.Name == "" {
+			return c.Status(400).JSON(fiber.Map{"error": "name is required"})
+		}
+		w, err := wsRepo.Create(c.Context(), body.Name, body.Description, middleware.GetUserID(c))
 		if err != nil {
 			return c.Status(409).JSON(fiber.Map{"error": err.Error()})
 		}

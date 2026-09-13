@@ -178,3 +178,13 @@ var PlanConfig = map[string]PlanLimits{
 	"pro":  {MaxTargets: 5, MaxScans: 50, Scheduler: true},
 	"team": {MaxTargets: 20, MaxScans: 200, Scheduler: true},
 }
+
+// Workspace groups targets for org-level views (ASPM). Persisted in the
+// workspaces table (migration 003).
+type Workspace struct {
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	CreatedBy   string    `json:"created_by,omitempty"`
+}

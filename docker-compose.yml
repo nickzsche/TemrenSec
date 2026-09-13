@@ -37,6 +37,7 @@ services:
       PORT: "8080"
       DATABASE_URL: postgres://temren:${POSTGRES_PASSWORD}@postgres:5432/temren?sslmode=disable
       REDIS_URL: redis://redis:6379
+      TEMREN_WS_REDIS: redis:6379
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET gerekli (openssl rand -hex 32)}
       ENVIRONMENT: ${ENVIRONMENT:-production}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
@@ -62,6 +63,7 @@ services:
     environment:
       DATABASE_URL: postgres://temren:${POSTGRES_PASSWORD}@postgres:5432/temren?sslmode=disable
       REDIS_URL: redis://redis:6379
+      TEMREN_WS_REDIS: redis:6379
       JWT_SECRET: ${JWT_SECRET}
       WORKER_CONCURRENCY: "5"
       SCAN_TIMEOUT: "30"

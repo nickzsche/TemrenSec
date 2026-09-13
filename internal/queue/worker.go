@@ -15,9 +15,11 @@ import (
 	"github.com/temren/internal/config"
 	"github.com/temren/internal/database"
 	"github.com/temren/internal/model"
+	"github.com/temren/internal/websocket"
 	"github.com/temren/pkg/analyzer"
 	"github.com/temren/pkg/httpengine"
 	"github.com/temren/pkg/plugin"
+	"github.com/temren/pkg/remediation"
 	"github.com/temren/pkg/scanner"
 	"github.com/temren/pkg/spider"
 	"github.com/hibiken/asynq"
@@ -69,6 +71,10 @@ func (w *Worker) handleScan(ctx context.Context, t *asynq.Task) error {
 		log.Printf("[worker] failed to start scan %s: %v", payload.ScanID, err)
 		return err
 	}
+
+	// Live progress → WebSocket (via Redis bridge to the API replicas).
+	hub := websocket.GetHub()
+	hub.PublishScanStarted(payload.ScanID, payload.TargetID)
 
 	var scanConfig struct {
 		Depth       int      `json:"depth"`
@@ -133,6 +139,7 @@ func (w *Worker) handleScan(ctx context.Context, t *asynq.Task) error {
 				continue
 			}
 			urlsToScan = append(urlsToScan, result.URL)
+			hub.PublishScanProgress(payload.ScanID, len(urlsToScan), scanConfig.MaxPages, result.URL)
 
 			if scanConfig.Passive {
 				passiveFindings := runPassiveAnalysis(scanCtx, result.URL, result.Response)
@@ -213,7 +220,7 @@ func (w *Worker) handleScan(ctx context.Context, t *asynq.Task) error {
 			Payload:           f.Payload,
 			Evidence:          f.Evidence,
 			OWASPCategory:     owaspCategory(f),
-			FixRecommendation: getFixRecommendation(f.Title, string(f.Severity)),
+			FixRecommendation: fixText(f),
 			Proof:             f.Request + "\n\n" + f.Response,
 			Status:            "open",
 		}
@@ -234,6 +241,7 @@ func (w *Worker) handleScan(ctx context.Context, t *asynq.Task) error {
 		if err := vulnDB.Create(ctx, vuln); err != nil {
 			log.Printf("[worker] failed to save vulnerability: %v", err)
 		}
+		hub.PublishVulnerabilityFound(payload.ScanID, &websocket.VulnFound{Title: f.Title, Severity: string(f.Severity), URL: f.URL})
 	}
 
 	if err := scanDB.CompleteScan(ctx, scanResult); err != nil {
@@ -243,6 +251,8 @@ func (w *Worker) handleScan(ctx context.Context, t *asynq.Task) error {
 
 	securityScore := calculateSecurityScore(scanResult)
 	_ = targetDB.UpdateSecurityScore(ctx, payload.TargetID, securityScore)
+
+	hub.PublishScanCompleted(payload.ScanID, len(allFindings))
 
 	log.Printf("[worker] scan %s completed: %d findings (score: %d)", payload.ScanID, len(allFindings), securityScore)
 
@@ -317,20 +327,24 @@ func mapScannerToOWASP(scannerName string) string {
 	return "A00:2021"
 }
 
-func getFixRecommendation(title, severity string) string {
-	if strings.Contains(strings.ToLower(title), "sql") {
-		return "Use parameterized queries/prepared statements. Validate and sanitize all user inputs."
+// ruleAdvisor gives per-scanner remediation (fix + code example + references)
+// offline. Far richer than the old four-keyword heuristic, and it matches on the
+// scanner that produced the finding rather than guessing from the title.
+var ruleAdvisor = remediation.NewRuleBasedAdvisor()
+
+func fixText(f scanner.Finding) string {
+	r := ruleAdvisor.Suggest(f)
+	if r == nil {
+		return "Review and remediate based on OWASP guidelines for this vulnerability category."
 	}
-	if strings.Contains(strings.ToLower(title), "xss") {
-		return "Implement Content-Security-Policy headers. Escape all user-controlled data in output."
+	out := r.FixSuggestion
+	if r.CodeFix != "" {
+		out += "\n\nÖrnek:\n" + r.CodeFix
 	}
-	if strings.Contains(strings.ToLower(title), "header") {
-		return "Configure proper security headers in your web server configuration."
+	if len(r.References) > 0 {
+		out += "\n\nKaynaklar:\n- " + strings.Join(r.References, "\n- ")
 	}
-	if strings.Contains(strings.ToLower(title), "tls") || strings.Contains(strings.ToLower(title), "ssl") {
-		return "Use TLS 1.2+ with strong cipher suites. Obtain certificates from trusted CAs."
-	}
-	return "Review and remediate based on OWASP guidelines for this vulnerability category."
+	return out
 }
 
 func calculateSecurityScore(scan *model.Scan) int {

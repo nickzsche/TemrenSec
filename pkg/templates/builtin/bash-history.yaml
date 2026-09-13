@@ -1,0 +1,14 @@
+id: exposed-bash-history
+info:
+  name: Exposed .bash_history
+  severity: medium
+  description: Kabuk geçmişi erişilebilir; komutlar ve olası sırlar sızabilir.
+  tags: exposure
+  owasp: "A05:2021"
+  remediation: .bash_history dosyasını web kökünden kaldırın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/.bash_history"]
+    matchers:
+      - type: status
+        status: [200]

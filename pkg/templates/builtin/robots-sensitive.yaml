@@ -1,0 +1,23 @@
+id: robots-sensitive-paths
+info:
+  name: Sensitive Paths in robots.txt
+  severity: info
+  description: robots.txt yönetim/yedek gibi hassas yolları listeliyor; saldırgana harita veriyor.
+  tags: discovery
+  owasp: "A05:2021"
+  remediation: robots.txt'de hassas yolları listelemeyin; erişimi gerçek yetkilendirmeyle koruyun.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/robots.txt"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: regex
+        part: body
+        regex: ["(?i)Disallow:\\s*/(admin|backup|config|private|secret|api/internal)"]
+    extractors:
+      - type: regex
+        part: body
+        regex: ["(?i)Disallow:\\s*(\\S+)"]
+        group: 1

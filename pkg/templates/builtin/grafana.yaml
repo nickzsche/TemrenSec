@@ -1,0 +1,17 @@
+id: grafana-exposed
+info:
+  name: Grafana Instance Exposed
+  severity: low
+  description: Grafana giriş arayüzü açık; varsayılan kimlik ve bilinen açıklar denenebilir.
+  tags: exposure,panel
+  owasp: "A05:2021"
+  remediation: Grafana erişimini kısıtlayın, varsayılan admin parolasını değiştirin.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/login", "{{BaseURL}}/grafana/login"]
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: all
+        words: ["Grafana", "grafana-app", "grafanaBootData"]
+        condition: or

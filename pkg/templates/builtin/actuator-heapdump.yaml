@@ -1,0 +1,18 @@
+id: spring-actuator-heapdump
+info:
+  name: Spring Actuator heapdump Exposed
+  severity: critical
+  description: /actuator/heapdump bellek dökümü sağlıyor; oturumlar, parolalar ve sırlar sızabilir.
+  tags: exposure,spring
+  owasp: "A05:2021"
+  remediation: heapdump uç noktasını kapatın veya kimlik doğrulamayla koruyun.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/actuator/heapdump"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: header
+        words: ["application/octet-stream", "application/vnd"]
+        condition: or

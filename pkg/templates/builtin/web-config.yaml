@@ -1,0 +1,18 @@
+id: exposed-web-config
+info:
+  name: Exposed web.config / .htpasswd
+  severity: high
+  description: Sunucu yapılandırma / kimlik dosyaları erişilebilir.
+  tags: exposure
+  owasp: "A05:2021"
+  remediation: Bu dosyalara HTTP erişimini engelleyin.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/web.config", "{{BaseURL}}/.htpasswd"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: regex
+        part: body
+        regex: ["<configuration", "\\$apr1\\$", ":\\$2[aby]\\$"]

@@ -71,12 +71,13 @@ func (w *Worker) handleScan(ctx context.Context, t *asynq.Task) error {
 	}
 
 	var scanConfig struct {
-		Depth       int  `json:"depth"`
-		MaxPages    int  `json:"max_pages"`
-		Concurrency int  `json:"concurrency"`
-		RateLimit   int  `json:"rate_limit"`
-		Active      bool `json:"active"`
-		Passive     bool `json:"passive"`
+		Depth       int      `json:"depth"`
+		MaxPages    int      `json:"max_pages"`
+		Concurrency int      `json:"concurrency"`
+		RateLimit   int      `json:"rate_limit"`
+		Active      bool     `json:"active"`
+		Passive     bool     `json:"passive"`
+		Scanners    []string `json:"scanners"` // optional subset; empty = every registered scanner
 	}
 	_ = json.Unmarshal([]byte(payload.Config), &scanConfig)
 
@@ -143,7 +144,14 @@ func (w *Worker) handleScan(ctx context.Context, t *asynq.Task) error {
 	}
 
 	if scanConfig.Active {
-		scanners := getAllScanners()
+		// The registry is the single source of truth: every scanner that ships
+		// runs, unless the scan explicitly narrows to a subset. Previously the
+		// worker hardcoded 26 of the 88 scanners, so two thirds never ran.
+		scanners := scanner.AllScanners()
+		if len(scanConfig.Scanners) > 0 {
+			scanners = scanner.EnabledScanners(scanConfig.Scanners)
+		}
+		log.Printf("[worker] scan %s running %d scanners", payload.ScanID, len(scanners))
 		scanEngine := scanner.NewScanEngine(client, scanners, scanConfig.Concurrency)
 
 		activeFindings, err := scanEngine.RunAll(scanCtx, urlsToScan)
@@ -204,7 +212,7 @@ func (w *Worker) handleScan(ctx context.Context, t *asynq.Task) error {
 			URL:               f.URL,
 			Payload:           f.Payload,
 			Evidence:          f.Evidence,
-			OWASPCategory:     mapScannerToOWASP(f.Scanner),
+			OWASPCategory:     owaspCategory(f),
 			FixRecommendation: getFixRecommendation(f.Title, string(f.Severity)),
 			Proof:             f.Request + "\n\n" + f.Response,
 			Status:            "open",
@@ -262,35 +270,18 @@ func runPassiveAnalysis(ctx context.Context, target string, resp *httpengine.Res
 	return findings
 }
 
-func getAllScanners() []scanner.Scanner {
-	return []scanner.Scanner{
-		scanner.NewSQLiScanner(),
-		scanner.NewXSSScanner(),
-		scanner.NewCommandInjectionScanner(),
-		scanner.NewSSRFScanner(),
-		scanner.NewIDORScanner(),
-		scanner.NewPathTraversalScanner(),
-		scanner.NewXXEScanner(),
-		scanner.NewAuthFailureScanner(),
-		scanner.NewVulnerableComponentsScanner(),
-		scanner.NewLoggingMonitoringScanner(),
-		scanner.NewInsecureDesignScanner(),
-		scanner.NewErrorHandlingScanner(),
-		scanner.NewSoftwareSupplyChainScanner(),
-		scanner.NewFormParameterScanner(),
-		scanner.NewWAFDetector(),
-		scanner.NewBackupFileScanner(),
-		scanner.NewDirectoryBruteForceScanner(),
-		scanner.NewTechnologyDetector(),
-		scanner.NewJWTScanner(),
-		scanner.NewGraphQLScanner(),
-		scanner.NewOpenRedirectScanner(),
-		scanner.NewHoneypotDetector(),
-		scanner.NewSwaggerScanner(),
-		scanner.NewParameterMiner(),
-		scanner.NewPrototypePollutionScanner(),
-		scanner.NewCloudLeakScanner(),
+// owaspCategory picks the best OWASP tag for a finding. Scanners already emit
+// their own 2021 tag (and ScanEngine fills the 2025 equivalent), so we trust the
+// finding first and only fall back to the name map for the rare scanner that
+// emits neither.
+func owaspCategory(f scanner.Finding) string {
+	if f.OWASPCategory2025 != "" {
+		return f.OWASPCategory2025
 	}
+	if f.OWASPCategory != "" {
+		return f.OWASPCategory
+	}
+	return mapScannerToOWASP(f.Scanner)
 }
 
 func mapScannerToOWASP(scannerName string) string {

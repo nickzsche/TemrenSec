@@ -45,6 +45,12 @@ func (r *RuleBasedAdvisor) Suggest(finding scanner.Finding) *Remediation {
 			}
 		}
 	}
+	// No scanner-specific rule — fall back to advice for the finding's OWASP
+	// category. This means even scanners without a bespoke rule still get
+	// category-appropriate guidance instead of a flat generic string.
+	if rem := categoryAdvice(finding); rem != nil {
+		return rem
+	}
 	// Generic fallback
 	return &Remediation{
 		Finding:       finding,
@@ -57,6 +63,49 @@ func (r *RuleBasedAdvisor) Suggest(finding scanner.Finding) *Remediation {
 		Effort:   "moderate",
 		Category: finding.OWASPCategory,
 	}
+}
+
+// categoryAdvice returns remediation keyed on the finding's OWASP category name
+// (matched on either the 2021 or 2025 label text), so any categorized finding
+// gets meaningful guidance without a per-scanner rule.
+func categoryAdvice(f scanner.Finding) *Remediation {
+	c := strings.ToLower(f.OWASPCategory2025 + " " + f.OWASPCategory)
+	mk := func(fix string, refs ...string) *Remediation {
+		return &Remediation{Finding: f, FixSuggestion: fix, References: refs, Priority: "high", Effort: "moderate", Category: f.OWASPCategory}
+	}
+	switch {
+	case strings.Contains(c, "misconfig"):
+		return mk("Sunucu/uygulama yapılandırmasını sıkılaştırın: gereksiz servis, dosya ve başlıkları kaldırın; güvenlik başlıklarını ekleyin; hata mesajlarında iç bilgi sızdırmayın; varsayılanları değiştirin.",
+			"https://owasp.org/Top10/A05_2021-Security_Misconfiguration/")
+	case strings.Contains(c, "crypto"), strings.Contains(c, "tls"), strings.Contains(c, "ssl"):
+		return mk("Güçlü, güncel kriptografi kullanın: TLS 1.2+ ve güçlü şifre takımları, HSTS; hassas veriyi bekleme ve aktarım hâlinde şifreleyin; parolaları bcrypt/argon2 ile hash'leyin; zayıf/eski algoritmaları (MD5, SHA1, RC4) bırakın.",
+			"https://owasp.org/Top10/A02_2021-Cryptographic_Failures/")
+	case strings.Contains(c, "inject"):
+		return mk("Kullanıcı verisini koddan/komuttan ayırın: parametreli sorgu, güvenli API'ler ve bağlama-özel çıktı kaçışlama kullanın; girdiyi allowlist ile doğrulayın.",
+			"https://owasp.org/Top10/A03_2021-Injection/")
+	case strings.Contains(c, "access"):
+		return mk("Erişim kontrolünü sunucu tarafında, varsayılan-reddet ilkesiyle uygulayın; her istekte sahiplik/yetki doğrulayın; nesne kimliklerini tahmin edilemez yapın veya yetkilendirin (IDOR).",
+			"https://owasp.org/Top10/A01_2021-Broken_Access_Control/")
+	case strings.Contains(c, "auth"):
+		return mk("Kimlik doğrulamayı güçlendirin: MFA, güçlü parola politikası, oturum sabitleme koruması, güvenli oturum yönetimi ve brute-force sınırlaması uygulayın.",
+			"https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/")
+	case strings.Contains(c, "supply"), strings.Contains(c, "component"):
+		return mk("Bağımlılıkları güncel tutun; SCA/SBOM ile bilinen açıkları izleyin; yalnız güvenilir kaynaklardan ve sabitlenmiş sürümlerle paket alın.",
+			"https://owasp.org/Top10/A06_2021-Vulnerable_and_Outdated_Components/")
+	case strings.Contains(c, "design"):
+		return mk("Tehdit modelleme ve güvenli tasarım desenleri uygulayın; iş mantığı sınırlarını, hız limitlerini ve kötüye kullanım senaryolarını tasarımda ele alın.",
+			"https://owasp.org/Top10/A04_2021-Insecure_Design/")
+	case strings.Contains(c, "integrity"):
+		return mk("Yazılım ve veri bütünlüğünü koruyun: imzalı güncelleme, alt kaynak bütünlüğü (SRI), güvenilir CI/CD ve seri hâle getirilmiş veriye güvenmeyin.",
+			"https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/")
+	case strings.Contains(c, "logging"), strings.Contains(c, "monitor"), strings.Contains(c, "alerting"):
+		return mk("Güvenlik olaylarını (giriş, erişim reddi, girdi doğrulama hataları) yeterli bağlamla loglayın; merkezi izleme ve alarm kurun; logları koruyun.",
+			"https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/")
+	case strings.Contains(c, "exception"), strings.Contains(c, "exceptional"):
+		return mk("Hataları güvenli varsayılana düşecek şekilde ele alın; kullanıcıya iç ayrıntı/iz göstermeyin; kaynakları güvenle serbest bırakın.",
+			"https://owasp.org/www-project-top-ten/")
+	}
+	return nil
 }
 
 func defaultRules() []RemediationRule {

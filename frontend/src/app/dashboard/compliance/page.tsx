@@ -1,4 +1,5 @@
 'use client'
+import { authHeader } from '@/lib/api'
 
 import { useEffect, useState } from 'react'
 
@@ -29,7 +30,7 @@ export default function CompliancePage() {
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_API_URL || '/api/v1'
     setLoading(true)
-    fetch(`${url}/compliance/summary`)
+    fetch(`${url}/compliance/summary`, { headers: authHeader() })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && Array.isArray(d) && setRows(d))
       .catch(() => {})

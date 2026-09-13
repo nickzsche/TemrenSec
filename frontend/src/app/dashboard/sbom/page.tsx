@@ -1,4 +1,5 @@
 'use client'
+import { authHeader } from '@/lib/api'
 
 import { useEffect, useState } from 'react'
 
@@ -18,7 +19,7 @@ export default function SBOMPage() {
 
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_API_URL || '/api/v1'
-    fetch(`${url}/sbom`).then(r => r.ok ? r.json() : null).then(d => d && setComponents(d)).catch(() => {})
+    fetch(`${url}/sbom`, { headers: authHeader() }).then(r => r.ok ? r.json() : null).then(d => d && setComponents(d)).catch(() => {})
   }, [])
 
   const filtered = components.filter(c =>

@@ -1,4 +1,5 @@
 'use client'
+import { authHeader } from '@/lib/api'
 
 import { useState } from 'react'
 
@@ -21,7 +22,7 @@ export default function AIChatPage() {
       const url = process.env.NEXT_PUBLIC_API_URL || '/api/v1'
       const resp = await fetch(`${url}/ai/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
         body: JSON.stringify({ prompt: user.text }),
       })
       const data = resp.ok ? await resp.json() : { reply: 'AI provider not configured. Set ANTHROPIC_API_KEY / OPENAI_API_KEY in the server env.' }

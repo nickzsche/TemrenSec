@@ -1,4 +1,5 @@
 'use client'
+import { authHeader } from '@/lib/api'
 
 import { useState } from 'react'
 
@@ -24,7 +25,7 @@ export default function ThreatIntelPage() {
       const ids = query.split(/[\s,]+/).filter(Boolean)
       const resp = await fetch(`${url}/intel/lookup`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
         body: JSON.stringify({ ids }),
       })
       if (resp.ok) setResults(await resp.json())

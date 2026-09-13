@@ -129,3 +129,11 @@ class ApiClient {
 }
 
 export const api = new ApiClient()
+
+// authHeader returns the bearer header for pages that call v2 endpoints with a
+// raw fetch (the v2 group is auth-gated in the backend). Empty when logged out.
+export function authHeader(): Record<string, string> {
+  if (typeof window === 'undefined') return {}
+  const t = localStorage.getItem('temren_token')
+  return t ? { Authorization: `Bearer ${t}` } : {}
+}

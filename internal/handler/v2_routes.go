@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/temren/internal/middleware"
 	"github.com/temren/pkg/ai"
 	"github.com/temren/pkg/compliance"
 	"github.com/temren/pkg/depscan"
@@ -39,6 +40,11 @@ var (
 // RegisterV2 mounts the new endpoints. Called from cmd/api/main.go after SetupRoutes.
 func RegisterV2(app *fiber.App) {
 	api := app.Group("/api/v1")
+	// These endpoints were intentionally open during frontend iteration. A
+	// security product must not ship unauthenticated routes (ai/chat can burn a
+	// paid LLM, export/intel leak data), so the whole v2 surface now requires a
+	// valid JWT — same gate as the v1 protected routes.
+	api.Use(middleware.AuthRequired())
 
 	// Compliance
 	api.Post("/compliance/summary", func(c *fiber.Ctx) error {

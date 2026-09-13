@@ -1,0 +1,20 @@
+id: exposed-ds-store
+info:
+  name: Exposed .DS_Store
+  author: temren
+  severity: low
+  description: macOS .DS_Store dosyası dizin yapısını sızdırıyor.
+  tags: exposure
+  owasp: "A05:2021"
+  remediation: .DS_Store dosyalarını yayından kaldırın ve .gitignore'a ekleyin.
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/.DS_Store"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["Bud1"]

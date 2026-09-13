@@ -1,0 +1,21 @@
+id: exposed-env-file
+info:
+  name: Exposed .env File
+  author: temren
+  severity: critical
+  description: Ortam değişkenleri dosyası (.env) erişilebilir; veritabanı ve API sırları sızabilir.
+  tags: exposure,secret
+  owasp: "A05:2021"
+  remediation: .env dosyasını web kökünün dışına taşıyın veya erişimi engelleyin.
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/.env"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: regex
+        part: body
+        regex:
+          - "(?i)(DB_PASSWORD|APP_KEY|SECRET|API_KEY|AWS_ACCESS_KEY)="

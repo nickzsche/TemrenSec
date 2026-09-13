@@ -1,0 +1,22 @@
+id: exposed-docker-compose
+info:
+  name: Exposed docker-compose / Dockerfile
+  author: temren
+  severity: medium
+  description: docker-compose.yml veya Dockerfile web kökünden erişilebilir; sırlar ve mimari sızabilir.
+  tags: exposure,docker
+  owasp: "A05:2021"
+  remediation: Bu dosyaları web kökünden kaldırın.
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/docker-compose.yml"
+      - "{{BaseURL}}/Dockerfile"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["services:", "FROM ", "image:", "RUN "]
+        condition: or

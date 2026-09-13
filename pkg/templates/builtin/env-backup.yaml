@@ -1,0 +1,23 @@
+id: exposed-backup-files
+info:
+  name: Exposed Backup / Archive File
+  author: temren
+  severity: high
+  description: Yaygın yedek/arşiv dosyaları (backup.zip, www.tar.gz, db.sql) erişilebilir.
+  tags: exposure,backup
+  owasp: "A05:2021"
+  remediation: Yedek ve arşiv dosyalarını web kökünden kaldırın.
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/backup.zip"
+      - "{{BaseURL}}/backup.sql"
+      - "{{BaseURL}}/db.sql"
+      - "{{BaseURL}}/www.tar.gz"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: header
+        words: ["application/zip", "application/x-gzip", "application/octet-stream", "application/sql"]
+        condition: or

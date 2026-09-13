@@ -1,0 +1,21 @@
+id: apache-server-status
+info:
+  name: Apache server-status Exposed
+  author: temren
+  severity: low
+  description: mod_status /server-status sayfası istek ve istemci bilgilerini ifşa ediyor.
+  tags: exposure,apache
+  owasp: "A05:2021"
+  remediation: /server-status erişimini yalnız localhost'a kısıtlayın.
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/server-status"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["Apache Server Status", "Server Version"]
+        condition: or

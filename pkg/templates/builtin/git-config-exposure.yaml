@@ -1,0 +1,23 @@
+id: exposed-git-config
+info:
+  name: Exposed .git/config
+  author: temren
+  severity: high
+  description: Sürüm kontrol dizini (.git/config) web kökünden erişilebilir; kaynak kod ve geçmiş sızabilir.
+  tags: exposure,git
+  owasp: "A05:2021"
+  reference:
+    - https://owasp.org/www-community/attacks/Repository_exposure
+  remediation: Web sunucusunda .git dizinine erişimi engelleyin (deny all).
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/.git/config"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["[core]", "repositoryformatversion"]
+        condition: or

@@ -1,0 +1,23 @@
+id: exposed-env-json
+info:
+  name: Exposed Config JSON (config.json / secrets.json)
+  author: temren
+  severity: high
+  description: Yapılandırma JSON dosyaları erişilebilir; anahtar ve bağlantı dizeleri sızabilir.
+  tags: exposure,config
+  owasp: "A05:2021"
+  remediation: Yapılandırma dosyalarını web kökünün dışına taşıyın.
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/config.json"
+      - "{{BaseURL}}/secrets.json"
+      - "{{BaseURL}}/appsettings.json"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: regex
+        part: body
+        regex:
+          - "(?i)(password|secret|apikey|connectionstring|token)\"\\s*:"

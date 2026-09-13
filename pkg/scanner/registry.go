@@ -124,6 +124,7 @@ func AllScanners() []Scanner {
 		NewSecretScanner(),
 		NewLLMScanner(),
 		NewSourceMapLeakScanner(),
+		NewTemplateScanner(),
 	}
 }
 

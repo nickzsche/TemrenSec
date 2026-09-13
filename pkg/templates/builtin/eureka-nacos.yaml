@@ -1,0 +1,16 @@
+id: eureka-nacos-exposed
+info:
+  name: Eureka / Nacos Registry Exposed
+  severity: medium
+  description: Servis kayıt merkezi (Eureka/Nacos) arayüzü/uçları açık; iç servis topolojisi sızabilir.
+  tags: exposure,microservice
+  owasp: "A05:2021"
+  remediation: Kayıt merkezi uçlarını kimlik doğrulama + ağ kısıtıyla koruyun.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/eureka/apps", "{{BaseURL}}/nacos/v1/ns/operator/metrics"]
+    matchers:
+      - type: word
+        part: all
+        words: ["<applications>", "\"serviceCount\"", "DS Replica"]
+        condition: or

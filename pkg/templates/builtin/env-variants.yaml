@@ -1,0 +1,18 @@
+id: exposed-env-variants
+info:
+  name: Exposed Environment File Variants
+  severity: critical
+  description: .env.local/.env.prod/.env.backup gibi ortam dosyası türevleri erişilebilir.
+  tags: exposure,secret
+  owasp: "A05:2021"
+  remediation: Tüm .env türevlerini web kökünden kaldırın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/.env.local", "{{BaseURL}}/.env.production", "{{BaseURL}}/.env.backup", "{{BaseURL}}/.env.dev"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: regex
+        part: body
+        regex: ["(?i)(DB_|APP_KEY|SECRET|API_KEY|PASSWORD)="]

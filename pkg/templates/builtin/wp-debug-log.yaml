@@ -1,0 +1,19 @@
+id: wordpress-debug-log
+info:
+  name: WordPress debug.log Exposed
+  severity: medium
+  description: wp-content/debug.log erişilebilir; yollar, sorgular ve hatalar sızabilir.
+  tags: exposure,wordpress
+  owasp: "A05:2021"
+  remediation: WP_DEBUG_LOG'u kapatın veya dosyayı erişimden kaldırın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/wp-content/debug.log"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["PHP Notice", "PHP Warning", "WordPress database error", "Stack trace"]
+        condition: or

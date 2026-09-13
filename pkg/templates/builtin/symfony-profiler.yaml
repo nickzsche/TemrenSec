@@ -1,0 +1,19 @@
+id: symfony-profiler
+info:
+  name: Symfony Profiler / Debug Exposed
+  severity: high
+  description: Symfony web profiler açık; istekler, sorgular ve yapılandırma görülebilir.
+  tags: exposure,symfony
+  owasp: "A05:2021"
+  remediation: Üretimde APP_ENV=prod, APP_DEBUG=0 ayarlayın; profiler'ı kapatın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/_profiler", "{{BaseURL}}/app_dev.php/_profiler"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["Symfony Profiler", "sf-toolbar", "WebProfilerBundle"]
+        condition: or

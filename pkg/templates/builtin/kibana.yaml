@@ -1,0 +1,16 @@
+id: kibana-exposed
+info:
+  name: Kibana Exposed
+  severity: medium
+  description: Kibana arayüzü kimlik doğrulamasız erişilebilir; Elasticsearch verisi görülebilir.
+  tags: exposure,panel
+  owasp: "A05:2021"
+  remediation: Kibana'ya erişimi kimlik doğrulama + ağ kısıtıyla koruyun.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/app/kibana", "{{BaseURL}}/api/status"]
+    matchers:
+      - type: word
+        part: all
+        words: ["kbn-name", "kibana", "\"status\":{\"overall\""]
+        condition: or

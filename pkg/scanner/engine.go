@@ -39,23 +39,45 @@ type BaselineResponse struct {
 //     internal apps, but never run unconstrained — a misconfigured
 //     scanner can DoS your own infrastructure.
 type ScanEngine struct {
-	client    *httpengine.Client
-	scanners  []Scanner
-	cache     map[string]*BaselineResponse
-	cacheMu   sync.RWMutex
-	noBatch   bool
-	concLimit int
+	client         *httpengine.Client
+	scanners       []Scanner
+	cache          map[string]*BaselineResponse
+	cacheMu        sync.RWMutex
+	noBatch        bool
+	concLimit      int
+	scannerTimeout time.Duration
 }
 
 // NewScanEngine creates a new scan engine with batching enabled
 func NewScanEngine(client *httpengine.Client, scanners []Scanner, concurrency int) *ScanEngine {
 	return &ScanEngine{
-		client:    client,
-		scanners:  scanners,
-		cache:     make(map[string]*BaselineResponse),
-		noBatch:   false,
-		concLimit: concurrency,
+		client:         client,
+		scanners:       scanners,
+		cache:          make(map[string]*BaselineResponse),
+		noBatch:        false,
+		concLimit:      concurrency,
+		scannerTimeout: 60 * time.Second, // per scanner, per target — bounds any single slow/hanging check
 	}
+}
+
+// SetScannerTimeout overrides the per-scanner deadline (0 = no bound).
+func (e *ScanEngine) SetScannerTimeout(d time.Duration) { e.scannerTimeout = d }
+
+// runScanner runs one scanner against one target with a deadline and panic
+// isolation, so a single slow or broken scanner can neither stall the whole
+// scan (it used to block until the 30-min scan timeout) nor crash the worker.
+func (e *ScanEngine) runScanner(ctx context.Context, s Scanner, target string) (out []Finding) {
+	if e.scannerTimeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, e.scannerTimeout)
+		defer cancel()
+	}
+	defer func() { _ = recover() }()
+	results, err := s.Scan(ctx, target, e.client)
+	if err != nil {
+		return nil
+	}
+	return results
 }
 
 // SetNoBatch disables request batching (for debugging)
@@ -137,8 +159,8 @@ func (e *ScanEngine) RunAll(ctx context.Context, targets []string) ([]Finding, e
 				defer wg.Done()
 				defer func() { <-semaphore }()
 
-				results, err := s.Scan(ctx, t, e.client)
-				if err != nil {
+				results := e.runScanner(ctx, s, t)
+				if len(results) == 0 {
 					return
 				}
 
@@ -219,8 +241,8 @@ func (e *ScanEngine) runWithoutBatching(ctx context.Context, targets []string) (
 				defer wg.Done()
 				defer func() { <-semaphore }()
 
-				results, err := s.Scan(ctx, t, e.client)
-				if err != nil {
+				results := e.runScanner(ctx, s, t)
+				if len(results) == 0 {
 					return
 				}
 

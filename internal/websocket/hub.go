@@ -126,6 +126,20 @@ func (h *Hub) InjectRemote(msg *Message) {
 	if msg == nil {
 		return
 	}
+	// A scan_update coming from a peer (e.g. the worker process) must also land
+	// in this hub's progress map, so the REST /scans/:id/progress endpoint —
+	// not just the live WS stream — reflects cross-process scans. Payload has
+	// been through JSON, so round-trip it back into a ScanProgress.
+	if msg.Type == "scan_update" && msg.Payload != nil {
+		if raw, err := json.Marshal(msg.Payload); err == nil {
+			var sp ScanProgress
+			if json.Unmarshal(raw, &sp) == nil && sp.ScanID != "" {
+				h.mu.Lock()
+				h.scanProgress[sp.ScanID] = &sp
+				h.mu.Unlock()
+			}
+		}
+	}
 	h.broadcastToTopic(msg)
 }
 

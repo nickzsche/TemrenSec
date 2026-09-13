@@ -284,52 +284,60 @@ func runPassiveAnalysis(ctx context.Context, target string, resp *httpengine.Res
 // their own 2021 tag (and ScanEngine fills the 2025 equivalent), so we trust the
 // finding first and only fall back to the name map for the rare scanner that
 // emits neither.
+// owaspCategory returns a single, consistent 2025 OWASP tag for every finding.
+// Active-scanner findings already carry OWASPCategory2025 (filled by the engine);
+// passive analyzers and category-less scanners don't, so we normalize their 2021
+// tag — or a keyword guess — through the same 2021→2025 map. No more mixed
+// "A05:2021" vs "A02:2025" labels in one report.
 func owaspCategory(f scanner.Finding) string {
 	if f.OWASPCategory2025 != "" {
 		return f.OWASPCategory2025
 	}
 	if f.OWASPCategory != "" {
-		return f.OWASPCategory
+		return scanner.MapOWASP2021To2025(f.OWASPCategory)
 	}
-	return mapScannerToOWASP(f.Scanner)
+	return scanner.MapOWASP2021To2025(guessOWASP(f))
 }
 
-func mapScannerToOWASP(scannerName string) string {
-	mapping := map[string]string{
-		"SQL Injection":         "A06:2021",
-		"XSS":                   "A06:2021",
-		"Command Injection":     "A06:2021",
-		"SSRF":                  "A06:2021",
-		"IDOR":                  "A01:2021",
-		"Path Traversal":        "A01:2021",
-		"XXE":                   "A05:2021",
-		"Auth Failure":          "A07:2021",
-		"Vulnerable Components": "A06:2021",
-		"Logging & Monitoring":  "A09:2021",
-		"Insecure Design":       "A04:2021",
-		"Error Handling":        "A05:2021",
-		"Supply Chain":          "A08:2021",
-		"Security Headers":      "A05:2021",
-		"SSL/TLS":               "A02:2021",
-		"Sensitive Data":        "A02:2021",
-		"CORS":                  "A05:2021",
-		"Backup File":           "A05:2021",
-		"Directory Brute Force": "A01:2021",
-		"JWT":                   "A07:2021",
-		"GraphQL":               "A06:2021",
-		"Open Redirect":         "A01:2021",
-		"Prototype Pollution":   "A06:2021",
-		"Cloud Leak":            "A05:2021",
+func containsAny(s string, subs ...string) bool {
+	for _, sub := range subs {
+		if strings.Contains(s, sub) {
+			return true
+		}
 	}
-	if cat, ok := mapping[scannerName]; ok {
-		return cat
+	return false
+}
+
+// guessOWASP infers a 2021 tag from the scanner name / finding title when the
+// scanner emits none. Returns A00 only for genuinely informational findings
+// (e.g. technology fingerprinting), which is honest — not every recon signal
+// maps to a Top 10 category.
+func guessOWASP(f scanner.Finding) string {
+	s := strings.ToLower(f.Scanner + " " + f.Title)
+	switch {
+	case containsAny(s, "sql", "inject", "xss", "ssti", "template", "command", "xpath", "ldap", "nosql", "ssrf", "deserial"):
+		return "A03:2021"
+	case containsAny(s, "credential", "auth", "login", "jwt", "session", "password", "2fa", "mfa", "oauth", "saml"):
+		return "A07:2021"
+	case containsAny(s, "tls", "ssl", "https", "certificate", "cipher", "crypto", "hsts"):
+		return "A02:2021"
+	case containsAny(s, "idor", "access", "redirect", "traversal", "cors", "admin path", "privilege"):
+		return "A01:2021"
+	case containsAny(s, "header", "misconfig", "honeypot", "well-known", "clickjack", "banner", "powered", "exposed", "webdav", "swagger", "storybook"):
+		return "A05:2021"
+	case containsAny(s, "component", "supply", "dependency", "outdated", "vulnerable"):
+		return "A06:2021"
+	case containsAny(s, "log", "monitor", "alert"):
+		return "A09:2021"
+	case containsAny(s, "error", "exception", "stack trace"):
+		return "A10:2021"
 	}
-	return "A00:2021"
+	return "A00:2021" // truly informational (technology detection, recon)
 }
 
 // ruleAdvisor gives per-scanner remediation (fix + code example + references)
-// offline. Far richer than the old four-keyword heuristic, and it matches on the
-// scanner that produced the finding rather than guessing from the title.
+// offline — far richer than a keyword guess, matched on the scanner that
+// produced the finding.
 var ruleAdvisor = remediation.NewRuleBasedAdvisor()
 
 func fixText(f scanner.Finding) string {

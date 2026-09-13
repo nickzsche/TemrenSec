@@ -188,3 +188,15 @@ type Workspace struct {
 	CreatedAt   time.Time `json:"created_at"`
 	CreatedBy   string    `json:"created_by,omitempty"`
 }
+
+// TriageSuppression persists a rule that hides matching findings across scans
+// (triage_suppressions table, migration 003). Empty workspace = global.
+type TriageSuppression struct {
+	ID          string    `json:"id"`
+	WorkspaceID string    `json:"workspace_id,omitempty"`
+	Scanner     string    `json:"scanner"`
+	URLGlob     string    `json:"url_glob"`
+	Param       string    `json:"param"`
+	Reason      string    `json:"reason"`
+	CreatedAt   time.Time `json:"created_at"`
+}

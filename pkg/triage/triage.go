@@ -180,3 +180,22 @@ func appendUnique(haystack, line string) string {
 	}
 	return haystack + "\n" + line
 }
+
+// Suppress drops findings matching any rule and returns the kept findings plus
+// the number removed. Unlike Run it does only suppression (no dedup/overrides),
+// so callers that already deduped (e.g. the scan engine) don't collapse twice.
+func Suppress(findings []scanner.Finding, rules []Suppression) ([]scanner.Finding, int) {
+	if len(rules) == 0 {
+		return findings, 0
+	}
+	kept := make([]scanner.Finding, 0, len(findings))
+	removed := 0
+	for _, f := range findings {
+		if matchesAnySuppression(f, rules) {
+			removed++
+			continue
+		}
+		kept = append(kept, f)
+	}
+	return kept, removed
+}

@@ -1,9 +1,8 @@
 package handler
 
 // v2_routes wires the new packages added under pkg/* into the API surface that
-// the new dashboard pages call. Everything here is read-mostly and stateless,
-// so we deliberately keep it on the unauthenticated /api/v1 prefix to ease
-// frontend iteration. Lock down with middleware.AuthRequired() when going to prod.
+// the new dashboard pages call. The whole group is auth-gated (JWT) and some
+// endpoints (workspaces, triage suppressions) are now Postgres-backed.
 
 import (
 	"context"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/temren/internal/database"
 	"github.com/temren/internal/middleware"
+	"github.com/temren/internal/model"
 	"github.com/temren/pkg/ai"
 	"github.com/temren/pkg/compliance"
 	"github.com/temren/pkg/depscan"
@@ -203,6 +203,29 @@ func RegisterV2(app *fiber.App) {
 			return c.Status(400).JSON(fiber.Map{"error": err.Error()})
 		}
 		return c.JSON(triage.Run(body.Findings, body.Config))
+	})
+
+	// Persisted triage suppressions — applied to every future scan by the worker.
+	triageRepo := database.NewTriageRepo()
+	api.Get("/triage/suppressions", func(c *fiber.Ctx) error {
+		list, err := triageRepo.List(c.Context())
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		}
+		return c.JSON(list)
+	})
+	api.Post("/triage/suppress", func(c *fiber.Ctx) error {
+		var s model.TriageSuppression
+		if err := c.BodyParser(&s); err != nil {
+			return c.Status(400).JSON(fiber.Map{"error": err.Error()})
+		}
+		if s.Scanner == "" && s.URLGlob == "" && s.Param == "" {
+			return c.Status(400).JSON(fiber.Map{"error": "scanner, url_glob veya param'dan en az biri gerekli"})
+		}
+		if err := triageRepo.Create(c.Context(), &s); err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		}
+		return c.Status(201).JSON(s)
 	})
 
 	// Risk scoring

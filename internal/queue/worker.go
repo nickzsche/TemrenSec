@@ -22,6 +22,7 @@ import (
 	"github.com/temren/pkg/remediation"
 	"github.com/temren/pkg/scanner"
 	"github.com/temren/pkg/spider"
+	"github.com/temren/pkg/triage"
 	"github.com/hibiken/asynq"
 )
 
@@ -201,6 +202,20 @@ func (w *Worker) handleScan(ctx context.Context, t *asynq.Task) error {
 			}
 		}
 		pluginEngine.Close()
+	}
+
+	// Apply persisted global triage suppressions so findings a user has triaged
+	// away (false positive / accepted risk) stay gone on every subsequent scan.
+	if sups, serr := database.NewTriageRepo().ListGlobal(ctx); serr == nil && len(sups) > 0 {
+		rules := make([]triage.Suppression, 0, len(sups))
+		for _, s := range sups {
+			rules = append(rules, triage.Suppression{Scanner: s.Scanner, URL: s.URLGlob, Param: s.Param})
+		}
+		kept, removed := triage.Suppress(allFindings, rules)
+		if removed > 0 {
+			log.Printf("[worker] scan %s: %d bulgu triage kuralıyla bastırıldı", payload.ScanID, removed)
+			allFindings = kept
+		}
 	}
 
 	scanResult := &model.Scan{

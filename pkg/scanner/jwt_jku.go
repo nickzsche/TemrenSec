@@ -83,15 +83,15 @@ func (s *JWTJKUInjectionScanner) Scan(ctx context.Context, target string, client
 	for _, m := range jkuFetchMarkers {
 		if strings.Contains(lowerBody, m) {
 			out := []Finding{{
-				URL:         target,
-				Title:       "JWT JKU header parsed by server — investigate",
-				Description: "Server response references JWKS/JKU after we sent a token with a remote JKU pointing at " + s.CanaryBase + ". This suggests the server inspects the JKU header. Confirm out-of-band whether it actually fetches arbitrary attacker URLs.",
-				Severity:    SeverityMedium,
-				Confidence:  ConfidenceLow,
-				Scanner:     s.Name(),
-				Payload:     token,
-				Evidence:    "response body contains JKU/JWKS marker: " + m,
-				Timestamp:   time.Now(),
+				URL:           target,
+				Title:         "JWT JKU header parsed by server — investigate",
+				Description:   "Server response references JWKS/JKU after we sent a token with a remote JKU pointing at " + s.CanaryBase + ". This suggests the server inspects the JKU header. Confirm out-of-band whether it actually fetches arbitrary attacker URLs.",
+				Severity:      SeverityMedium,
+				Confidence:    ConfidenceLow,
+				Scanner:       s.Name(),
+				Payload:       token,
+				Evidence:      "response body contains JKU/JWKS marker: " + m,
+				Timestamp:     time.Now(),
 				OWASPCategory: "A02:2021-Cryptographic Failures",
 				CVSSScore:     5.3,
 			}}

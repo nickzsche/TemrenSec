@@ -213,7 +213,7 @@ func TestSAMLMiddlewareRequireAuth(t *testing.T) {
 	middleware := NewSAMLMiddleware(sp, MiddlewareConfig{
 		SessionKey:   "test_session",
 		RedirectPath: "/login",
-		SkipPaths:   []string{"/health", "/public"},
+		SkipPaths:    []string{"/health", "/public"},
 	})
 
 	app := fiber.New()
@@ -282,7 +282,7 @@ func TestSAMLMiddlewareRequireAuthWithValidToken(t *testing.T) {
 	})
 
 	claims := jwt.MapClaims{
-		"sub":   "user@example.com",
+		"sub":    "user@example.com",
 		"email":  "user@example.com",
 		"groups": []string{"admin"},
 		"iat":    time.Now().Unix(),

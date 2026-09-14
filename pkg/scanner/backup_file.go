@@ -98,4 +98,3 @@ func (s *BackupFileScanner) Scan(ctx context.Context, target string, client *htt
 
 	return findings, nil
 }
-

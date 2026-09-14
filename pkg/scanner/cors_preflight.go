@@ -38,7 +38,7 @@ func (s *CORSPreflightScanner) Scan(ctx context.Context, target string, client *
 			findings = append(findings, Finding{
 				URL: target, Title: "CORS Wildcard with Credentials",
 				Description: "Access-Control-Allow-Origin is * and Allow-Credentials is true — browsers will refuse, but server intent is dangerous and may have variant code paths.",
-				Severity: SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Severity:    SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
 				Timestamp: time.Now(), OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 7.5,
 			})
 		}
@@ -46,7 +46,7 @@ func (s *CORSPreflightScanner) Scan(ctx context.Context, target string, client *
 			findings = append(findings, Finding{
 				URL: target, Title: "CORS Reflects Arbitrary Origin with Credentials",
 				Description: "Server echoes any Origin and sets Allow-Credentials: true. An attacker-controlled site can read authenticated responses.",
-				Severity: SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Severity:    SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
 				Payload: "Origin: " + origin, Timestamp: time.Now(),
 				OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 8.6,
 			})
@@ -55,7 +55,7 @@ func (s *CORSPreflightScanner) Scan(ctx context.Context, target string, client *
 			findings = append(findings, Finding{
 				URL: target, Title: "CORS Allows null Origin",
 				Description: "Access-Control-Allow-Origin: null trusts sandboxed iframes and local files — exploitable from data: URIs and sandboxed contexts.",
-				Severity: SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Severity:    SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
 				Timestamp: time.Now(), OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 6.5,
 			})
 		}

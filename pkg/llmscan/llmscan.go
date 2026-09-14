@@ -136,15 +136,15 @@ func (s *Scanner) runOne(ctx context.Context, p Probe) (*scanner.Finding, error)
 		if strings.Contains(low, strings.ToLower(marker)) {
 			return &scanner.Finding{
 				URL: s.Endpoint, Title: p.Title,
-				Description: fmt.Sprintf("LLM endpoint replied with marker %q for probe %q. Review prompt template, system-message protection, and output sanitization.", marker, p.Title),
-				Severity:    p.Severity,
-				Confidence:  scanner.ConfidenceMedium,
-				Scanner:     "llmscan",
-				Payload:     p.Prompt,
-				Evidence:    truncate(reply, 200),
-				Timestamp:   time.Now(),
+				Description:   fmt.Sprintf("LLM endpoint replied with marker %q for probe %q. Review prompt template, system-message protection, and output sanitization.", marker, p.Title),
+				Severity:      p.Severity,
+				Confidence:    scanner.ConfidenceMedium,
+				Scanner:       "llmscan",
+				Payload:       p.Prompt,
+				Evidence:      truncate(reply, 200),
+				Timestamp:     time.Now(),
 				OWASPCategory: p.OWASP,
-				CVSSScore:   p.CVSS,
+				CVSSScore:     p.CVSS,
 			}, nil
 		}
 	}

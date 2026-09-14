@@ -110,4 +110,3 @@ func looksLikeSupplyChainFile(pattern, body string) bool {
 	}
 	return true
 }
-

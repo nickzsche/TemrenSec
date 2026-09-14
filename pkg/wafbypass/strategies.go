@@ -64,7 +64,7 @@ func ApplyCaseTampering(targetURL string) (string, error) {
 			result.WriteString(strings.ToLower(string(c)))
 		}
 	}
-	
+
 	u.Path = result.String()
 	return u.String(), nil
 }
@@ -81,7 +81,7 @@ func ApplyCommentInjection(targetURL string) (string, error) {
 		newPath := path[:mid] + "/**/" + path[mid:]
 		u.Path = newPath
 	}
-	
+
 	return u.String(), nil
 }
 
@@ -95,7 +95,7 @@ func ApplyPathTraversal(targetURL string) (string, error) {
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
-	
+
 	u.Path = "/../.." + path
 	return u.String(), nil
 }
@@ -121,7 +121,7 @@ func ApplyNullByteInjection(targetURL string) (string, error) {
 	if strings.Contains(targetURL, "?") {
 		return targetURL + "%00", nil
 	}
-	
+
 	u.Path = u.Path + "%00"
 	return u.String(), nil
 }
@@ -150,7 +150,7 @@ func MutateURL(targetURL string, mutation URLMutation) (string, error) {
 func GenerateAllMutations(targetURL string) ([]string, error) {
 	mutations := GetAllURLMutations()
 	results := make([]string, 0, len(mutations))
-	
+
 	for _, m := range mutations {
 		mutated, err := MutateURL(targetURL, m)
 		if err != nil {
@@ -158,7 +158,7 @@ func GenerateAllMutations(targetURL string) ([]string, error) {
 		}
 		results = append(results, mutated)
 	}
-	
+
 	return results, nil
 }
 

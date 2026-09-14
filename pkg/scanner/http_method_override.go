@@ -34,8 +34,8 @@ func (s *HTTPMethodOverrideScanner) Scan(ctx context.Context, target string, cli
 		return []Finding{{
 			URL: target, Title: "X-HTTP-Method-Override Honored",
 			Description: "Server allows POST + X-HTTP-Method-Override to invoke PUT, bypassing method-level access control. Authorization decisions made on HTTP verb are circumventable.",
-			Severity: SeverityHigh, Confidence: ConfidenceMedium, Scanner: s.Name(),
-			Evidence: "control=" + http.StatusText(control) + " override=" + http.StatusText(override),
+			Severity:    SeverityHigh, Confidence: ConfidenceMedium, Scanner: s.Name(),
+			Evidence:  "control=" + http.StatusText(control) + " override=" + http.StatusText(override),
 			Timestamp: time.Now(), OWASPCategory: "A01:2021-Broken Access Control", CVSSScore: 7.5,
 		}}, nil
 	}

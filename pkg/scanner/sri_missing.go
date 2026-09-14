@@ -47,7 +47,7 @@ func (s *SubresourceIntegrityScanner) Scan(ctx context.Context, target string, c
 		findings = append(findings, Finding{
 			URL: target, Title: "External resource without SRI: " + ref,
 			Description: "Cross-origin asset loaded without an integrity= hash. A breach of the CDN can silently substitute hostile code.",
-			Severity: SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
+			Severity:    SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
 			Evidence: tag, Timestamp: time.Now(),
 			OWASPCategory: "A08:2021-Software and Data Integrity Failures", CVSSScore: 6.5,
 		})

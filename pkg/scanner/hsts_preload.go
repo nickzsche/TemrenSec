@@ -29,7 +29,7 @@ func (s *HSTSPreloadScanner) Scan(ctx context.Context, target string, client *ht
 		return []Finding{{
 			URL: target, Title: "HSTS Header Missing",
 			Description: "Site does not send Strict-Transport-Security. SSL-strip attacks remain possible until first visit.",
-			Severity: SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
+			Severity:    SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
 			Timestamp: time.Now(), OWASPCategory: "A02:2021-Cryptographic Failures", CVSSScore: 5.3,
 		}}, nil
 	}
@@ -66,7 +66,7 @@ func (s *HSTSPreloadScanner) Scan(ctx context.Context, target string, client *ht
 	return []Finding{{
 		URL: target, Title: "HSTS Not Preload-Eligible",
 		Description: "Header present but fails the hstspreload.org criteria. Missing: " + strings.Join(missing, ", "),
-		Severity: SeverityLow, Confidence: ConfidenceHigh, Scanner: s.Name(),
+		Severity:    SeverityLow, Confidence: ConfidenceHigh, Scanner: s.Name(),
 		Evidence: h, Timestamp: time.Now(),
 		OWASPCategory: "A02:2021-Cryptographic Failures", CVSSScore: 3.7,
 	}}, nil

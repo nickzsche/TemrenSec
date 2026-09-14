@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/temren/internal/config"
 	"github.com/hibiken/asynq"
+	"github.com/temren/internal/config"
 )
 
 // scanUniqueTTL is the deduplication window for scan tasks. Within this

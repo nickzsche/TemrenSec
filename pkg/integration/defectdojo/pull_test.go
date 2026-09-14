@@ -72,10 +72,10 @@ func TestPullFindings_HTTPError(t *testing.T) {
 
 func TestExtractTemrenID(t *testing.T) {
 	cases := map[string]string{
-		"":                                 "",
-		"temren-id:abc-123":                 "abc-123",
-		"prefix-stripped":                  "",
-		"temren-id:":                        "",
+		"":                  "",
+		"temren-id:abc-123": "abc-123",
+		"prefix-stripped":   "",
+		"temren-id:":        "",
 	}
 	for in, want := range cases {
 		tags := []string{"env:prod", in, "auto-import"}

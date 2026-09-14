@@ -39,7 +39,7 @@ func (s *GraphQLFieldSuggestionScanner) Scan(ctx context.Context, target string,
 		return []Finding{{
 			URL: target, Title: "GraphQL Server Leaks Schema via Suggestions",
 			Description: "Server returned \"Did you mean ...\" hints for unknown fields. Even with introspection disabled, attackers can extract the schema by enumeration.",
-			Severity: SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
+			Severity:    SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
 			Evidence: "suggestion in error", Timestamp: time.Now(),
 			OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 5.3,
 		}}, nil

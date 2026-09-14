@@ -29,11 +29,11 @@ var userAgents = []string{
 }
 
 const (
-	maxBackoff      = 60 * time.Second
-	initialBackoff  = 1 * time.Second
+	maxBackoff       = 60 * time.Second
+	initialBackoff   = 1 * time.Second
 	defaultJitterMin = 100 * time.Millisecond
 	defaultJitterMax = 500 * time.Millisecond
-	maxRetries      = 5
+	maxRetries       = 5
 )
 
 type Client struct {
@@ -68,9 +68,9 @@ type Client struct {
 }
 
 type Config struct {
-	Timeout         time.Duration
-	MaxRedirects    int
-	RateLimit       int
+	Timeout      time.Duration
+	MaxRedirects int
+	RateLimit    int
 	// PerHostRate caps requests/sec to any single host. Defaults to
 	// RateLimit if zero — i.e. one host can burn the whole budget,
 	// which matches the pre-multi-host behaviour. Lower this (e.g. 5)
@@ -81,13 +81,13 @@ type Config struct {
 	EnableBypass    bool
 	WAFType         wafbypass.WAFType
 
-	ProxyList   string
-	ProxyType   string
-	TorEnabled  bool
-	TorConfig   *TorConfig
-	JitterMin   time.Duration
-	JitterMax   time.Duration
-	RotateUA    bool
+	ProxyList  string
+	ProxyType  string
+	TorEnabled bool
+	TorConfig  *TorConfig
+	JitterMin  time.Duration
+	JitterMax  time.Duration
+	RotateUA   bool
 }
 
 func DefaultConfig() *Config {

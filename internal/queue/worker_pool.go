@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hibiken/asynq"
 	"github.com/temren/internal/config"
 	"github.com/temren/internal/metrics"
-	"github.com/hibiken/asynq"
 )
 
 type TaskStats struct {
@@ -63,13 +63,13 @@ func (s *TaskStats) GetStats() (total, processed, failed, retry, dead int64) {
 }
 
 type WorkerPool struct {
-	server      *asynq.Server
-	mux         *asynq.ServeMux
-	stats       *TaskStats
-	inspector   *asynq.Inspector
-	deadLetter  chan *asynq.TaskInfo
-	stopCh      chan struct{}
-	wg          sync.WaitGroup
+	server     *asynq.Server
+	mux        *asynq.ServeMux
+	stats      *TaskStats
+	inspector  *asynq.Inspector
+	deadLetter chan *asynq.TaskInfo
+	stopCh     chan struct{}
+	wg         sync.WaitGroup
 }
 
 func NewWorkerPool() *WorkerPool {
@@ -82,15 +82,15 @@ func NewWorkerPool() *WorkerPool {
 
 func (wp *WorkerPool) Start(handlers map[string]asynq.Handler) error {
 	redisOpt := asynq.RedisClientOpt{Addr: redisAddr()}
-	
+
 	wp.inspector = asynq.NewInspector(redisOpt)
-	
+
 	cfg := asynq.Config{
 		Concurrency: config.AppConfig.WorkerConcurrency,
 		Queues: map[string]int{
-			"critical":  10,
-			"scans":     5,
-			"default":   1,
+			"critical": 10,
+			"scans":    5,
+			"default":  1,
 		},
 		RetryDelayFunc: func(n int, err error, t *asynq.Task) time.Duration {
 			delay := time.Duration(n) * time.Minute
@@ -104,32 +104,32 @@ func (wp *WorkerPool) Start(handlers map[string]asynq.Handler) error {
 			wp.stats.IncrementRetry()
 		}),
 	}
-	
+
 	wp.server = asynq.NewServer(redisOpt, cfg)
 	wp.mux = asynq.NewServeMux()
-	
+
 	for pattern, handler := range handlers {
 		wp.mux.Handle(pattern, asynq.HandlerFunc(func(ctx context.Context, task *asynq.Task) error {
 			wp.stats.IncrementTotal()
-			
+
 			metrics.QueueSize.Dec()
 			metrics.ActiveWorkers.Inc()
 			defer metrics.ActiveWorkers.Dec()
-			
+
 			err := handler.ProcessTask(ctx, task)
 			if err != nil {
 				wp.stats.IncrementFailed()
 				return err
 			}
-			
+
 			wp.stats.IncrementProcessed()
 			return nil
 		}))
 	}
-	
+
 	wp.wg.Add(1)
 	go wp.deadLetterProcessor()
-	
+
 	log.Printf("[worker] starting with concurrency=%d", cfg.Concurrency)
 	return wp.server.Run(wp.mux)
 }
@@ -145,10 +145,10 @@ func (wp *WorkerPool) Stop() {
 
 func (wp *WorkerPool) deadLetterProcessor() {
 	defer wp.wg.Done()
-	
+
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-wp.stopCh:
@@ -161,13 +161,13 @@ func (wp *WorkerPool) deadLetterProcessor() {
 
 func (wp *WorkerPool) processDeadLetter() {
 	queues := []string{"critical", "scans", "default"}
-	
+
 	for _, queue := range queues {
 		tasks, err := wp.inspector.ListArchivedTasks(queue)
 		if err != nil {
 			continue
 		}
-		
+
 		for _, task := range tasks {
 			select {
 			case wp.deadLetter <- task:
@@ -182,10 +182,10 @@ func (wp *WorkerPool) processDeadLetter() {
 
 func (wp *WorkerPool) GetStats() map[string]interface{} {
 	total, processed, failed, retry, dead := wp.stats.GetStats()
-	
+
 	queues := []string{"critical", "scans", "default"}
 	queueStats := make(map[string]interface{})
-	
+
 	for _, queue := range queues {
 		info, err := wp.inspector.GetQueueInfo(queue)
 		if err != nil {
@@ -199,15 +199,15 @@ func (wp *WorkerPool) GetStats() map[string]interface{} {
 			"archived": info.Archived,
 		}
 	}
-	
+
 	return map[string]interface{}{
-		"total_tasks":     total,
-		"processed":       processed,
-		"failed":          failed,
-		"retry":           retry,
-		"dead":            dead,
-		"queues":          queueStats,
-		"concurrency":     config.AppConfig.WorkerConcurrency,
+		"total_tasks": total,
+		"processed":   processed,
+		"failed":      failed,
+		"retry":       retry,
+		"dead":        dead,
+		"queues":      queueStats,
+		"concurrency": config.AppConfig.WorkerConcurrency,
 	}
 }
 
@@ -233,7 +233,7 @@ func (wp *WorkerPool) ListPendingTasks(queue string, page, size int) ([]*TaskInf
 	if err != nil {
 		return nil, err
 	}
-	
+
 	result := make([]*TaskInfo, len(tasks))
 	for i, t := range tasks {
 		result[i] = &TaskInfo{
@@ -249,7 +249,7 @@ func (wp *WorkerPool) ListPendingTasks(queue string, page, size int) ([]*TaskInf
 			NextProcess: t.NextProcessAt,
 		}
 	}
-	
+
 	return result, nil
 }
 
@@ -258,16 +258,16 @@ func EnqueueWithPriority(ctx context.Context, client *asynq.Client, taskType str
 	if err != nil {
 		return err
 	}
-	
+
 	task := asynq.NewTask(taskType, data)
-	
+
 	queue := "default"
 	if priority >= 8 {
 		queue = "critical"
 	} else if priority >= 5 {
 		queue = "scans"
 	}
-	
+
 	info, err := client.EnqueueContext(ctx, task,
 		asynq.Queue(queue),
 		asynq.MaxRetry(3),
@@ -276,7 +276,7 @@ func EnqueueWithPriority(ctx context.Context, client *asynq.Client, taskType str
 	if err != nil {
 		return fmt.Errorf("enqueue failed: %w", err)
 	}
-	
+
 	metrics.QueueSize.Inc()
 	log.Printf("[queue] enqueued task %s to queue %s", info.ID, queue)
 	return nil

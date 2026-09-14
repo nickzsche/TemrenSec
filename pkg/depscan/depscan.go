@@ -43,11 +43,11 @@ type Vulnerability struct {
 }
 
 type Scanner struct {
-	Root     string
-	OSVBase  string
-	HTTP     *http.Client
+	Root    string
+	OSVBase string
+	HTTP    *http.Client
 	// Offline disables OSV.dev calls — useful in tests/CI gating.
-	Offline  bool
+	Offline bool
 }
 
 func New(root string) *Scanner {
@@ -201,7 +201,7 @@ func severityFromOSV(s []struct {
 
 type packageLockV1 struct {
 	Dependencies map[string]struct {
-		Version      string                            `json:"version"`
+		Version      string                              `json:"version"`
 		Dependencies map[string]struct{ Version string } `json:"dependencies"`
 	} `json:"dependencies"`
 	Packages map[string]struct {

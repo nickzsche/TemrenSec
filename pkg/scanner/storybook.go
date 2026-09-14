@@ -47,7 +47,7 @@ func (s *StorybookExposureScanner) Scan(ctx context.Context, target string, clie
 			findings = append(findings, Finding{
 				URL: target + d.path, Title: d.title,
 				Description: "Development tooling reachable in production. Components may leak internal API names, fixtures, or credentials.",
-				Severity: d.sev, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Severity:    d.sev, Confidence: ConfidenceHigh, Scanner: s.Name(),
 				Timestamp: time.Now(), OWASPCategory: "A05:2021-Security Misconfiguration",
 			})
 		}

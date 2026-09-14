@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/temren/pkg/httpengine"
 	"github.com/temren/pkg/scanner"
-	"github.com/google/uuid"
 )
 
 type Component struct {
@@ -40,9 +40,9 @@ type Author struct {
 }
 
 type Metadata struct {
-	Timestamp string   `json:"timestamp"`
-	Tools     []Tool   `json:"tools"`
-	Authors   []Author `json:"authors"`
+	Timestamp string    `json:"timestamp"`
+	Tools     []Tool    `json:"tools"`
+	Authors   []Author  `json:"authors"`
 	Component Component `json:"component"`
 }
 
@@ -57,8 +57,8 @@ type SBOM struct {
 
 type VulnerabilityMatch struct {
 	Component   Component         `json:"component"`
-	Findings     []scanner.Finding `json:"findings"`
-	Severity     scanner.Severity  `json:"severity"`
+	Findings    []scanner.Finding `json:"findings"`
+	Severity    scanner.Severity  `json:"severity"`
 	Description string            `json:"description"`
 }
 
@@ -418,8 +418,8 @@ func CorrelateWithFindings(sbom *SBOM, findings []scanner.Finding) []Vulnerabili
 				} else {
 					matches = append(matches, VulnerabilityMatch{
 						Component:   c,
-						Findings:     []scanner.Finding{f},
-						Severity:     f.Severity,
+						Findings:    []scanner.Finding{f},
+						Severity:    f.Severity,
 						Description: fmt.Sprintf("Vulnerability in %s: %s", c.Name, f.Title),
 					})
 				}
@@ -495,14 +495,14 @@ func extractLibFromURL(src string) (name, version string) {
 	}
 
 	knownLibs := map[string][2]string{
-		"jquery":        {"jquery", ""},
-		"react":         {"react", ""},
-		"vue":           {"vue", ""},
-		"angular":       {"angular", ""},
-		"bootstrap":     {"bootstrap", ""},
-		"tailwind":      {"tailwindcss", ""},
-		"font-awesome":  {"font-awesome", ""},
-		"fontawesome":   {"font-awesome", ""},
+		"jquery":       {"jquery", ""},
+		"react":        {"react", ""},
+		"vue":          {"vue", ""},
+		"angular":      {"angular", ""},
+		"bootstrap":    {"bootstrap", ""},
+		"tailwind":     {"tailwindcss", ""},
+		"font-awesome": {"font-awesome", ""},
+		"fontawesome":  {"font-awesome", ""},
 	}
 	for key, val := range knownLibs {
 		if strings.Contains(strings.ToLower(src), key) {
@@ -514,10 +514,10 @@ func extractLibFromURL(src string) (name, version string) {
 
 func extractCSSLibFromURL(href string) (name, version string) {
 	knownCSS := map[string][2]string{
-		"bootstrap": {"bootstrap", ""},
-		"tailwind": {"tailwindcss", ""},
+		"bootstrap":  {"bootstrap", ""},
+		"tailwind":   {"tailwindcss", ""},
 		"foundation": {"foundation-sites", ""},
-		"bulma":     {"bulma", ""},
+		"bulma":      {"bulma", ""},
 	}
 	for key, val := range knownCSS {
 		if strings.Contains(strings.ToLower(href), key) {
@@ -540,12 +540,12 @@ func parseJSON(s string, v interface{}) error {
 }
 
 type cycloneDXBOM struct {
-	XMLName      xml.Name              `xml:"bom"`
-	XMLNS        string                `xml:"xmlns,attr"`
-	Version      int                   `xml:"version,attr"`
-	SerialNumber string                `xml:"serialNumber,attr"`
-	Metadata     cycloneDXMetadata     `xml:"metadata"`
-	Components   []cycloneDXComponent  `xml:"components>component"`
+	XMLName      xml.Name             `xml:"bom"`
+	XMLNS        string               `xml:"xmlns,attr"`
+	Version      int                  `xml:"version,attr"`
+	SerialNumber string               `xml:"serialNumber,attr"`
+	Metadata     cycloneDXMetadata    `xml:"metadata"`
+	Components   []cycloneDXComponent `xml:"components>component"`
 }
 
 type cycloneDXMetadata struct {

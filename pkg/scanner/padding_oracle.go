@@ -51,10 +51,10 @@ func (s *PaddingOracleScanner) Scan(ctx context.Context, target string, client *
 			findings = append(findings, Finding{
 				URL: target, Title: "Possible Padding Oracle: cookie " + c.Name,
 				Description: "Cookie body length aligns with AES-CBC blocks; flipping the last ciphertext byte changed the response. Investigate with PadBuster / poracle.",
-				Severity: SeverityHigh, Confidence: ConfidenceLow, Scanner: s.Name(),
+				Severity:    SeverityHigh, Confidence: ConfidenceLow, Scanner: s.Name(),
 				Evidence: "good=" + itoa(good.status) + "/" + itoa(good.length) +
 					" bad=" + itoa(bad.status) + "/" + itoa(bad.length),
-				Timestamp: time.Now(),
+				Timestamp:     time.Now(),
 				OWASPCategory: "A02:2021-Cryptographic Failures", CVSSScore: 7.5,
 			})
 		}

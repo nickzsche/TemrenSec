@@ -27,7 +27,7 @@ type SAMLConfig struct {
 
 // SAMLServiceProvider implements SAML authentication operations.
 type SAMLServiceProvider struct {
-	config      SAMLConfig
+	config     SAMLConfig
 	cert       *x509.Certificate
 	privateKey *rsa.PrivateKey
 }
@@ -168,7 +168,7 @@ func (sp *SAMLServiceProvider) GetRedirectURL() string {
 type MiddlewareConfig struct {
 	SessionKey   string
 	RedirectPath string
-	SkipPaths   []string
+	SkipPaths    []string
 }
 
 // SAMLMiddleware provides Fiber v2 middleware for SAML authentication.
@@ -251,7 +251,7 @@ func (m *SAMLMiddleware) HandleACS() fiber.Handler {
 		}
 
 		claims := jwt.MapClaims{
-			"sub":   assertion.NameID,
+			"sub":    assertion.NameID,
 			"email":  assertion.Email,
 			"groups": assertion.Groups,
 			"iss":    assertion.Issuer,
@@ -279,11 +279,11 @@ func (m *SAMLMiddleware) HandleACS() fiber.Handler {
 		})
 
 		return c.JSON(fiber.Map{
-			"token":    tokenString,
-			"name_id":  assertion.NameID,
-			"email":    assertion.Email,
-			"groups":   assertion.Groups,
-			"issuer":   assertion.Issuer,
+			"token":   tokenString,
+			"name_id": assertion.NameID,
+			"email":   assertion.Email,
+			"groups":  assertion.Groups,
+			"issuer":  assertion.Issuer,
 		})
 	}
 }
@@ -307,22 +307,22 @@ func (m *SAMLMiddleware) HandleMetadata() fiber.Handler {
 
 // SAMLResponseDoc represents a SAML Response XML document.
 type SAMLResponseDoc struct {
-	XMLName    xml.Name          `xml:"urn:oasis:names:tc:SAML:2.0:protocol Response"`
-	Destination string           `xml:"Destination,attr"`
-	ID          string           `xml:"ID,attr"`
-	IssueInstant string          `xml:"IssueInstant,attr"`
-	Assertion   *SAMLAssertionDoc `xml:"urn:oasis:names:tc:SAML:2.0:assertion Assertion"`
+	XMLName      xml.Name          `xml:"urn:oasis:names:tc:SAML:2.0:protocol Response"`
+	Destination  string            `xml:"Destination,attr"`
+	ID           string            `xml:"ID,attr"`
+	IssueInstant string            `xml:"IssueInstant,attr"`
+	Assertion    *SAMLAssertionDoc `xml:"urn:oasis:names:tc:SAML:2.0:assertion Assertion"`
 }
 
 // SAMLAssertionDoc represents a SAML Assertion element.
 type SAMLAssertionDoc struct {
-	XMLName            xml.Name              `xml:"urn:oasis:names:tc:SAML:2.0:assertion Assertion"`
-	ID                 string                `xml:"ID,attr"`
-	IssueInstant       string                `xml:"IssueInstant,attr"`
-	Issuer            *SAMLIssuerDoc         `xml:"urn:oasis:names:tc:SAML:2.0:assertion Issuer"`
-	Subject           *SAMLSubjectDoc        `xml:"urn:oasis:names:tc:SAML:2.0:assertion Subject"`
-	Conditions        SAMLConditionsDoc      `xml:"urn:oasis:names:tc:SAML:2.0:assertion Conditions"`
-	AuthnStatement    SAMLAuthnStatementDoc  `xml:"urn:oasis:names:tc:SAML:2.0:assertion AuthnStatement"`
+	XMLName             xml.Name                    `xml:"urn:oasis:names:tc:SAML:2.0:assertion Assertion"`
+	ID                  string                      `xml:"ID,attr"`
+	IssueInstant        string                      `xml:"IssueInstant,attr"`
+	Issuer              *SAMLIssuerDoc              `xml:"urn:oasis:names:tc:SAML:2.0:assertion Issuer"`
+	Subject             *SAMLSubjectDoc             `xml:"urn:oasis:names:tc:SAML:2.0:assertion Subject"`
+	Conditions          SAMLConditionsDoc           `xml:"urn:oasis:names:tc:SAML:2.0:assertion Conditions"`
+	AuthnStatement      SAMLAuthnStatementDoc       `xml:"urn:oasis:names:tc:SAML:2.0:assertion AuthnStatement"`
 	AttributeStatements []SAMLAttributeStatementDoc `xml:"urn:oasis:names:tc:SAML:2.0:assertion AttributeStatement"`
 }
 
@@ -347,29 +347,29 @@ type SAMLNameIDDoc struct {
 
 // SAMLConditionsDoc represents SAML Conditions.
 type SAMLConditionsDoc struct {
-	XMLName      xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:assertion Conditions"`
+	XMLName      xml.Name  `xml:"urn:oasis:names:tc:SAML:2.0:assertion Conditions"`
 	NotBefore    time.Time `xml:"NotBefore,attr"`
 	NotOnOrAfter time.Time `xml:"NotOnOrAfter,attr"`
 }
 
 // SAMLAuthnStatementDoc represents a SAML AuthnStatement.
 type SAMLAuthnStatementDoc struct {
-	XMLName       xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:assertion AuthnStatement"`
-	AuthnInstant  string   `xml:"AuthnInstant,attr"`
-	SessionIndex  string   `xml:"SessionIndex,attr"`
+	XMLName      xml.Name `xml:"urn:oasis:names:tc:SAML:2.0:assertion AuthnStatement"`
+	AuthnInstant string   `xml:"AuthnInstant,attr"`
+	SessionIndex string   `xml:"SessionIndex,attr"`
 }
 
 // SAMLAttributeStatementDoc represents a SAML AttributeStatement.
 type SAMLAttributeStatementDoc struct {
-	XMLName    xml.Name             `xml:"urn:oasis:names:tc:SAML:2.0:assertion AttributeStatement"`
-	Attributes []SAMLAttributeDoc   `xml:"urn:oasis:names:tc:SAML:2.0:assertion Attribute"`
+	XMLName    xml.Name           `xml:"urn:oasis:names:tc:SAML:2.0:assertion AttributeStatement"`
+	Attributes []SAMLAttributeDoc `xml:"urn:oasis:names:tc:SAML:2.0:assertion Attribute"`
 }
 
 // SAMLAttributeDoc represents a SAML Attribute.
 type SAMLAttributeDoc struct {
-	XMLName xml.Name          `xml:"urn:oasis:names:tc:SAML:2.0:assertion Attribute"`
-	Name    string            `xml:"Name,attr"`
-	Values []SAMLAttributeValueDoc `xml:"urn:oasis:names:tc:SAML:2.0:assertion AttributeValue"`
+	XMLName xml.Name                `xml:"urn:oasis:names:tc:SAML:2.0:assertion Attribute"`
+	Name    string                  `xml:"Name,attr"`
+	Values  []SAMLAttributeValueDoc `xml:"urn:oasis:names:tc:SAML:2.0:assertion AttributeValue"`
 }
 
 // SAMLAttributeValueDoc represents a SAML AttributeValue.

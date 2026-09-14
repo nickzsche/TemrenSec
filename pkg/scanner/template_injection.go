@@ -15,7 +15,9 @@ import (
 // AdvancedTemplateInjectionScanner extends SSTI coverage with engine-specific identifiers.
 type AdvancedTemplateInjectionScanner struct{}
 
-func NewAdvancedTemplateInjectionScanner() *AdvancedTemplateInjectionScanner { return &AdvancedTemplateInjectionScanner{} }
+func NewAdvancedTemplateInjectionScanner() *AdvancedTemplateInjectionScanner {
+	return &AdvancedTemplateInjectionScanner{}
+}
 
 func (s *AdvancedTemplateInjectionScanner) Name() string { return "SSTI — Engine Fingerprint" }
 
@@ -69,7 +71,7 @@ func (s *AdvancedTemplateInjectionScanner) Scan(ctx context.Context, target stri
 				findings = append(findings, Finding{
 					URL: u.String(), Title: fmt.Sprintf("Server-Side Template Injection (%s)", p.engine),
 					Description: "Template engine evaluated injected expression. RCE may be trivial depending on engine.",
-					Severity: p.sev, Confidence: ConfidenceHigh, Scanner: s.Name(),
+					Severity:    p.sev, Confidence: ConfidenceHigh, Scanner: s.Name(),
 					Parameter: param, Payload: p.payload, Evidence: p.expect,
 					Timestamp: time.Now(), OWASPCategory: "A03:2021-Injection", CVSSScore: p.score,
 				})

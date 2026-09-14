@@ -14,7 +14,9 @@ import (
 // HostHeaderInjectionScanner manipulates Host / X-Forwarded-Host to detect reset-poisoning and SSRF pivots.
 type HostHeaderInjectionScanner struct{}
 
-func NewHostHeaderInjectionScanner() *HostHeaderInjectionScanner { return &HostHeaderInjectionScanner{} }
+func NewHostHeaderInjectionScanner() *HostHeaderInjectionScanner {
+	return &HostHeaderInjectionScanner{}
+}
 
 func (s *HostHeaderInjectionScanner) Name() string { return "Host Header Injection" }
 
@@ -45,7 +47,7 @@ func (s *HostHeaderInjectionScanner) Scan(ctx context.Context, target string, cl
 			findings = append(findings, Finding{
 				URL: target, Title: "Host Header Reflected — Password Reset Poisoning Risk",
 				Description: "Manipulated Host/X-Forwarded-Host appears in the response or Location header. Attackers can poison password-reset emails and absolute-URL generation.",
-				Severity: SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Severity:    SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
 				Payload: evil, Timestamp: time.Now(),
 				OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 7.5,
 			})

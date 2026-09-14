@@ -6,9 +6,9 @@ import (
 	"io"
 	"os"
 
+	"github.com/spf13/cobra"
 	"github.com/temren/pkg/exporter"
 	"github.com/temren/pkg/scanner"
-	"github.com/spf13/cobra"
 )
 
 var (

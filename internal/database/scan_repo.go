@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/temren/internal/model"
 	"github.com/google/uuid"
+	"github.com/temren/internal/model"
 )
 
 type ScanRepo struct{}

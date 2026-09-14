@@ -9,13 +9,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/adaptor"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/temren/internal/config"
 	"github.com/temren/internal/database"
 	"github.com/temren/internal/handler"
 	"github.com/temren/pkg/ai"
-	"github.com/gofiber/fiber/v2/middleware/adaptor"
-	"github.com/gofiber/fiber/v2"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -45,7 +45,7 @@ func run() error {
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  120 * time.Second,
-		BodyLimit:   10 * 1024 * 1024,
+		BodyLimit:    10 * 1024 * 1024,
 	})
 
 	app.Get("/health", func(c *fiber.Ctx) error {

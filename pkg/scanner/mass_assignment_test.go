@@ -82,7 +82,10 @@ func TestMassAssignment_JSONWithoutEchoIsNotFlagged(t *testing.T) {
 }
 
 func TestLooksLikeAPIPath(t *testing.T) {
-	cases := []struct{ url string; want bool }{
+	cases := []struct {
+		url  string
+		want bool
+	}{
 		{"https://x.com/api/users", true},
 		{"https://x.com/v1/users", true},
 		{"https://x.com/v2/x", true},

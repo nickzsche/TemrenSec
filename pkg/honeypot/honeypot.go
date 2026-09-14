@@ -13,7 +13,7 @@ import (
 
 // Verdict is the analysis output.
 type Verdict struct {
-	Score   int      // 0-100
+	Score   int // 0-100
 	Signals []string
 }
 
@@ -66,9 +66,9 @@ func Analyze(ctx context.Context, target string, client *http.Client) Verdict {
 }
 
 type snap struct {
-	status        int
-	body          string
-	serverHeader  string
+	status       int
+	body         string
+	serverHeader string
 }
 
 func fetch(ctx context.Context, c *http.Client, url string) snap {

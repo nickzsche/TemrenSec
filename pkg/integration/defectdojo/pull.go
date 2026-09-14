@@ -18,12 +18,12 @@ import (
 // direction. That keeps a one-way merge: Temren pushes findings, DD pushes
 // triage state.
 type FindingUpdate struct {
-	DDFindingID   int       `json:"dd_finding_id"`
-	TemrenVulnID   string    `json:"temren_vuln_id"` // extracted from DD tags
-	Status        string    `json:"status"`        // active | false_positive | risk_accepted | verified
-	Severity      string    `json:"severity"`
-	Notes         string    `json:"notes,omitempty"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	DDFindingID  int       `json:"dd_finding_id"`
+	TemrenVulnID string    `json:"temren_vuln_id"` // extracted from DD tags
+	Status       string    `json:"status"`         // active | false_positive | risk_accepted | verified
+	Severity     string    `json:"severity"`
+	Notes        string    `json:"notes,omitempty"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 // ddFinding is the subset of /api/v2/findings/ we consume.
@@ -42,9 +42,9 @@ type ddFinding struct {
 }
 
 type ddFindingPage struct {
-	Count    int         `json:"count"`
-	Next     string      `json:"next"`
-	Results  []ddFinding `json:"results"`
+	Count   int         `json:"count"`
+	Next    string      `json:"next"`
+	Results []ddFinding `json:"results"`
 }
 
 // PullFindings fetches DefectDojo findings whose last_status_update is at
@@ -108,11 +108,11 @@ func projectFinding(f ddFinding) FindingUpdate {
 		status = "verified"
 	}
 	return FindingUpdate{
-		DDFindingID:   f.ID,
-		TemrenVulnID:   extractTemrenID(f.Tags),
-		Status:        status,
-		Severity:      f.Severity,
-		UpdatedAt:     f.LastStatusUpdate,
+		DDFindingID:  f.ID,
+		TemrenVulnID: extractTemrenID(f.Tags),
+		Status:       status,
+		Severity:     f.Severity,
+		UpdatedAt:    f.LastStatusUpdate,
 	}
 }
 

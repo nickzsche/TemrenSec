@@ -3,9 +3,9 @@ package email
 import (
 	"bytes"
 	"fmt"
+	"github.com/temren/internal/model"
 	"html/template"
 	"net/smtp"
-	"github.com/temren/internal/model"
 )
 
 type Config struct {
@@ -35,15 +35,15 @@ func (s *Service) SendScanComplete(to string, scan *model.Scan, target *model.Ta
 	}
 
 	data := struct {
-		TargetURL       string
-		ScanDate        string
-		Duration        int
-		TotalFindings   int
-		CriticalCount   int
-		HighCount       int
-		MediumCount     int
-		LowCount        int
-		SecurityScore   int
+		TargetURL     string
+		ScanDate      string
+		Duration      int
+		TotalFindings int
+		CriticalCount int
+		HighCount     int
+		MediumCount   int
+		LowCount      int
+		SecurityScore int
 	}{
 		TargetURL:     target.URL,
 		ScanDate:      scan.CreatedAt.Format("2006-01-02 15:04:05"),
@@ -153,7 +153,7 @@ func (s *Service) SendWeeklyReport(to string, stats *WeeklyStats) error {
 
 func (s *Service) send(to, subject, body string) error {
 	addr := s.config.Host + ":" + s.config.Port
-	
+
 	msg := []byte(fmt.Sprintf("To: %s\r\n"+
 		"Subject: %s\r\n"+
 		"Content-Type: text/html; charset=UTF-8\r\n"+
@@ -178,13 +178,13 @@ func (s *Service) renderTemplate(tmplStr string, data interface{}) (string, erro
 }
 
 type WeeklyStats struct {
-	StartDate       string
-	EndDate         string
-	TotalScans      int
-	TotalVulns      int
-	CriticalCount   int
-	HighCount       int
-	Targets         []TargetStat
+	StartDate     string
+	EndDate       string
+	TotalScans    int
+	TotalVulns    int
+	CriticalCount int
+	HighCount     int
+	Targets       []TargetStat
 }
 
 type TargetStat struct {

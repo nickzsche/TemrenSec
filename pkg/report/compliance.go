@@ -7,9 +7,9 @@ import (
 type ComplianceFramework string
 
 const (
-	PCIDSS    ComplianceFramework = "PCI-DSS"
-	SOC2      ComplianceFramework = "SOC2"
-	ISO27001  ComplianceFramework = "ISO27001"
+	PCIDSS   ComplianceFramework = "PCI-DSS"
+	SOC2     ComplianceFramework = "SOC2"
+	ISO27001 ComplianceFramework = "ISO27001"
 )
 
 type ComplianceMapping struct {

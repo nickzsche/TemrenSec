@@ -45,7 +45,7 @@ func Load() *Config {
 	_ = godotenv.Load()
 
 	jwtSecret := getEnv("JWT_SECRET", "change-me-in-production-please")
-	
+
 	if err := ValidateJWTSecret(jwtSecret); err != nil {
 		if isProduction() {
 			log.Fatalf("[FATAL] JWT_SECRET validation failed: %v", err)

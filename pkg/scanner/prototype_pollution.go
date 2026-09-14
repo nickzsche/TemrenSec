@@ -81,4 +81,3 @@ func (s *PrototypePollutionScanner) Scan(ctx context.Context, target string, cli
 
 	return findings, nil
 }
-

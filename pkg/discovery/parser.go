@@ -86,8 +86,10 @@ var goPatterns = []*regexp.Regexp{
 
 // Matches .GET("/path", ...), .POST("/path", ...) etc. for gin/echo/fiber
 var goMethodPattern = regexp.MustCompile(`\.(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\(\s*"([^"]+)"`)
+
 // Matches http.HandleFunc("/path", ...) and http.Handle("/path", ...)
 var goHandleFuncPattern = regexp.MustCompile(`http\.(HandleFunc|Handle)\(\s*"([^"]+)"`)
+
 // Matches group assignments like g := r.Group("/api")
 var goGroupPattern = regexp.MustCompile(`(\w+)\s*:=?\s*\w+\.Group\(\s*"([^"]+)"`)
 
@@ -250,8 +252,10 @@ func detectNextjsMethods(path string) []string {
 
 // Matches Flask @app.route("/path") and @app.route("/path", methods=[...])
 var flaskRoutePattern = regexp.MustCompile(`@(?:app|application)\.route\(\s*['"]([^'"]+)['"]\s*(?:,\s*methods\s*=\s*\[([^\]]+)\])?`)
+
 // Matches FastAPI @app.get("/path"), @app.post("/path"), etc.
 var fastApiMethodPattern = regexp.MustCompile(`@(?:app|application)\.(get|post|put|delete|patch)\(\s*['"]([^'"]+)['"]`)
+
 // Matches Django path("url/", view)
 var djangoUrlPattern = regexp.MustCompile(`path\(\s*['"]([^'"]+)['"]`)
 
@@ -325,16 +329,22 @@ func parsePythonFile(path string) []APIEndpoint {
 
 // Matches Spring @GetMapping("/path")
 var springGetPattern = regexp.MustCompile(`@GetMapping\(\s*(?:"([^"]+)")?(?:\s*,\s*produces\s*=\s*"[^"]*")?\s*\)`)
+
 // Matches Spring @PostMapping("/path")
 var springPostPattern = regexp.MustCompile(`@PostMapping\(\s*(?:"([^"]+)")?\s*\)`)
+
 // Matches Spring @PutMapping("/path")
 var springPutPattern = regexp.MustCompile(`@PutMapping\(\s*(?:"([^"]+)")?\s*\)`)
+
 // Matches Spring @DeleteMapping("/path")
 var springDeletePattern = regexp.MustCompile(`@DeleteMapping\(\s*(?:"([^"]+)")?\s*\)`)
+
 // Matches Spring @PatchMapping("/path")
 var springPatchPattern = regexp.MustCompile(`@PatchMapping\(\s*(?:"([^"]+)")?\s*\)`)
+
 // Matches Spring @RequestMapping(value="/path", method=RequestMethod.GET)
 var springRequestMappingPattern = regexp.MustCompile(`@RequestMapping\(\s*(?:value\s*=\s*)?(?:"([^"]+)")?(?:\s*,\s*method\s*=\s*(?:RequestMethod\.)?(\w+))?\s*\)`)
+
 // Matches class-level @RequestMapping("/prefix")
 var springClassMappingPattern = regexp.MustCompile(`@RequestMapping\(\s*(?:"([^"]+)")?\s*\)`)
 

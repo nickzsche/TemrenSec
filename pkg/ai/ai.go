@@ -27,11 +27,11 @@ func New(p Provider) *Engine { return &Engine{P: p} }
 
 // TriageVerdict describes the engine's confidence that a finding is real.
 type TriageVerdict struct {
-	Finding    scanner.Finding `json:"finding"`
-	IsTrueHit  bool            `json:"is_true_hit"`
-	Confidence float64         `json:"confidence"` // 0..1
-	Reasoning  string          `json:"reasoning"`
-	Remediation string         `json:"remediation"`
+	Finding     scanner.Finding `json:"finding"`
+	IsTrueHit   bool            `json:"is_true_hit"`
+	Confidence  float64         `json:"confidence"` // 0..1
+	Reasoning   string          `json:"reasoning"`
+	Remediation string          `json:"remediation"`
 }
 
 const triageSystem = `You are a senior application security engineer.
@@ -102,7 +102,7 @@ func (e *Engine) ExecutiveSummary(ctx context.Context, findings []scanner.Findin
 
 // ScanQuery is the schema we ask the LLM to fill from a natural-language target description.
 type ScanQuery struct {
-	Targets []string `json:"targets"`
+	Targets  []string `json:"targets"`
 	Scanners []string `json:"scanners"`
 	Excludes []string `json:"excludes"`
 	Notes    string   `json:"notes"`

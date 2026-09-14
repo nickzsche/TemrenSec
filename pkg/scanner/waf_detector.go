@@ -102,4 +102,3 @@ func (s *WAFDetector) Scan(ctx context.Context, target string, client *httpengin
 
 	return findings, nil
 }
-

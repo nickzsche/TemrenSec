@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/temren/internal/model"
 	"github.com/go-pdf/fpdf"
+	"github.com/temren/internal/model"
 )
 
 // DejaVu Sans is a free Unicode TTF that covers Latin Extended-A (Turkish

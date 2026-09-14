@@ -3,9 +3,9 @@ package cmd
 import (
 	"os"
 
+	"github.com/spf13/cobra"
 	"github.com/temren/pkg/ai"
 	"github.com/temren/pkg/sbom"
-	"github.com/spf13/cobra"
 )
 
 var mlbomCmd = &cobra.Command{

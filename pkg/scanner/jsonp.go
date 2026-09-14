@@ -40,7 +40,7 @@ func (s *JSONPCallbackScanner) Scan(ctx context.Context, target string, client *
 			findings = append(findings, Finding{
 				URL: full, Title: "JSONP Endpoint with Attacker-Controlled Callback",
 				Description: "Server wrapped its JSON in a callback name we supplied. If the endpoint returns authenticated data, any third-party site can read it cross-origin.",
-				Severity: SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Severity:    SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
 				Parameter: p, Payload: canary, Timestamp: time.Now(),
 				OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 7.5,
 			})

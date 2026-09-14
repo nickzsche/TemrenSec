@@ -43,8 +43,8 @@ func (s *ServerFingerprintScanner) Scan(ctx context.Context, target string, clie
 	return []Finding{{
 		URL: target, Title: "Server Banners Disclose Versions",
 		Description: "Strip these headers at the reverse-proxy or app server. Attackers use them to map known CVEs onto your infrastructure.",
-		Severity: SeverityLow, Confidence: ConfidenceHigh, Scanner: s.Name(),
-		Evidence: strings.Join(leaks, " | "),
+		Severity:    SeverityLow, Confidence: ConfidenceHigh, Scanner: s.Name(),
+		Evidence:  strings.Join(leaks, " | "),
 		Timestamp: time.Now(), OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 3.7,
 	}}, nil
 }

@@ -79,8 +79,8 @@ func TestLLMTests_SecurityHeaders(t *testing.T) {
 	}
 
 	secureHeaders := map[string][]string{
-		"Content-Type":          {"application/json"},
-		"X-Content-Type-Options": {"nosniff"},
+		"Content-Type":            {"application/json"},
+		"X-Content-Type-Options":  {"nosniff"},
 		"Content-Security-Policy": {"default-src 'none'"},
 	}
 	if test.CheckFunc("", secureHeaders, 200) {
@@ -104,7 +104,7 @@ func TestLLMTests_TrainingDataExtraction(t *testing.T) {
 
 func TestGetHeaderValue(t *testing.T) {
 	headers := map[string][]string{
-		"Content-Type": {"application/json"},
+		"Content-Type":      {"application/json"},
 		"X-Ratelimit-Limit": {"100"},
 	}
 

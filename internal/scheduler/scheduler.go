@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/temren/internal/queue"
 	"github.com/go-co-op/gocron"
+	"github.com/temren/internal/queue"
 )
 
 type Schedule struct {
@@ -26,13 +26,13 @@ type Schedule struct {
 }
 
 type Scheduler struct {
-	cron     *gocron.Scheduler
-	queue    *queue.Queue
-	storage  Storage
-	jobs     map[string]*gocron.Job
-	mu       sync.RWMutex
-	ctx      context.Context
-	cancel   context.CancelFunc
+	cron    *gocron.Scheduler
+	queue   *queue.Queue
+	storage Storage
+	jobs    map[string]*gocron.Job
+	mu      sync.RWMutex
+	ctx     context.Context
+	cancel  context.CancelFunc
 }
 
 type Storage interface {
@@ -52,7 +52,7 @@ type ScanJob struct {
 
 func NewScheduler(storage Storage, q *queue.Queue) *Scheduler {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	return &Scheduler{
 		cron:    gocron.NewScheduler(time.UTC),
 		queue:   q,
@@ -148,7 +148,7 @@ func (s *Scheduler) runScan(schedule *Schedule) {
 
 	schedule.LastRun = time.Now()
 	schedule.NextRun = s.jobs[schedule.ID].NextRun()
-	
+
 	if err := s.storage.Update(schedule); err != nil {
 		log.Printf("[scheduler] failed to update schedule: %v", err)
 	}

@@ -39,7 +39,7 @@ func (s *SAMLEndpointScanner) Scan(ctx context.Context, target string, client *h
 			findings = append(findings, Finding{
 				URL: target + p, Title: "SAML ACS Endpoint Reachable",
 				Description: "SAML endpoint accessible; review for XML Signature Wrapping (XSW), unsigned assertion acceptance, replay window, and audience restriction. Test with samlraider or python-saml regression suite.",
-				Severity: SeverityMedium, Confidence: ConfidenceLow, Scanner: s.Name(),
+				Severity:    SeverityMedium, Confidence: ConfidenceLow, Scanner: s.Name(),
 				Timestamp: time.Now(), OWASPCategory: "A02:2021-Cryptographic Failures", CVSSScore: 5.3,
 			})
 		}

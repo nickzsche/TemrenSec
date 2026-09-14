@@ -49,7 +49,7 @@ func (s *WellKnownScanner) Scan(ctx context.Context, target string, client *http
 			findings = append(findings, Finding{
 				URL: target + w.path, Title: "Missing " + w.path,
 				Description: "Recommended .well-known endpoint not served (" + w.purpose + "). Consider publishing.",
-				Severity: SeverityInfo, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Severity:    SeverityInfo, Confidence: ConfidenceHigh, Scanner: s.Name(),
 				Timestamp: time.Now(), OWASPCategory: "informational",
 			})
 		}
@@ -57,7 +57,7 @@ func (s *WellKnownScanner) Scan(ctx context.Context, target string, client *http
 			findings = append(findings, Finding{
 				URL: target + w.path, Title: "Discovered " + w.path,
 				Description: w.purpose + " is published.",
-				Severity: SeverityInfo, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Severity:    SeverityInfo, Confidence: ConfidenceHigh, Scanner: s.Name(),
 				Timestamp: time.Now(), OWASPCategory: "informational",
 			})
 		}

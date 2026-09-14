@@ -7,33 +7,33 @@ import (
 	"os"
 	"time"
 
+	"github.com/spf13/cobra"
 	"github.com/temren/pkg/httpengine"
 	"github.com/temren/pkg/scheduler"
-	"github.com/spf13/cobra"
 )
 
 var (
-	schedTarget      string
-	schedName        string
-	schedCron        string
-	schedHourly      bool
-	schedDaily       bool
-	schedWeekly      bool
-	schedMonthly     bool
-	schedDepth       int
-	schedMaxPages    int
-	schedConcurrency int
-	schedRateLimit   int
-	schedTimeout     int
-	schedActive      bool
-	schedPassive     bool
-	schedAuthToken   string
-	schedAuthType    string
-	schedWAFBypass   bool
-	schedHeadless    bool
-	schedFormat      string
-	schedVerify      bool
-	schedSBOM        bool
+	schedTarget        string
+	schedName          string
+	schedCron          string
+	schedHourly        bool
+	schedDaily         bool
+	schedWeekly        bool
+	schedMonthly       bool
+	schedDepth         int
+	schedMaxPages      int
+	schedConcurrency   int
+	schedRateLimit     int
+	schedTimeout       int
+	schedActive        bool
+	schedPassive       bool
+	schedAuthToken     string
+	schedAuthType      string
+	schedWAFBypass     bool
+	schedHeadless      bool
+	schedFormat        string
+	schedVerify        bool
+	schedSBOM          bool
 	schedNotifySlack   string
 	schedNotifyDiscord string
 	schedNotifyTeams   string

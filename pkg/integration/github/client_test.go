@@ -217,9 +217,9 @@ func TestCreateIssueDeduplication(t *testing.T) {
 			json.NewEncoder(w).Encode(map[string]interface{}{
 				"items": []interface{}{
 					map[string]interface{}{
-						"number":  10,
-						"title":   "[Temren] [CRITICAL] SQL Injection",
-						"state":   "open",
+						"number":   10,
+						"title":    "[Temren] [CRITICAL] SQL Injection",
+						"state":    "open",
 						"html_url": "https://github.com/testowner/testrepo/issues/10",
 					},
 				},

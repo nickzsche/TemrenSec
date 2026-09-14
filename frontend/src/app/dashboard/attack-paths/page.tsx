@@ -58,10 +58,10 @@ export default function AttackPathsPage() {
         <div className="mt-4 rounded-md bg-zinc-50 p-3 text-sm dark:bg-zinc-950">
           <p className="font-semibold">Chain: Account Takeover</p>
           <ol className="ml-5 list-decimal text-zinc-600 dark:text-zinc-400">
-            <li>Reflected XSS lands in victim's browser via crafted URL.</li>
+            <li>Reflected XSS lands in victim&apos;s browser via crafted URL.</li>
             <li>Cookie lacks HttpOnly — XSS reads it.</li>
             <li>Attacker replays the session against authenticated API.</li>
-            <li>IDOR enumerates other users' records.</li>
+            <li>IDOR enumerates other users&apos; records.</li>
             <li>PII is exfiltrated, breaching GDPR Article 32 and PCI-DSS 3.5.</li>
           </ol>
         </div>

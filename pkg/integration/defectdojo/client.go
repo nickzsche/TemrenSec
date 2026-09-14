@@ -14,9 +14,9 @@ import (
 )
 
 type Config struct {
-	BaseURL string
-	APIToken string
-	ProductName string
+	BaseURL        string
+	APIToken       string
+	ProductName    string
 	EngagementName string
 }
 
@@ -82,9 +82,9 @@ func (c *Client) ImportFindings(findings []scanner.Finding, targetURL string) (*
 }
 
 type ImportResult struct {
-	ScanID       int `json:"scan"`
-	FindingsNew  int `json:"new_findings"`
-	FindingsClosed int `json:"closed_findings"`
+	ScanID              int `json:"scan"`
+	FindingsNew         int `json:"new_findings"`
+	FindingsClosed      int `json:"closed_findings"`
 	FindingsReactivated int `json:"reactivated_findings"`
 }
 
@@ -288,12 +288,12 @@ func (c *Client) importScan(engagementID int, scanData []byte) (*ImportResult, e
 	}
 
 	fields := map[string]string{
-		"scan_date":       time.Now().Format("2006-01-02"),
-		"engagement":      fmt.Sprintf("%d", engagementID),
-		"scan_type":       "Temren Scan",
+		"scan_date":        time.Now().Format("2006-01-02"),
+		"engagement":       fmt.Sprintf("%d", engagementID),
+		"scan_type":        "Temren Scan",
 		"minimum_severity": "Info",
-		"active":          "true",
-		"verified":        "true",
+		"active":           "true",
+		"verified":         "true",
 	}
 
 	for key, value := range fields {

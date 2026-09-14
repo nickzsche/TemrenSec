@@ -88,4 +88,3 @@ func (s *HoneypotDetector) Scan(ctx context.Context, target string, client *http
 
 	return findings, nil
 }
-

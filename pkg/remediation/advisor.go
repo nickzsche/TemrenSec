@@ -21,7 +21,7 @@ type Remediation struct {
 }
 
 type AdvisorConfig struct {
-	Provider    string  // "openai", "anthropic", "ollama", "none"
+	Provider    string // "openai", "anthropic", "ollama", "none"
 	APIKey      string
 	Model       string
 	BaseURL     string

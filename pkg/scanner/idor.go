@@ -85,4 +85,3 @@ func (s *IDORScanner) Scan(ctx context.Context, target string, client *httpengin
 
 	return findings, nil
 }
-

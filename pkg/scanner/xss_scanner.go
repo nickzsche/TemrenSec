@@ -102,4 +102,3 @@ func (s *XSSScanner) isPayloadReflected(payload, body string) bool {
 
 	return false
 }
-

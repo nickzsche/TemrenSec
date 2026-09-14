@@ -78,4 +78,3 @@ func (s *VulnerableComponentsScanner) Scan(ctx context.Context, target string, c
 
 	return findings, nil
 }
-

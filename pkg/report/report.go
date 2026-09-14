@@ -164,8 +164,8 @@ h2 { color: #555; margin-top: 30px; }
 func (r *Report) generateComplianceTable() string {
 	var buf bytes.Buffer
 	var allMappings []struct {
-		Finding   scanner.Finding
-		Mappings  []ComplianceMapping
+		Finding  scanner.Finding
+		Mappings []ComplianceMapping
 	}
 
 	seen := make(map[string]bool)
@@ -389,9 +389,9 @@ func (r *Report) GenerateCSV() string {
 		if confidence == "" {
 			confidence = "N/A"
 		}
-		
+
 		cvss := getCVSSScore(f.Severity)
-		
+
 		buf.WriteString(fmt.Sprintf("%d,%s,%s,%s,%s,%s,%s,%s,%.1f,open,%s\n",
 			i+1,
 			escapeCSV(f.Title),

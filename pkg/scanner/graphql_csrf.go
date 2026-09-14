@@ -34,7 +34,7 @@ func (s *GraphQLCSRFScanner) Scan(ctx context.Context, target string, client *ht
 		return []Finding{{
 			URL: target, Title: "GraphQL CSRF — Form-Encoded POST Accepted",
 			Description: "Server accepted GraphQL operations sent as application/x-www-form-urlencoded. Browsers send these without CORS preflight, so any authenticated mutation is exploitable via CSRF.",
-			Severity: SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
+			Severity:    SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
 			Timestamp: time.Now(), OWASPCategory: "A01:2021-Broken Access Control", CVSSScore: 7.5,
 		}}, nil
 	}

@@ -17,11 +17,11 @@ func NewSecurityHeadersScanner() *SecurityHeadersScanner { return &SecurityHeade
 func (s *SecurityHeadersScanner) Name() string { return "Security Headers Audit" }
 
 type headerExpect struct {
-	header string
+	header      string
 	mustContain string
-	severity Severity
-	score float64
-	desc string
+	severity    Severity
+	score       float64
+	desc        string
 }
 
 var headerChecks = []headerExpect{
@@ -71,7 +71,7 @@ func (s *SecurityHeadersScanner) Scan(ctx context.Context, target string, client
 			findings = append(findings, Finding{
 				URL: target, Title: "Cookie Missing Flags: " + c.Name,
 				Description: "Cookie " + c.Name + " missing: " + strings.Join(miss, ", "),
-				Severity: SeverityMedium, Confidence: ConfidenceHigh,
+				Severity:    SeverityMedium, Confidence: ConfidenceHigh,
 				Scanner: s.Name(), Timestamp: time.Now(),
 				OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 5.4,
 			})

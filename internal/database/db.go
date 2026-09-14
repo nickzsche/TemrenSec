@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/temren/internal/config"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/temren/internal/config"
 )
 
 var Pool *pgxpool.Pool

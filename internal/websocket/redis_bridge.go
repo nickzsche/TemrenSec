@@ -14,8 +14,10 @@ import (
 // and forwards inbound messages (filtered by Origin) to its local clients.
 //
 // Operationally: deploy multiple API replicas, each calls
-//   bridge, _ := websocket.NewRedisBridge(ctx, redisAddr, "temren:ws", hub)
-//   hub.AttachBridge(bridge)
+//
+//	bridge, _ := websocket.NewRedisBridge(ctx, redisAddr, "temren:ws", hub)
+//	hub.AttachBridge(bridge)
+//
 // and the websocket layer behaves as if it were a single process.
 //
 // Failure modes:

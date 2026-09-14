@@ -16,14 +16,14 @@ import (
 // model id, deployment surface, intended use). It is intentionally hand-rolled
 // JSON rather than tied to a full CycloneDX schema library to keep deps minimal.
 type MLModelComponent struct {
-	BomRef     string            `json:"bom-ref"`
-	Type       string            `json:"type"`
-	Name       string            `json:"name"`
-	Version    string            `json:"version,omitempty"`
-	Provider   string            `json:"-"`
-	Purpose    string            `json:"-"`
-	Properties []ModelProperty   `json:"properties,omitempty"`
-	ModelCard  *ModelCard        `json:"modelCard,omitempty"`
+	BomRef     string          `json:"bom-ref"`
+	Type       string          `json:"type"`
+	Name       string          `json:"name"`
+	Version    string          `json:"version,omitempty"`
+	Provider   string          `json:"-"`
+	Purpose    string          `json:"-"`
+	Properties []ModelProperty `json:"properties,omitempty"`
+	ModelCard  *ModelCard      `json:"modelCard,omitempty"`
 }
 
 type ModelProperty struct {
@@ -32,10 +32,10 @@ type ModelProperty struct {
 }
 
 type ModelCard struct {
-	BomRef            string            `json:"bom-ref"`
-	ModelParameters   *ModelParameters  `json:"modelParameters,omitempty"`
-	QuantitativeAnaly map[string]any    `json:"quantitativeAnalysis,omitempty"`
-	Considerations    *Considerations   `json:"considerations,omitempty"`
+	BomRef            string           `json:"bom-ref"`
+	ModelParameters   *ModelParameters `json:"modelParameters,omitempty"`
+	QuantitativeAnaly map[string]any   `json:"quantitativeAnalysis,omitempty"`
+	Considerations    *Considerations  `json:"considerations,omitempty"`
 }
 
 type ModelParameters struct {
@@ -46,10 +46,10 @@ type ModelParameters struct {
 }
 
 type Considerations struct {
-	IntendedUse      []string `json:"users,omitempty"`
-	UseCases         []string `json:"useCases,omitempty"`
-	TechnicalLimits  []string `json:"technicalLimitations,omitempty"`
-	EthicalConsider  []string `json:"ethicalConsiderations,omitempty"`
+	IntendedUse     []string `json:"users,omitempty"`
+	UseCases        []string `json:"useCases,omitempty"`
+	TechnicalLimits []string `json:"technicalLimitations,omitempty"`
+	EthicalConsider []string `json:"ethicalConsiderations,omitempty"`
 }
 
 // MLBOMDoc is the top-level CycloneDX 1.6 document with ML-BOM components.

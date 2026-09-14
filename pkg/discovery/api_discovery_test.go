@@ -11,8 +11,8 @@ import (
 
 func TestNewAPIDiscoverer(t *testing.T) {
 	cfg := &DiscoveryConfig{
-		TargetURL:    "https://example.com",
-		AutoDiscover: true,
+		TargetURL:     "https://example.com",
+		AutoDiscover:  true,
 		DiscoverDepth: 2,
 	}
 	d := NewAPIDiscoverer(cfg, nil)
@@ -415,7 +415,7 @@ r.POST("/api/v1/users", handler)
 	}
 
 	cfg := &DiscoveryConfig{
-		LocalPath:    tmpDir,
+		LocalPath:     tmpDir,
 		DiscoverDepth: 2,
 	}
 	d := NewAPIDiscoverer(cfg, nil)

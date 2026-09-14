@@ -7,15 +7,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/temren/pkg/honeypot"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/honeypot"
 )
 
 var honeypotURL string
 
 var honeypotCmd = &cobra.Command{
-	Use:   "honeypot",
-	Short: "Score how likely a target is a honeypot (0-100)",
+	Use:     "honeypot",
+	Short:   "Score how likely a target is a honeypot (0-100)",
 	Example: `  temren honeypot --url https://suspicious.example`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if honeypotURL == "" {

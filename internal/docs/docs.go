@@ -33,6 +33,7 @@ import "github.com/temren/internal/model"
 //   200: healthResponse
 
 // swagger:response healthResponse
+//
 //nolint:unused
 type healthResponse struct {
 	// in:body
@@ -56,17 +57,19 @@ type healthResponse struct {
 //   401: errorResponse
 
 // swagger:response authResponse
+//
 //nolint:unused
 type authResponse struct {
 	// in:body
 	Body struct {
-		AccessToken  string       `json:"access_token"`
-		RefreshToken string       `json:"refresh_token"`
-		User         *model.User  `json:"user"`
+		AccessToken  string      `json:"access_token"`
+		RefreshToken string      `json:"refresh_token"`
+		User         *model.User `json:"user"`
 	}
 }
 
 // swagger:response errorResponse
+//
 //nolint:unused
 type errorResponse struct {
 	// in:body
@@ -82,6 +85,7 @@ type errorResponse struct {
 //   401: errorResponse
 
 // swagger:response dashboardResponse
+//
 //nolint:unused
 type dashboardResponse struct {
 	// in:body
@@ -100,6 +104,7 @@ type dashboardResponse struct {
 //   200: projectsResponse
 
 // swagger:response projectResponse
+//
 //nolint:unused
 type projectResponse struct {
 	// in:body
@@ -107,6 +112,7 @@ type projectResponse struct {
 }
 
 // swagger:response projectsResponse
+//
 //nolint:unused
 type projectsResponse struct {
 	// in:body
@@ -122,6 +128,7 @@ type projectsResponse struct {
 //   400: errorResponse
 
 // swagger:response targetResponse
+//
 //nolint:unused
 type targetResponse struct {
 	// in:body
@@ -141,6 +148,7 @@ type targetResponse struct {
 //   404: errorResponse
 
 // swagger:response scanResponse
+//
 //nolint:unused
 type scanResponse struct {
 	// in:body
@@ -148,6 +156,7 @@ type scanResponse struct {
 }
 
 // swagger:response scanDetailResponse
+//
 //nolint:unused
 type scanDetailResponse struct {
 	// in:body
@@ -160,6 +169,7 @@ type scanDetailResponse struct {
 //   200: vulnerabilitiesResponse
 
 // swagger:response vulnerabilitiesResponse
+//
 //nolint:unused
 type vulnerabilitiesResponse struct {
 	// in:body
@@ -174,6 +184,7 @@ type vulnerabilitiesResponse struct {
 //   200: cliScanResponse
 
 // swagger:response cliScanResponse
+//
 //nolint:unused
 type cliScanResponse struct {
 	// in:body

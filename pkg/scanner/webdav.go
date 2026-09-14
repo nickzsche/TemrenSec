@@ -30,8 +30,8 @@ func (s *WebDAVScanner) Scan(ctx context.Context, target string, client *httpeng
 		return []Finding{{
 			URL: target, Title: "WebDAV Methods Exposed",
 			Description: "Server advertises WebDAV verbs (DAV header / Allow: PROPFIND, MKCOL, COPY, etc.). Disable WebDAV unless intentionally serving a DAV client.",
-			Severity: SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
-			Evidence: "DAV=" + dav + " Allow=" + allow,
+			Severity:    SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
+			Evidence:  "DAV=" + dav + " Allow=" + allow,
 			Timestamp: time.Now(), OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 7.5,
 		}}, nil
 	}

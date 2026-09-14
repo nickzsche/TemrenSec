@@ -62,7 +62,7 @@ func (m *mockStorage) Update(s *Schedule) error {
 func TestNewScheduler(t *testing.T) {
 	storage := newMockStorage()
 	scheduler := NewScheduler(storage, nil)
-	
+
 	assert.NotNil(t, scheduler)
 	assert.NotNil(t, scheduler.cron)
 	assert.NotNil(t, scheduler.jobs)
@@ -92,7 +92,7 @@ func TestScheduleCreation(t *testing.T) {
 func TestScheduleWithCron(t *testing.T) {
 	storage := newMockStorage()
 	scheduler := NewScheduler(storage, nil)
-	
+
 	schedule := &Schedule{
 		ID:       "test-2",
 		TargetID: "target-2",
@@ -100,7 +100,7 @@ func TestScheduleWithCron(t *testing.T) {
 		CronExpr: "0 9 * * 1",
 		Enabled:  true,
 	}
-	
+
 	err := scheduler.Schedule(schedule)
 	assert.NoError(t, err)
 }
@@ -108,7 +108,7 @@ func TestScheduleWithCron(t *testing.T) {
 func TestUnschedule(t *testing.T) {
 	storage := newMockStorage()
 	scheduler := NewScheduler(storage, nil)
-	
+
 	schedule := &Schedule{
 		ID:        "test-3",
 		TargetID:  "target-3",
@@ -116,10 +116,10 @@ func TestUnschedule(t *testing.T) {
 		Frequency: "weekly",
 		Enabled:   true,
 	}
-	
+
 	err := scheduler.Schedule(schedule)
 	assert.NoError(t, err)
-	
+
 	err = scheduler.Unschedule("test-3")
 	assert.NoError(t, err)
 }
@@ -127,7 +127,7 @@ func TestUnschedule(t *testing.T) {
 func TestPauseResume(t *testing.T) {
 	storage := newMockStorage()
 	scheduler := NewScheduler(storage, nil)
-	
+
 	schedule := &Schedule{
 		ID:        "test-4",
 		TargetID:  "target-4",
@@ -135,13 +135,13 @@ func TestPauseResume(t *testing.T) {
 		Frequency: "hourly",
 		Enabled:   true,
 	}
-	
+
 	err := scheduler.Schedule(schedule)
 	assert.NoError(t, err)
-	
+
 	err = scheduler.Pause("test-4")
 	assert.NoError(t, err)
-	
+
 	saved, _ := storage.Get("test-4")
 	assert.False(t, saved.Enabled)
 }
@@ -159,9 +159,9 @@ func TestGenerateID(t *testing.T) {
 func TestScheduleFrequencies(t *testing.T) {
 	storage := newMockStorage()
 	scheduler := NewScheduler(storage, nil)
-	
+
 	frequencies := []string{"hourly", "daily", "weekly", "monthly"}
-	
+
 	for i, freq := range frequencies {
 		schedule := &Schedule{
 			ID:        fmt.Sprintf("test-freq-%d", i),
@@ -170,7 +170,7 @@ func TestScheduleFrequencies(t *testing.T) {
 			Frequency: freq,
 			Enabled:   true,
 		}
-		
+
 		err := scheduler.Schedule(schedule)
 		assert.NoError(t, err, "Frequency %s should work", freq)
 	}

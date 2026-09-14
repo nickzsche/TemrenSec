@@ -2,17 +2,18 @@
 // Each rule has a name, a condition (a small expression language), and an action
 // (fail/warn/notify/tag). Useful for gating CI builds:
 //
-//   rules:
-//     - name: block-prod-criticals
-//       when: severity == "CRITICAL" && asset.tag contains "prod"
-//       action: fail
-//       message: "Critical finding on production asset"
+//	rules:
+//	  - name: block-prod-criticals
+//	    when: severity == "CRITICAL" && asset.tag contains "prod"
+//	    action: fail
+//	    message: "Critical finding on production asset"
 //
 // The expression language supports:
-//   identifiers   severity, scanner, url, owasp, cvss, confidence, asset.tag
-//   operators     == != > < >= <= && || ! contains startswith endswith
-//   literals      "strings", numbers, true/false
-//   grouping      (a || b) && c
+//
+//	identifiers   severity, scanner, url, owasp, cvss, confidence, asset.tag
+//	operators     == != > < >= <= && || ! contains startswith endswith
+//	literals      "strings", numbers, true/false
+//	grouping      (a || b) && c
 package policy
 
 import (

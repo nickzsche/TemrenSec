@@ -20,9 +20,9 @@ type CVEInfo struct {
 	ID           string    `json:"id"`
 	Description  string    `json:"description"`
 	CVSS         float64   `json:"cvss_v3"`
-	EPSS         float64   `json:"epss"`         // 0..1 probability of exploitation in next 30 days
+	EPSS         float64   `json:"epss"` // 0..1 probability of exploitation in next 30 days
 	EPSSPctile   float64   `json:"epss_percentile"`
-	KEV          bool      `json:"kev"`          // CISA Known-Exploited
+	KEV          bool      `json:"kev"` // CISA Known-Exploited
 	KEVDateAdded time.Time `json:"kev_date,omitempty"`
 	References   []string  `json:"references"`
 }
@@ -34,14 +34,14 @@ type Doer interface {
 
 // Client is safe for concurrent use.
 type Client struct {
-	HTTP    Doer
-	NVDBase string
+	HTTP     Doer
+	NVDBase  string
 	EPSSBase string
-	KEVURL  string
+	KEVURL   string
 
-	mu    sync.RWMutex
-	cache map[string]CVEInfo
-	kev   map[string]time.Time
+	mu      sync.RWMutex
+	cache   map[string]CVEInfo
+	kev     map[string]time.Time
 	kevOnce sync.Once
 }
 

@@ -9,11 +9,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/spf13/cobra"
 	"github.com/temren/pkg/cloudscan"
 	"github.com/temren/pkg/compliance"
 	"github.com/temren/pkg/exporter"
 	"github.com/temren/pkg/scanner"
-	"github.com/spf13/cobra"
 )
 
 var selftestCmd = &cobra.Command{

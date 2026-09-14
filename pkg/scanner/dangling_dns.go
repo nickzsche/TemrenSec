@@ -16,7 +16,9 @@ type DanglingDNSScanner struct {
 	Resolver *net.Resolver
 }
 
-func NewDanglingDNSScanner() *DanglingDNSScanner { return &DanglingDNSScanner{Resolver: net.DefaultResolver} }
+func NewDanglingDNSScanner() *DanglingDNSScanner {
+	return &DanglingDNSScanner{Resolver: net.DefaultResolver}
+}
 
 func (s *DanglingDNSScanner) Name() string { return "Subdomain Takeover (Dangling DNS)" }
 
@@ -60,7 +62,7 @@ func (s *DanglingDNSScanner) Scan(ctx context.Context, target string, _ *httpeng
 				return []Finding{{
 					URL: target, Title: "Likely Subdomain Takeover (" + t.vendor + ")",
 					Description: "Host has a CNAME pointing to " + cname + " but the target does not resolve. An attacker can register the unclaimed " + t.vendor + " resource and serve content as your subdomain.",
-					Severity: SeverityCritical, Confidence: ConfidenceHigh, Scanner: s.Name(),
+					Severity:    SeverityCritical, Confidence: ConfidenceHigh, Scanner: s.Name(),
 					Evidence: "CNAME=" + cname, Timestamp: time.Now(),
 					OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 9.0,
 				}}, nil
@@ -68,7 +70,7 @@ func (s *DanglingDNSScanner) Scan(ctx context.Context, target string, _ *httpeng
 			return []Finding{{
 				URL: target, Title: "Subdomain points to " + t.vendor + " (informational)",
 				Description: "CNAME=" + cname + ". Confirm the resource is owned by your org to prevent future takeover.",
-				Severity: SeverityInfo, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Severity:    SeverityInfo, Confidence: ConfidenceHigh, Scanner: s.Name(),
 				Timestamp: time.Now(), OWASPCategory: "informational",
 			}}, nil
 		}

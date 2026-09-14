@@ -80,4 +80,3 @@ func (s *OpenRedirectScanner) Scan(ctx context.Context, target string, client *h
 
 	return findings, nil
 }
-

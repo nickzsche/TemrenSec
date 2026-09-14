@@ -31,9 +31,9 @@ var rcColors = map[Severity]string{
 
 func (r *RocketChat) Send(ctx context.Context, e Event) error {
 	att := map[string]any{
-		"title":      e.Title,
-		"text":       e.Description,
-		"color":      rcColors[e.Severity],
+		"title": e.Title,
+		"text":  e.Description,
+		"color": rcColors[e.Severity],
 		"fields": []map[string]any{
 			{"title": "Severity", "value": e.Severity, "short": true},
 			{"title": "Scanner", "value": e.Scanner, "short": true},

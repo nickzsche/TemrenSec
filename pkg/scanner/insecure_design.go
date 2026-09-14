@@ -87,4 +87,3 @@ func (s *InsecureDesignScanner) Scan(ctx context.Context, target string, client 
 
 	return findings, nil
 }
-

@@ -32,7 +32,7 @@ func (s *JWTKeyConfusionScanner) Scan(ctx context.Context, target string, client
 	findings = append(findings, Finding{
 		URL: jwksURL, Title: "JWKS endpoint discovered",
 		Description: "Public JWKS is reachable. If the API also accepts HS256 tokens, an attacker can re-sign tokens with the public key.",
-		Severity: SeverityInfo, Confidence: ConfidenceHigh, Scanner: s.Name(),
+		Severity:    SeverityInfo, Confidence: ConfidenceHigh, Scanner: s.Name(),
 		Timestamp: time.Now(), OWASPCategory: "A02:2021-Cryptographic Failures",
 	})
 
@@ -44,7 +44,7 @@ func (s *JWTKeyConfusionScanner) Scan(ctx context.Context, target string, client
 		findings = append(findings, Finding{
 			URL: target, Title: "JWT alg=none accepted",
 			Description: "API accepted a JWT with alg=none. Authentication can be bypassed by forging arbitrary claims.",
-			Severity: SeverityCritical, Confidence: ConfidenceHigh, Scanner: s.Name(),
+			Severity:    SeverityCritical, Confidence: ConfidenceHigh, Scanner: s.Name(),
 			Payload: tokenNone, Timestamp: time.Now(), OWASPCategory: "A02:2021-Cryptographic Failures", CVSSScore: 9.8,
 		})
 	}

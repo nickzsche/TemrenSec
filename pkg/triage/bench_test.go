@@ -18,9 +18,9 @@ func BenchmarkRunLargeBatch(b *testing.B) {
 	findings := make([]scanner.Finding, 10_000)
 	for i := range findings {
 		findings[i] = scanner.Finding{
-			Scanner: "idor",
-			URL:     fmt.Sprintf("https://example.com/users/%d", i),
-			Title:   "IDOR",
+			Scanner:  "idor",
+			URL:      fmt.Sprintf("https://example.com/users/%d", i),
+			Title:    "IDOR",
 			Severity: scanner.SeverityHigh,
 		}
 	}

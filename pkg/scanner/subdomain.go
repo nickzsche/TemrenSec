@@ -60,4 +60,3 @@ func (s *SubdomainEnumerator) Scan(ctx context.Context, target string, client *h
 
 	return findings, nil
 }
-

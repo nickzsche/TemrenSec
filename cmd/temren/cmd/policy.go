@@ -6,20 +6,20 @@ import (
 	"io"
 	"os"
 
+	"github.com/spf13/cobra"
 	"github.com/temren/pkg/policy"
 	"github.com/temren/pkg/scanner"
-	"github.com/spf13/cobra"
 )
 
 var (
-	policyFile    string
-	policyInput   string
-	policyTags    []string
+	policyFile  string
+	policyInput string
+	policyTags  []string
 )
 
 var policyCmd = &cobra.Command{
-	Use:   "policy",
-	Short: "Evaluate findings against a YAML policy (exit non-zero on fail decisions)",
+	Use:     "policy",
+	Short:   "Evaluate findings against a YAML policy (exit non-zero on fail decisions)",
 	Example: `  temren policy --policy policy.yaml --input findings.json --tags prod,pii`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		yamlData, err := os.ReadFile(policyFile)

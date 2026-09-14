@@ -6,14 +6,14 @@ import (
 	"io"
 	"os"
 
-	"github.com/temren/pkg/scanner"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/scanner"
 )
 
 var (
-	baselineFile  string
-	currentFile   string
-	baselineFail  bool
+	baselineFile string
+	currentFile  string
+	baselineFail bool
 )
 
 var baselineCmd = &cobra.Command{

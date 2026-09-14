@@ -10,9 +10,9 @@ import (
 
 // OpsGenie Alert API.
 type OpsGenie struct {
-	HTTP   *http.Client
-	APIKey string
-	Team   string
+	HTTP       *http.Client
+	APIKey     string
+	Team       string
 	EUInstance bool
 }
 

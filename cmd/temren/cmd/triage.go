@@ -6,21 +6,21 @@ import (
 	"io"
 	"os"
 
+	"github.com/spf13/cobra"
 	"github.com/temren/pkg/scanner"
 	"github.com/temren/pkg/triage"
-	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
 
 var (
-	triageInput    string
-	triageConfig   string
-	triageOutput   string
+	triageInput  string
+	triageConfig string
+	triageOutput string
 )
 
 var triageCmd = &cobra.Command{
-	Use:   "triage",
-	Short: "Dedup, suppress, and re-rank findings using a triage rules file",
+	Use:     "triage",
+	Short:   "Dedup, suppress, and re-rank findings using a triage rules file",
 	Example: `  temren triage --input findings.json --config triage.yaml --output triaged.json`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var r io.Reader = os.Stdin

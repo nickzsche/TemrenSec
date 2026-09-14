@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/temren/pkg/httpengine"
 	"github.com/stretchr/testify/assert"
+	"github.com/temren/pkg/httpengine"
 )
 
 func TestSSTIScanner_Scan(t *testing.T) {

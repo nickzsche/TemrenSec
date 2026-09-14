@@ -14,17 +14,17 @@ import (
 )
 
 type Report struct {
-	Host           string
-	Port           string
-	NegotiatedTLS  uint16
-	CipherSuite    uint16
-	Score          int      // 0..100
-	Issues         []string
-	CertSubject    string
-	CertIssuer     string
-	CertNotAfter   time.Time
-	CertChainLen   int
-	AltNames       []string
+	Host          string
+	Port          string
+	NegotiatedTLS uint16
+	CipherSuite   uint16
+	Score         int // 0..100
+	Issues        []string
+	CertSubject   string
+	CertIssuer    string
+	CertNotAfter  time.Time
+	CertChainLen  int
+	AltNames      []string
 }
 
 // Audit dials the host:port and grades the handshake.

@@ -34,7 +34,7 @@ func (s *ETagLeakScanner) Scan(ctx context.Context, target string, client *httpe
 		return []Finding{{
 			URL: target, Title: "ETag Leaks Server Inode",
 			Description: "Default Apache ETag format embeds the file inode and size. Useful to attackers in clustered or NFS environments to fingerprint storage layout.",
-			Severity: SeverityLow, Confidence: ConfidenceHigh, Scanner: s.Name(),
+			Severity:    SeverityLow, Confidence: ConfidenceHigh, Scanner: s.Name(),
 			Evidence: etag, Timestamp: time.Now(),
 			OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 3.7,
 		}}, nil

@@ -14,13 +14,13 @@ type Resolver interface {
 }
 
 type Report struct {
-	Domain    string
-	SPF       string
-	SPFOK     bool
-	DKIM      []string
-	DMARC     string
-	DMARCOK   bool
-	Issues    []string
+	Domain  string
+	SPF     string
+	SPFOK   bool
+	DKIM    []string
+	DMARC   string
+	DMARCOK bool
+	Issues  []string
 }
 
 func Inspect(ctx context.Context, r Resolver, domain string, dkimSelectors []string) (*Report, error) {

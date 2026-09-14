@@ -11,7 +11,7 @@ import (
 type AssignmentStatus string
 
 const (
-	StatusAssigned      AssignmentStatus = "assigned"
+	StatusAssigned     AssignmentStatus = "assigned"
 	StatusInProgress   AssignmentStatus = "in_progress"
 	StatusResolved     AssignmentStatus = "resolved"
 	StatusAccepted     AssignmentStatus = "accepted"
@@ -21,26 +21,26 @@ const (
 type AuditAction string
 
 const (
-	ActionAssigned       AuditAction = "assigned"
-	ActionUnassigned     AuditAction = "unassigned"
-	ActionCommented      AuditAction = "commented"
-	ActionStatusChanged  AuditAction = "status_changed"
+	ActionAssigned        AuditAction = "assigned"
+	ActionUnassigned      AuditAction = "unassigned"
+	ActionCommented       AuditAction = "commented"
+	ActionStatusChanged   AuditAction = "status_changed"
 	ActionSeverityChanged AuditAction = "severity_changed"
-	ActionAssignedTo     AuditAction = "assigned_to"
+	ActionAssignedTo      AuditAction = "assigned_to"
 )
 
 type VulnerabilityAssignment struct {
-	ID            string
+	ID              string
 	VulnerabilityID string
-	AssigneeID    string
-	AssigneeName  string
-	AssigneeEmail string
-	AssignedBy    string
-	AssignedAt    time.Time
-	Status        AssignmentStatus
-	Notes         string
-	Resolution    string
-	ResolvedAt    *time.Time
+	AssigneeID      string
+	AssigneeName    string
+	AssigneeEmail   string
+	AssignedBy      string
+	AssignedAt      time.Time
+	Status          AssignmentStatus
+	Notes           string
+	Resolution      string
+	ResolvedAt      *time.Time
 }
 
 type Comment struct {

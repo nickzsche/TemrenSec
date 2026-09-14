@@ -17,15 +17,15 @@ import (
 
 // Entry is one recorded HTTP round-trip.
 type Entry struct {
-	Time      time.Time         `json:"time"`
-	Method    string            `json:"method"`
-	URL       string            `json:"url"`
-	ReqHdrs   map[string]string `json:"req_headers,omitempty"`
-	ReqBody   string            `json:"req_body,omitempty"` // base64
-	Status    int               `json:"status"`
-	RespHdrs  map[string]string `json:"resp_headers,omitempty"`
-	RespBody  string            `json:"resp_body,omitempty"` // base64
-	Duration  string            `json:"duration,omitempty"`
+	Time     time.Time         `json:"time"`
+	Method   string            `json:"method"`
+	URL      string            `json:"url"`
+	ReqHdrs  map[string]string `json:"req_headers,omitempty"`
+	ReqBody  string            `json:"req_body,omitempty"` // base64
+	Status   int               `json:"status"`
+	RespHdrs map[string]string `json:"resp_headers,omitempty"`
+	RespBody string            `json:"resp_body,omitempty"` // base64
+	Duration string            `json:"duration,omitempty"`
 }
 
 // Recorder writes entries to a JSONL file.

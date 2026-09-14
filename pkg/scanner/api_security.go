@@ -15,7 +15,7 @@ import (
 
 // APISecurityScanner parses OpenAPI specs and tests API endpoints for security issues.
 type APISecurityScanner struct {
-	SpecURL     string
+	SpecURL      string
 	AutoDiscover bool
 }
 
@@ -236,13 +236,13 @@ func (s *APISecurityScanner) testEndpoint(ctx context.Context, baseURL string, e
 	// Test 1: Missing authentication on endpoint
 	if !ep.Auth {
 		findings = append(findings, Finding{
-			URL:         testURL,
-			Title:       "Missing Authentication on API Endpoint",
-			Description: fmt.Sprintf("Endpoint %s %s has no security requirement defined", ep.Method, ep.Path),
-			Severity:    SeverityMedium,
-			Evidence:    "No security scheme defined in OpenAPI spec for this endpoint",
-			Scanner:     s.Name(),
-			Timestamp:   time.Now(),
+			URL:           testURL,
+			Title:         "Missing Authentication on API Endpoint",
+			Description:   fmt.Sprintf("Endpoint %s %s has no security requirement defined", ep.Method, ep.Path),
+			Severity:      SeverityMedium,
+			Evidence:      "No security scheme defined in OpenAPI spec for this endpoint",
+			Scanner:       s.Name(),
+			Timestamp:     time.Now(),
 			OWASPCategory: "API1:2023 Broken Object Level Authorization",
 		})
 	}
@@ -297,15 +297,15 @@ func (s *APISecurityScanner) testParameter(ctx context.Context, testURL string, 
 			// Check for SQL error patterns
 			if containsAny(bodyStr, "SQL syntax", "mysql_", "pg_query", "ORA-", "SQLITE_ERROR", "unclosed quotation mark") {
 				findings = append(findings, Finding{
-					URL:         testURL,
-					Title:       "SQL Injection in API Parameter",
-					Description: fmt.Sprintf("Parameter '%s' in %s %s is vulnerable to SQL injection", param.Name, ep.Method, ep.Path),
-					Severity:    SeverityCritical,
-					Payload:     payload,
-					Evidence:    "SQL error pattern detected in response",
-					Scanner:     s.Name(),
-					Timestamp:   time.Now(),
-					Parameter:  param.Name,
+					URL:           testURL,
+					Title:         "SQL Injection in API Parameter",
+					Description:   fmt.Sprintf("Parameter '%s' in %s %s is vulnerable to SQL injection", param.Name, ep.Method, ep.Path),
+					Severity:      SeverityCritical,
+					Payload:       payload,
+					Evidence:      "SQL error pattern detected in response",
+					Scanner:       s.Name(),
+					Timestamp:     time.Now(),
+					Parameter:     param.Name,
 					OWASPCategory: "API8:2023 Security Misconfiguration",
 				})
 				break
@@ -314,15 +314,15 @@ func (s *APISecurityScanner) testParameter(ctx context.Context, testURL string, 
 			// Check for XSS reflection
 			if strings.Contains(bodyStr, payload) && strings.Contains(payload, "<script>") {
 				findings = append(findings, Finding{
-					URL:         testURL,
-					Title:       "XSS in API Parameter",
-					Description: fmt.Sprintf("Parameter '%s' in %s %s reflects input without sanitization", param.Name, ep.Method, ep.Path),
-					Severity:    SeverityHigh,
-					Payload:     payload,
-					Evidence:    "Payload reflected in response body",
-					Scanner:     s.Name(),
-					Timestamp:   time.Now(),
-					Parameter:  param.Name,
+					URL:           testURL,
+					Title:         "XSS in API Parameter",
+					Description:   fmt.Sprintf("Parameter '%s' in %s %s reflects input without sanitization", param.Name, ep.Method, ep.Path),
+					Severity:      SeverityHigh,
+					Payload:       payload,
+					Evidence:      "Payload reflected in response body",
+					Scanner:       s.Name(),
+					Timestamp:     time.Now(),
+					Parameter:     param.Name,
 					OWASPCategory: "API8:2023 Security Misconfiguration",
 				})
 			}
@@ -342,13 +342,13 @@ func (s *APISecurityScanner) testParameter(ctx context.Context, testURL string, 
 			for _, pattern := range sensitivePatterns {
 				if strings.Contains(bodyStr, pattern) {
 					findings = append(findings, Finding{
-						URL:         testURL,
-						Title:       "Excessive Data Exposure in API Response",
-						Description: fmt.Sprintf("API response at %s %s may expose sensitive field: %s", ep.Method, ep.Path, pattern),
-						Severity:    SeverityHigh,
-						Evidence:    fmt.Sprintf("Sensitive pattern '%s' found in response", pattern),
-						Scanner:     s.Name(),
-						Timestamp:   time.Now(),
+						URL:           testURL,
+						Title:         "Excessive Data Exposure in API Response",
+						Description:   fmt.Sprintf("API response at %s %s may expose sensitive field: %s", ep.Method, ep.Path, pattern),
+						Severity:      SeverityHigh,
+						Evidence:      fmt.Sprintf("Sensitive pattern '%s' found in response", pattern),
+						Scanner:       s.Name(),
+						Timestamp:     time.Now(),
 						OWASPCategory: "API3:2023 Broken Object Property Level Authorization",
 					})
 					break
@@ -366,10 +366,10 @@ func (s *APISecurityScanner) testMassAssignment(ctx context.Context, testURL str
 
 	// Try sending requests with extra privileged fields
 	extraFields := map[string]string{
-		"role":      "admin",
-		"is_admin":  "true",
-		"admin":     "true",
-		"is_staff":  "true",
+		"role":         "admin",
+		"is_admin":     "true",
+		"admin":        "true",
+		"is_staff":     "true",
 		"is_superuser": "true",
 	}
 
@@ -389,14 +389,14 @@ func (s *APISecurityScanner) testMassAssignment(ctx context.Context, testURL str
 		for field := range extraFields {
 			if strings.Contains(bodyStr, field) {
 				findings = append(findings, Finding{
-					URL:         testURL,
-					Title:       "Mass Assignment Vulnerability",
-					Description: fmt.Sprintf("Endpoint %s %s accepts extra field '%s' that may grant elevated privileges", ep.Method, ep.Path, field),
-					Severity:    SeverityHigh,
-					Payload:     jsonBody,
-					Evidence:    fmt.Sprintf("Field '%s' reflected in response after being set in request", field),
-					Scanner:     s.Name(),
-					Timestamp:   time.Now(),
+					URL:           testURL,
+					Title:         "Mass Assignment Vulnerability",
+					Description:   fmt.Sprintf("Endpoint %s %s accepts extra field '%s' that may grant elevated privileges", ep.Method, ep.Path, field),
+					Severity:      SeverityHigh,
+					Payload:       jsonBody,
+					Evidence:      fmt.Sprintf("Field '%s' reflected in response after being set in request", field),
+					Scanner:       s.Name(),
+					Timestamp:     time.Now(),
 					OWASPCategory: "API3:2023 Broken Object Property Level Authorization",
 				})
 				break
@@ -441,13 +441,13 @@ func (s *APISecurityScanner) testRateLimiting(ctx context.Context, testURL strin
 
 	if !hasRateLimit {
 		findings = append(findings, Finding{
-			URL:         testURL,
-			Title:       "Missing Rate Limiting on Auth Endpoint",
-			Description: fmt.Sprintf("Authentication endpoint %s %s lacks rate limiting headers", ep.Method, ep.Path),
-			Severity:    SeverityMedium,
-			Evidence:    "No rate limiting headers (X-RateLimit-*, Retry-After) detected after 5 rapid requests",
-			Scanner:     s.Name(),
-			Timestamp:   time.Now(),
+			URL:           testURL,
+			Title:         "Missing Rate Limiting on Auth Endpoint",
+			Description:   fmt.Sprintf("Authentication endpoint %s %s lacks rate limiting headers", ep.Method, ep.Path),
+			Severity:      SeverityMedium,
+			Evidence:      "No rate limiting headers (X-RateLimit-*, Retry-After) detected after 5 rapid requests",
+			Scanner:       s.Name(),
+			Timestamp:     time.Now(),
 			OWASPCategory: "API4:2023 Unrestricted Resource Consumption",
 		})
 	}
@@ -474,13 +474,13 @@ func (s *APISecurityScanner) testVersionDisclosure(ctx context.Context, testURL 
 			strings.Contains(strings.ToLower(val), "v2") ||
 			strings.Contains(strings.ToLower(val), "v3")) {
 			findings = append(findings, Finding{
-				URL:         testURL,
-				Title:       "API Version Disclosure",
-				Description: fmt.Sprintf("API version information exposed via %s header: %s", h, val),
-				Severity:    SeverityLow,
-				Evidence:    fmt.Sprintf("Header %s: %s", h, val),
-				Scanner:     s.Name(),
-				Timestamp:   time.Now(),
+				URL:           testURL,
+				Title:         "API Version Disclosure",
+				Description:   fmt.Sprintf("API version information exposed via %s header: %s", h, val),
+				Severity:      SeverityLow,
+				Evidence:      fmt.Sprintf("Header %s: %s", h, val),
+				Scanner:       s.Name(),
+				Timestamp:     time.Now(),
 				OWASPCategory: "API8:2023 Security Misconfiguration",
 			})
 		}

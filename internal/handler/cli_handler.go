@@ -3,10 +3,10 @@ package handler
 import (
 	"time"
 
-	"github.com/temren/internal/middleware"
-	"github.com/temren/internal/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/temren/internal/middleware"
+	"github.com/temren/internal/model"
 )
 
 func (h *Handler) ReceiveCLIScan(c *fiber.Ctx) error {

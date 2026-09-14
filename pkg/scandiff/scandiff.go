@@ -16,11 +16,11 @@ import (
 )
 
 type Result struct {
-	Added       []scanner.Finding
-	Fixed       []scanner.Finding
-	Regressed   []SeverityChange
-	Improved    []SeverityChange
-	Stable      int
+	Added     []scanner.Finding
+	Fixed     []scanner.Finding
+	Regressed []SeverityChange
+	Improved  []SeverityChange
+	Stable    int
 }
 
 type SeverityChange struct {

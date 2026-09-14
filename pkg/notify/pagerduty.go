@@ -33,9 +33,9 @@ func (p *PagerDuty) Send(ctx context.Context, e Event) error {
 		"routing_key":  p.RoutingKey,
 		"event_action": "trigger",
 		"payload": map[string]any{
-			"summary":  e.Title,
-			"source":   e.URL,
-			"severity": pdSeverity[e.Severity],
+			"summary":   e.Title,
+			"source":    e.URL,
+			"severity":  pdSeverity[e.Severity],
 			"component": e.Scanner,
 			"custom_details": map[string]any{
 				"description": e.Description,

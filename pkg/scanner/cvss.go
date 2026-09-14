@@ -15,18 +15,18 @@ type CVSS4Vector struct {
 	PrivilegesRequired string // N (None), L (Low), H (High)
 	UserInteraction    string // N (None), P (Passive), A (Active)
 	Scope              string // U (Unchanged), C (Changed)
-	Confidentiality   string // N (None), L (Low), H (High)
-	Integrity         string // N (None), L (Low), H (High)
-	Availability      string // N (None), L (Low), H (High)
+	Confidentiality    string // N (None), L (Low), H (High)
+	Integrity          string // N (None), L (Low), H (High)
+	Availability       string // N (None), L (Low), H (High)
 }
 
 // CVSS 4.0 metric weight tables
 var (
-	avWeights = map[string]float64{"N": 0.97, "A": 0.62, "L": 0.55, "P": 0.20}
-	acWeights = map[string]float64{"L": 0.97, "H": 0.44}
-	atWeights = map[string]float64{"N": 0.97, "R": 0.62}
-	prWeights = map[string]float64{"N": 0.97, "L": 0.62, "H": 0.27}
-	uiWeights = map[string]float64{"N": 0.97, "P": 0.62, "A": 0.27}
+	avWeights  = map[string]float64{"N": 0.97, "A": 0.62, "L": 0.55, "P": 0.20}
+	acWeights  = map[string]float64{"L": 0.97, "H": 0.44}
+	atWeights  = map[string]float64{"N": 0.97, "R": 0.62}
+	prWeights  = map[string]float64{"N": 0.97, "L": 0.62, "H": 0.27}
+	uiWeights  = map[string]float64{"N": 0.97, "P": 0.62, "A": 0.27}
 	ciaWeights = map[string]float64{"N": 0.0, "L": 0.22, "H": 0.56}
 )
 
@@ -120,9 +120,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "N",
 			UserInteraction:    "N",
 			Scope:              "C",
-			Confidentiality:   "H",
-			Integrity:         "H",
-			Availability:      "H",
+			Confidentiality:    "H",
+			Integrity:          "H",
+			Availability:       "H",
 		}
 	case "Cross-Site Scripting (XSS)":
 		return CVSS4Vector{
@@ -132,9 +132,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "N",
 			UserInteraction:    "A",
 			Scope:              "U",
-			Confidentiality:   "N",
-			Integrity:         "L",
-			Availability:      "N",
+			Confidentiality:    "N",
+			Integrity:          "L",
+			Availability:       "N",
 		}
 	case "Server-Side Request Forgery (SSRF)":
 		return CVSS4Vector{
@@ -144,9 +144,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "N",
 			UserInteraction:    "N",
 			Scope:              "C",
-			Confidentiality:   "H",
-			Integrity:         "N",
-			Availability:      "N",
+			Confidentiality:    "H",
+			Integrity:          "N",
+			Availability:       "N",
 		}
 	case "Insecure Direct Object Reference (IDOR)":
 		return CVSS4Vector{
@@ -156,9 +156,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "L",
 			UserInteraction:    "N",
 			Scope:              "U",
-			Confidentiality:   "H",
-			Integrity:         "N",
-			Availability:      "N",
+			Confidentiality:    "H",
+			Integrity:          "N",
+			Availability:       "N",
 		}
 	case "Path Traversal":
 		return CVSS4Vector{
@@ -168,9 +168,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "N",
 			UserInteraction:    "N",
 			Scope:              "U",
-			Confidentiality:   "H",
-			Integrity:         "N",
-			Availability:      "N",
+			Confidentiality:    "H",
+			Integrity:          "N",
+			Availability:       "N",
 		}
 	case "XML External Entity (XXE)":
 		return CVSS4Vector{
@@ -180,9 +180,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "N",
 			UserInteraction:    "N",
 			Scope:              "C",
-			Confidentiality:   "H",
-			Integrity:         "H",
-			Availability:      "N",
+			Confidentiality:    "H",
+			Integrity:          "H",
+			Availability:       "N",
 		}
 	case "Command Injection":
 		return CVSS4Vector{
@@ -192,9 +192,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "N",
 			UserInteraction:    "N",
 			Scope:              "C",
-			Confidentiality:   "H",
-			Integrity:         "H",
-			Availability:      "H",
+			Confidentiality:    "H",
+			Integrity:          "H",
+			Availability:       "H",
 		}
 	case "Authentication Failures":
 		return CVSS4Vector{
@@ -204,9 +204,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "N",
 			UserInteraction:    "A",
 			Scope:              "U",
-			Confidentiality:   "H",
-			Integrity:         "L",
-			Availability:      "N",
+			Confidentiality:    "H",
+			Integrity:          "L",
+			Availability:       "N",
 		}
 	case "CORS Misconfiguration":
 		return CVSS4Vector{
@@ -216,9 +216,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "N",
 			UserInteraction:    "P",
 			Scope:              "U",
-			Confidentiality:   "L",
-			Integrity:         "N",
-			Availability:      "N",
+			Confidentiality:    "L",
+			Integrity:          "N",
+			Availability:       "N",
 		}
 	case "Server-Side Template Injection (SSTI)":
 		return CVSS4Vector{
@@ -228,9 +228,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "N",
 			UserInteraction:    "N",
 			Scope:              "C",
-			Confidentiality:   "H",
-			Integrity:         "H",
-			Availability:      "H",
+			Confidentiality:    "H",
+			Integrity:          "H",
+			Availability:       "H",
 		}
 	case "NoSQL Injection":
 		return CVSS4Vector{
@@ -240,9 +240,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "N",
 			UserInteraction:    "N",
 			Scope:              "C",
-			Confidentiality:   "H",
-			Integrity:         "H",
-			Availability:      "H",
+			Confidentiality:    "H",
+			Integrity:          "H",
+			Availability:       "H",
 		}
 	case "Security Headers":
 		return CVSS4Vector{
@@ -252,9 +252,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "N",
 			UserInteraction:    "P",
 			Scope:              "U",
-			Confidentiality:   "N",
-			Integrity:         "L",
-			Availability:      "N",
+			Confidentiality:    "N",
+			Integrity:          "L",
+			Availability:       "N",
 		}
 	case "Secret Scanner":
 		return CVSS4Vector{
@@ -264,9 +264,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "N",
 			UserInteraction:    "N",
 			Scope:              "C",
-			Confidentiality:   "H",
-			Integrity:         "H",
-			Availability:      "H",
+			Confidentiality:    "H",
+			Integrity:          "H",
+			Availability:       "H",
 		}
 	default:
 		// Default for unknown scanners
@@ -277,9 +277,9 @@ func InferCVSS4Vector(finding Finding) CVSS4Vector {
 			PrivilegesRequired: "N",
 			UserInteraction:    "N",
 			Scope:              "U",
-			Confidentiality:   "L",
-			Integrity:         "L",
-			Availability:      "N",
+			Confidentiality:    "L",
+			Integrity:          "L",
+			Availability:       "N",
 		}
 	}
 }
@@ -325,9 +325,9 @@ func ParseCVSS4Vector(vectorStr string) CVSS4Vector {
 		PrivilegesRequired: "N",
 		UserInteraction:    "N",
 		Scope:              "U",
-		Confidentiality:   "N",
-		Integrity:         "N",
-		Availability:      "N",
+		Confidentiality:    "N",
+		Integrity:          "N",
+		Availability:       "N",
 	}
 
 	parts := strings.Split(vectorStr, "/")

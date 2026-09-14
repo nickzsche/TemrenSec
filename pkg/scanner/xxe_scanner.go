@@ -74,4 +74,3 @@ func (s *XXEScanner) detectXXE(body string) bool {
 	}
 	return false
 }
-

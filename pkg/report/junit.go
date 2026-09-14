@@ -23,11 +23,11 @@ type junitTestSuite struct {
 }
 
 type junitTestCase struct {
-	Name      string           `xml:"name,attr"`
-	Classname string           `xml:"classname,attr"`
-	Time      string           `xml:"time,attr,omitempty"`
-	Error     *junitError      `xml:"error,omitempty"`
-	Failure   *junitFailure    `xml:"failure,omitempty"`
+	Name      string        `xml:"name,attr"`
+	Classname string        `xml:"classname,attr"`
+	Time      string        `xml:"time,attr,omitempty"`
+	Error     *junitError   `xml:"error,omitempty"`
+	Failure   *junitFailure `xml:"failure,omitempty"`
 }
 
 type junitError struct {

@@ -44,7 +44,7 @@ func (s *TLSAuditScanner) Scan(ctx context.Context, target string, _ *httpengine
 	return []Finding{{
 		URL: target, Title: fmt.Sprintf("TLS Score %d/100", rep.Score),
 		Description: strings.Join(rep.Issues, "; "),
-		Severity: severity, Confidence: ConfidenceHigh, Scanner: s.Name(),
+		Severity:    severity, Confidence: ConfidenceHigh, Scanner: s.Name(),
 		Timestamp: time.Now(), OWASPCategory: "A02:2021-Cryptographic Failures", CVSSScore: 5.3,
 	}}, nil
 }

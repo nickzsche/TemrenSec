@@ -45,7 +45,7 @@ func TestCompute_PartialAndFPs(t *testing.T) {
 		{ID: "b", URL: "/missing", Scanner: "Y"},
 	}
 	reports := []Reported{
-		{URL: "/foo", Scanner: "X"}, // TP for a
+		{URL: "/foo", Scanner: "X"},  // TP for a
 		{URL: "/junk", Scanner: "Z"}, // FP
 	}
 	s := Compute("test", reports, truth)
@@ -65,8 +65,8 @@ func TestCompute_FPOKSuppresses(t *testing.T) {
 		{ID: "h", URL: "/", Scanner: "Headers", FPOK: true},
 	}
 	reports := []Reported{
-		{URL: "/", Scanner: "Headers"},          // TP for h
-		{URL: "/another", Scanner: "Headers"},    // would be FP, but Headers is FPOK
+		{URL: "/", Scanner: "Headers"},        // TP for h
+		{URL: "/another", Scanner: "Headers"}, // would be FP, but Headers is FPOK
 	}
 	s := Compute("test", reports, truth)
 	if s.TruePos != 1 {

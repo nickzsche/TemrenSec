@@ -41,7 +41,7 @@ func (s *WebSocketOriginScanner) Scan(ctx context.Context, target string, client
 		return []Finding{{
 			URL: wsURL, Title: "WebSocket Accepts Cross-Origin Upgrade",
 			Description: "Server upgraded a WebSocket handshake when Origin was attacker-controlled. Cross-site WebSocket hijacking (CSWSH) is possible — pair with cookies for full account takeover.",
-			Severity: SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
+			Severity:    SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
 			Payload: "Origin: https://evil.example", Timestamp: time.Now(),
 			OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 7.5,
 		}}, nil

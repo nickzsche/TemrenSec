@@ -22,13 +22,13 @@ type Client struct {
 }
 
 type Issue struct {
-	ID          int64  `json:"id,omitempty"`
-	Number      int    `json:"number,omitempty"`
-	Title       string `json:"title"`
-	Body        string `json:"body"`
-	State       string `json:"state,omitempty"`
-	Labels      []string `json:"labels,omitempty"`
-	Assignees   []string `json:"assignees,omitempty"`
+	ID        int64    `json:"id,omitempty"`
+	Number    int      `json:"number,omitempty"`
+	Title     string   `json:"title"`
+	Body      string   `json:"body"`
+	State     string   `json:"state,omitempty"`
+	Labels    []string `json:"labels,omitempty"`
+	Assignees []string `json:"assignees,omitempty"`
 }
 
 func NewClient(config *Config) *Client {

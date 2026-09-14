@@ -51,7 +51,7 @@ func (s *OpenRedirectPathScanner) Scan(ctx context.Context, target string, clien
 				findings = append(findings, Finding{
 					URL: full, Title: "Open Redirect via Path Segment",
 					Description: "Server issued a 3xx redirect to attacker-controlled host. Useful in phishing chains and OAuth account takeover.",
-					Severity: SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
+					Severity:    SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
 					Payload: m, Evidence: "Location: " + loc,
 					Timestamp: time.Now(), OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 6.1,
 				})

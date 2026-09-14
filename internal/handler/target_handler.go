@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"github.com/gofiber/fiber/v2"
 	"github.com/temren/internal/middleware"
 	"github.com/temren/internal/model"
-	"github.com/gofiber/fiber/v2"
 )
 
 func (h *Handler) CreateTarget(c *fiber.Ctx) error {

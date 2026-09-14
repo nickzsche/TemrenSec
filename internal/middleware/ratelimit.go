@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/temren/internal/config"
 	"github.com/gofiber/fiber/v2"
 	"github.com/redis/go-redis/v9"
+	"github.com/temren/internal/config"
 )
 
 type RateLimiter struct {
@@ -195,7 +195,7 @@ func (r *RateLimiter) LimitByEndpoint() fiber.Handler {
 func (r *RateLimiter) GetUserUsage(userID string, window time.Duration) (int64, error) {
 	ctx := context.Background()
 	key := fmt.Sprintf("ratelimit:user:%s", userID)
-	
+
 	count, err := r.redis.Get(ctx, key).Int64()
 	if err == redis.Nil {
 		return 0, nil

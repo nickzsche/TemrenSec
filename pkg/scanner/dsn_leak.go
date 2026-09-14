@@ -41,7 +41,7 @@ func (s *DSNLeakScanner) Scan(ctx context.Context, target string, client *httpen
 			findings = append(findings, Finding{
 				URL: target, Title: "Public Telemetry / SDK Key Leaked",
 				Description: "A telemetry SDK key was embedded in the page source. Public-by-design or not, restrict via referrer / origin allowlists in the vendor console to prevent third-party abuse and quota draining.",
-				Severity: SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Severity:    SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
 				Evidence: redact(match), Timestamp: time.Now(),
 				OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 5.3,
 			})

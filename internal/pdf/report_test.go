@@ -29,10 +29,10 @@ func TestGeneratePDF_TurkishCharacters(t *testing.T) {
 	target := &model.Target{ID: "t1", URL: "https://türkçe-test.example", SecurityScore: 78}
 	vulns := []*model.Vulnerability{
 		{
-			Title:       "Türkçe başlık: İçerik güvenliği",
-			Severity:    "HIGH",
-			Description: "Güvenlik açığı bulundu — ğüşıöç İĞŞÖÇÜ.",
-			URL:         "https://example.test/şehir/güvenlik",
+			Title:         "Türkçe başlık: İçerik güvenliği",
+			Severity:      "HIGH",
+			Description:   "Güvenlik açığı bulundu — ğüşıöç İĞŞÖÇÜ.",
+			URL:           "https://example.test/şehir/güvenlik",
 			OWASPCategory: "A05:2025-Injection",
 		},
 	}
@@ -52,8 +52,8 @@ func TestGeneratePDF_TurkishCharacters(t *testing.T) {
 		t.Fatal("no compressed streams found in PDF")
 	}
 	mojibakeMarkers := []string{
-		"TÃ¼rk",   // "Türk"
-		"Ã§e",     // "çe"
+		"TÃ¼rk",  // "Türk"
+		"Ã§e",    // "çe"
 		"gÃ¼ven", // "güven"
 	}
 	for _, s := range streams {

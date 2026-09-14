@@ -73,13 +73,13 @@ func (s *Scanner) Run(ctx context.Context) ([]scanner.Finding, error) {
 	if _, ok := init["result"]; ok {
 		findings = append(findings, scanner.Finding{
 			URL: s.Endpoint, Title: "MCP server accepts unauthenticated initialize",
-			Description: "Server handshake succeeded without any authentication header. MCP servers should require an Authorization bearer or session token.",
-			Severity:    scanner.SeverityHigh,
-			Confidence:  scanner.ConfidenceHigh,
-			Scanner:     s.Name(),
-			Timestamp:   time.Now(),
+			Description:   "Server handshake succeeded without any authentication header. MCP servers should require an Authorization bearer or session token.",
+			Severity:      scanner.SeverityHigh,
+			Confidence:    scanner.ConfidenceHigh,
+			Scanner:       s.Name(),
+			Timestamp:     time.Now(),
 			OWASPCategory: "A07:2021-Identification and Authentication Failures",
-			CVSSScore:   7.5,
+			CVSSScore:     7.5,
 		})
 	}
 
@@ -87,13 +87,13 @@ func (s *Scanner) Run(ctx context.Context) ([]scanner.Finding, error) {
 		if list := extractList(tools, "tools"); len(list) > 0 {
 			findings = append(findings, scanner.Finding{
 				URL: s.Endpoint, Title: fmt.Sprintf("MCP exposes %d tools unauthenticated", len(list)),
-				Description: "Enumerated tools: " + truncateList(list),
-				Severity:    severityForTools(list),
-				Confidence:  scanner.ConfidenceHigh,
-				Scanner:     s.Name(),
-				Timestamp:   time.Now(),
+				Description:   "Enumerated tools: " + truncateList(list),
+				Severity:      severityForTools(list),
+				Confidence:    scanner.ConfidenceHigh,
+				Scanner:       s.Name(),
+				Timestamp:     time.Now(),
 				OWASPCategory: "A01:2021-Broken Access Control",
-				CVSSScore:   8.0,
+				CVSSScore:     8.0,
 			})
 		}
 	}
@@ -102,13 +102,13 @@ func (s *Scanner) Run(ctx context.Context) ([]scanner.Finding, error) {
 		if list := extractList(resources, "resources"); len(list) > 0 {
 			findings = append(findings, scanner.Finding{
 				URL: s.Endpoint, Title: fmt.Sprintf("MCP exposes %d resources unauthenticated", len(list)),
-				Description: "Resource URIs: " + truncateList(list),
-				Severity:    scanner.SeverityHigh,
-				Confidence:  scanner.ConfidenceHigh,
-				Scanner:     s.Name(),
-				Timestamp:   time.Now(),
+				Description:   "Resource URIs: " + truncateList(list),
+				Severity:      scanner.SeverityHigh,
+				Confidence:    scanner.ConfidenceHigh,
+				Scanner:       s.Name(),
+				Timestamp:     time.Now(),
 				OWASPCategory: "A01:2021-Broken Access Control",
-				CVSSScore:   7.5,
+				CVSSScore:     7.5,
 			})
 		}
 	}

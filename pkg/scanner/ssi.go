@@ -60,7 +60,7 @@ func (s *SSIInjectionScanner) Scan(ctx context.Context, target string, client *h
 				findings = append(findings, Finding{
 					URL: u.String(), Title: "Server-Side Include Injection",
 					Description: "SSI directive evaluated by the server. Often grants command execution on legacy Apache deployments.",
-					Severity: SeverityCritical, Confidence: ConfidenceHigh, Scanner: s.Name(),
+					Severity:    SeverityCritical, Confidence: ConfidenceHigh, Scanner: s.Name(),
 					Parameter: param, Payload: p, Timestamp: time.Now(),
 					OWASPCategory: "A03:2021-Injection", CVSSScore: 9.8,
 				})

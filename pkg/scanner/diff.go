@@ -8,24 +8,24 @@ import (
 type DiffCategory string
 
 const (
-	DiffFixed      DiffCategory = "FIXED"
-	DiffNew        DiffCategory = "NEW"
-	DiffRegressed  DiffCategory = "REGRESSED"
-	DiffUnchanged  DiffCategory = "UNCHANGED"
+	DiffFixed     DiffCategory = "FIXED"
+	DiffNew       DiffCategory = "NEW"
+	DiffRegressed DiffCategory = "REGRESSED"
+	DiffUnchanged DiffCategory = "UNCHANGED"
 )
 
 type DiffEntry struct {
-	Finding  Finding     `json:"finding"`
+	Finding  Finding      `json:"finding"`
 	Category DiffCategory `json:"category"`
-	Previous *Finding    `json:"previous,omitempty"`
+	Previous *Finding     `json:"previous,omitempty"`
 }
 
 type DiffResult struct {
-	Fixed      []DiffEntry `json:"fixed"`
-	New        []DiffEntry `json:"new"`
-	Regressed  []DiffEntry `json:"regressed"`
-	Unchanged  []DiffEntry `json:"unchanged"`
-	Summary    DiffSummary `json:"summary"`
+	Fixed     []DiffEntry `json:"fixed"`
+	New       []DiffEntry `json:"new"`
+	Regressed []DiffEntry `json:"regressed"`
+	Unchanged []DiffEntry `json:"unchanged"`
+	Summary   DiffSummary `json:"summary"`
 }
 
 type DiffSummary struct {

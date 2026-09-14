@@ -106,4 +106,3 @@ func (s *TechnologyDetector) Scan(ctx context.Context, target string, client *ht
 
 	return findings, nil
 }
-

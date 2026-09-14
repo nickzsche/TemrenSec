@@ -11,14 +11,14 @@ import (
 
 // GroundTruth row, parsed from juice-shop/ground_truth.yaml (and peers).
 type GroundTruth struct {
-	ID          string `yaml:"id"`
-	URL         string `yaml:"url"`
-	Parameter   string `yaml:"parameter,omitempty"`
-	Scanner     string `yaml:"scanner"`
-	CWE         string `yaml:"cwe"`
-	OWASP2025   string `yaml:"owasp_2025"`
-	Severity    string `yaml:"severity"`
-	FPOK        bool   `yaml:"fp_ok"`
+	ID        string `yaml:"id"`
+	URL       string `yaml:"url"`
+	Parameter string `yaml:"parameter,omitempty"`
+	Scanner   string `yaml:"scanner"`
+	CWE       string `yaml:"cwe"`
+	OWASP2025 string `yaml:"owasp_2025"`
+	Severity  string `yaml:"severity"`
+	FPOK      bool   `yaml:"fp_ok"`
 }
 
 // Reported is the minimal projection of a finding we need to score. We

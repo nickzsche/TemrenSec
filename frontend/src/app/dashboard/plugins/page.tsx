@@ -22,7 +22,7 @@ export default function PluginsPage() {
     <div className="space-y-6 p-6">
       <header>
         <h1 className="text-2xl font-bold">Plugin Marketplace</h1>
-        <p className="text-sm text-zinc-500">Drop-in scanners. Plugins are Lua scripts loaded by Temren' plugin engine.</p>
+        <p className="text-sm text-zinc-500">Drop-in scanners. Plugins are Lua scripts loaded by Temren&apos;s plugin engine.</p>
       </header>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {plugins.map(p => (

@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/cobra"
 	"github.com/temren/pkg/compliance"
 	"github.com/temren/pkg/scanner"
-	"github.com/spf13/cobra"
 )
 
 var complianceInput string

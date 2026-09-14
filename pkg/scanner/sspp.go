@@ -44,7 +44,7 @@ func (s *ServerSidePrototypePollutionScanner) Scan(ctx context.Context, target s
 			findings = append(findings, Finding{
 				URL: target, Title: "Server-Side Prototype Pollution",
 				Description: "Endpoint merged untrusted JSON into a shared object; injected property leaked into the response. Attackers can shape downstream object lookups and frequently chain this to RCE in Node.js.",
-				Severity: SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Severity:    SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
 				Payload: string(buf), Evidence: "canary echoed",
 				Timestamp: time.Now(), OWASPCategory: "A08:2021-Software and Data Integrity Failures", CVSSScore: 8.1,
 			})

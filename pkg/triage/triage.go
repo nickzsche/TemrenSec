@@ -2,7 +2,7 @@
 // downstream channels (issue trackers, dashboards, paging). It applies:
 //
 //   - Stable fingerprinting   group near-duplicates (same scanner + host + path
-//                              shape + parameter family)
+//     shape + parameter family)
 //   - Suppression rules       drop findings matching a YAML allowlist
 //   - Severity overrides      bump or lower severity per rule
 //
@@ -23,7 +23,7 @@ import (
 // Suppression matches and discards findings.
 type Suppression struct {
 	Scanner string `yaml:"scanner,omitempty"`
-	URL     string `yaml:"url,omitempty"`      // glob
+	URL     string `yaml:"url,omitempty"` // glob
 	Param   string `yaml:"param,omitempty"`
 	Reason  string `yaml:"reason,omitempty"`
 }

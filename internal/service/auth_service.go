@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/temren/internal/config"
 	"github.com/temren/internal/database"
 	"github.com/temren/internal/model"
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 

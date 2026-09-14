@@ -93,8 +93,8 @@ func (s *SlackNotifier) buildPayload(result ScanResult) map[string]interface{} {
 	})
 
 	blocks = append(blocks, map[string]interface{}{
-		"type":    "section",
-		"fields":  fields,
+		"type":   "section",
+		"fields": fields,
 	})
 
 	blocks = append(blocks, map[string]interface{}{

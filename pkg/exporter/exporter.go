@@ -45,11 +45,11 @@ type sarifTextContainer struct {
 	Text string `json:"text"`
 }
 type sarifResult struct {
-	RuleID    string             `json:"ruleId"`
-	Level     string             `json:"level"`
-	Message   sarifTextContainer `json:"message"`
-	Locations []sarifLocation    `json:"locations"`
-	Properties map[string]any    `json:"properties,omitempty"`
+	RuleID     string             `json:"ruleId"`
+	Level      string             `json:"level"`
+	Message    sarifTextContainer `json:"message"`
+	Locations  []sarifLocation    `json:"locations"`
+	Properties map[string]any     `json:"properties,omitempty"`
 }
 type sarifLocation struct {
 	PhysicalLocation sarifPhysical `json:"physicalLocation"`
@@ -126,11 +126,11 @@ func CycloneDX(w io.Writer, findings []scanner.Finding) error {
 		Method   string  `json:"method,omitempty"`
 	}
 	type vuln struct {
-		BomRef      string   `json:"bom-ref"`
-		ID          string   `json:"id"`
-		Description string   `json:"description"`
-		Ratings     []rating `json:"ratings"`
-		Source      map[string]string `json:"source"`
+		BomRef      string              `json:"bom-ref"`
+		ID          string              `json:"id"`
+		Description string              `json:"description"`
+		Ratings     []rating            `json:"ratings"`
+		Source      map[string]string   `json:"source"`
 		References  []map[string]string `json:"references,omitempty"`
 	}
 	doc := map[string]any{
@@ -139,7 +139,7 @@ func CycloneDX(w io.Writer, findings []scanner.Finding) error {
 		"version":     1,
 		"metadata": map[string]any{
 			"timestamp": time.Now().UTC().Format(time.RFC3339),
-			"tools": []map[string]string{{"vendor": "temren", "name": "temren", "version": "1.0.0"}},
+			"tools":     []map[string]string{{"vendor": "temren", "name": "temren", "version": "1.0.0"}},
 		},
 		"vulnerabilities": []vuln{},
 	}

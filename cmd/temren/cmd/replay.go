@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/temren/pkg/replay"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/replay"
 )
 
 var (

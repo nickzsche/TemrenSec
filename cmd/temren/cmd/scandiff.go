@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/spf13/cobra"
 	"github.com/temren/pkg/scandiff"
 	"github.com/temren/pkg/scanner"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -17,8 +17,8 @@ var (
 )
 
 var scandiffCmd = &cobra.Command{
-	Use:   "scan-diff",
-	Short: "Semantic diff between two scan-result JSON files (added / fixed / regressed / improved)",
+	Use:     "scan-diff",
+	Short:   "Semantic diff between two scan-result JSON files (added / fixed / regressed / improved)",
 	Example: `  temren scan-diff --base baseline.json --current latest.json`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		base, err := readJSON(diffBaseFile)

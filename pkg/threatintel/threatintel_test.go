@@ -30,7 +30,7 @@ func TestLookupReturnsZeroOnBadID(t *testing.T) {
 
 func TestLookupNVDIntegration(t *testing.T) {
 	srv := stubServer(map[string]string{
-		"/nvd": `{"vulnerabilities":[{"cve":{"id":"CVE-2024-9999","descriptions":[{"lang":"en","value":"Test"}],"metrics":{"cvssMetricV31":[{"cvssData":{"baseScore":7.5}}]},"references":[{"url":"https://example.com"}]}}]}`,
+		"/nvd":  `{"vulnerabilities":[{"cve":{"id":"CVE-2024-9999","descriptions":[{"lang":"en","value":"Test"}],"metrics":{"cvssMetricV31":[{"cvssData":{"baseScore":7.5}}]},"references":[{"url":"https://example.com"}]}}]}`,
 		"/epss": `{"data":[{"epss":"0.85","percentile":"0.99"}]}`,
 		"/kev":  `{"vulnerabilities":[{"cveID":"CVE-2024-9999","dateAdded":"2024-05-01"}]}`,
 	})

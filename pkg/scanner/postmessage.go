@@ -40,7 +40,7 @@ func (s *PostMessageScanner) Scan(ctx context.Context, target string, client *ht
 	return []Finding{{
 		URL: target, Title: "postMessage handler without origin check",
 		Description: "JavaScript registers a message handler but no origin equality check is detected. Any iframe / window.open can deliver hostile messages.",
-		Severity: SeverityHigh, Confidence: ConfidenceMedium, Scanner: s.Name(),
+		Severity:    SeverityHigh, Confidence: ConfidenceMedium, Scanner: s.Name(),
 		Timestamp: time.Now(), OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 7.5,
 	}}, nil
 }

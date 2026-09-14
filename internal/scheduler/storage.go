@@ -47,7 +47,7 @@ func (s *PostgresStorage) Save(schedule *Schedule) error {
 			next_run = EXCLUDED.next_run,
 			updated_at = EXCLUDED.updated_at
 	`
-	
+
 	if schedule.CreatedAt.IsZero() {
 		schedule.CreatedAt = time.Now()
 	}
@@ -64,18 +64,18 @@ func (s *PostgresStorage) Save(schedule *Schedule) error {
 		schedule.CreatedAt,
 		schedule.UpdatedAt,
 	)
-	
+
 	return err
 }
 
 func (s *PostgresStorage) Get(id string) (*Schedule, error) {
 	query := `SELECT id, target_id, user_id, cron_expr, frequency, enabled, last_run, next_run, created_at, updated_at FROM schedules WHERE id = $1`
-	
+
 	row := s.db.QueryRow(query, id)
 	schedule := &Schedule{}
-	
+
 	var lastRun, nextRun sql.NullTime
-	
+
 	err := row.Scan(
 		&schedule.ID,
 		&schedule.TargetID,
@@ -88,32 +88,32 @@ func (s *PostgresStorage) Get(id string) (*Schedule, error) {
 		&schedule.CreatedAt,
 		&schedule.UpdatedAt,
 	)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("schedule not found")
 		}
 		return nil, err
 	}
-	
+
 	if lastRun.Valid {
 		schedule.LastRun = lastRun.Time
 	}
 	if nextRun.Valid {
 		schedule.NextRun = nextRun.Time
 	}
-	
+
 	return schedule, nil
 }
 
 func (s *PostgresStorage) GetByTarget(targetID string) (*Schedule, error) {
 	query := `SELECT id, target_id, user_id, cron_expr, frequency, enabled, last_run, next_run, created_at, updated_at FROM schedules WHERE target_id = $1 LIMIT 1`
-	
+
 	row := s.db.QueryRow(query, targetID)
 	schedule := &Schedule{}
-	
+
 	var lastRun, nextRun sql.NullTime
-	
+
 	err := row.Scan(
 		&schedule.ID,
 		&schedule.TargetID,
@@ -126,39 +126,39 @@ func (s *PostgresStorage) GetByTarget(targetID string) (*Schedule, error) {
 		&schedule.CreatedAt,
 		&schedule.UpdatedAt,
 	)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("schedule not found")
 		}
 		return nil, err
 	}
-	
+
 	if lastRun.Valid {
 		schedule.LastRun = lastRun.Time
 	}
 	if nextRun.Valid {
 		schedule.NextRun = nextRun.Time
 	}
-	
+
 	return schedule, nil
 }
 
 func (s *PostgresStorage) List(userID string) ([]*Schedule, error) {
 	query := `SELECT id, target_id, user_id, cron_expr, frequency, enabled, last_run, next_run, created_at, updated_at FROM schedules WHERE user_id = $1 ORDER BY created_at DESC`
-	
+
 	rows, err := s.db.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var schedules []*Schedule
-	
+
 	for rows.Next() {
 		schedule := &Schedule{}
 		var lastRun, nextRun sql.NullTime
-		
+
 		err := rows.Scan(
 			&schedule.ID,
 			&schedule.TargetID,
@@ -171,21 +171,21 @@ func (s *PostgresStorage) List(userID string) ([]*Schedule, error) {
 			&schedule.CreatedAt,
 			&schedule.UpdatedAt,
 		)
-		
+
 		if err != nil {
 			return nil, err
 		}
-		
+
 		if lastRun.Valid {
 			schedule.LastRun = lastRun.Time
 		}
 		if nextRun.Valid {
 			schedule.NextRun = nextRun.Time
 		}
-		
+
 		schedules = append(schedules, schedule)
 	}
-	
+
 	return schedules, rows.Err()
 }
 

@@ -39,7 +39,7 @@ func (s *GRPCReflectionScanner) Scan(ctx context.Context, target string, client 
 			return []Finding{{
 				URL: target + p, Title: "gRPC Reflection Service Exposed",
 				Description: "Public reflection lets attackers enumerate every RPC method and message schema, often revealing internal admin endpoints. Disable on production.",
-				Severity: SeverityMedium, Confidence: ConfidenceMedium, Scanner: s.Name(),
+				Severity:    SeverityMedium, Confidence: ConfidenceMedium, Scanner: s.Name(),
 				Timestamp: time.Now(), OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 5.3,
 			}}, nil
 		}

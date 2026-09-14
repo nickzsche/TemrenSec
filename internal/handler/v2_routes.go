@@ -310,12 +310,12 @@ func RegisterV2(app *fiber.App) {
 	// Notification smoke-test (used by the Settings → Integrations form)
 	api.Post("/notify/test", func(c *fiber.Ctx) error {
 		var body struct {
-			Channel string         `json:"channel"`
-			URL     string         `json:"url"`
-			Token   string         `json:"token"`
-			Topic   string         `json:"topic"`
-			Event   notify.Event   `json:"event"`
-			Secret  string         `json:"secret"`
+			Channel string       `json:"channel"`
+			URL     string       `json:"url"`
+			Token   string       `json:"token"`
+			Topic   string       `json:"topic"`
+			Event   notify.Event `json:"event"`
+			Secret  string       `json:"secret"`
 		}
 		if err := c.BodyParser(&body); err != nil {
 			return c.Status(400).JSON(fiber.Map{"error": err.Error()})

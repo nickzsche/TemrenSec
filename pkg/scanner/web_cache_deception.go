@@ -40,7 +40,7 @@ func (s *WebCacheDeceptionScanner) Scan(ctx context.Context, target string, clie
 			findings = append(findings, Finding{
 				URL: probe, Title: "Web Cache Deception Possible",
 				Description: "Suffixing the dynamic URL with a static-asset extension produced a cacheable 200 with HTML body. Authenticated content may be cached and served to other users.",
-				Severity: SeverityHigh, Confidence: ConfidenceMedium, Scanner: s.Name(),
+				Severity:    SeverityHigh, Confidence: ConfidenceMedium, Scanner: s.Name(),
 				Payload: suf, Evidence: "Cache-Control=" + cc + " Age=" + age,
 				Timestamp: time.Now(), OWASPCategory: "A04:2021-Insecure Design", CVSSScore: 7.5,
 			})

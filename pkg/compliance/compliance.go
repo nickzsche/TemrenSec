@@ -40,8 +40,8 @@ type ControlHit struct {
 // rules maps a normalized OWASP category (or scanner name keyword) to a list of control hits.
 // Keys are lower-cased substrings. A finding matches if its OWASPCategory or Scanner contains the key.
 var rules = []struct {
-	key   string
-	hits  []ControlHit
+	key  string
+	hits []ControlHit
 }{
 	{"a01:2021-broken access control", []ControlHit{
 		{PCIDSS, "7.2", "Restrict access to system components"},

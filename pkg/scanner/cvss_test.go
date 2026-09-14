@@ -14,9 +14,9 @@ func TestCalculateCVSS4_SQLi(t *testing.T) {
 		PrivilegesRequired: "N",
 		UserInteraction:    "N",
 		Scope:              "C",
-		Confidentiality:   "H",
-		Integrity:         "H",
-		Availability:      "H",
+		Confidentiality:    "H",
+		Integrity:          "H",
+		Availability:       "H",
 	}
 	score := CalculateCVSS4(vector)
 	if score < 9.0 || score > 10.0 {
@@ -32,9 +32,9 @@ func TestCalculateCVSS4_XSS(t *testing.T) {
 		PrivilegesRequired: "N",
 		UserInteraction:    "A",
 		Scope:              "U",
-		Confidentiality:   "N",
-		Integrity:         "L",
-		Availability:      "N",
+		Confidentiality:    "N",
+		Integrity:          "L",
+		Availability:       "N",
 	}
 	score := CalculateCVSS4(vector)
 	if score < 3.0 || score > 6.0 {
@@ -50,9 +50,9 @@ func TestCalculateCVSS4_CommandInjection(t *testing.T) {
 		PrivilegesRequired: "N",
 		UserInteraction:    "N",
 		Scope:              "C",
-		Confidentiality:   "H",
-		Integrity:         "H",
-		Availability:      "H",
+		Confidentiality:    "H",
+		Integrity:          "H",
+		Availability:       "H",
 	}
 	score := CalculateCVSS4(vector)
 	if score < 9.0 {
@@ -71,9 +71,9 @@ func TestCalculateCVSS4_SecurityHeaders(t *testing.T) {
 		PrivilegesRequired: "N",
 		UserInteraction:    "P",
 		Scope:              "U",
-		Confidentiality:   "N",
-		Integrity:         "L",
-		Availability:      "N",
+		Confidentiality:    "N",
+		Integrity:          "L",
+		Availability:       "N",
 	}
 	score := CalculateCVSS4(vector)
 	if score < 4.0 || score > 7.0 {
@@ -89,9 +89,9 @@ func TestCalculateCVSS4_ZeroImpact(t *testing.T) {
 		PrivilegesRequired: "N",
 		UserInteraction:    "N",
 		Scope:              "U",
-		Confidentiality:   "N",
-		Integrity:         "N",
-		Availability:      "N",
+		Confidentiality:    "N",
+		Integrity:          "N",
+		Availability:       "N",
 	}
 	score := CalculateCVSS4(vector)
 	if score != 0.0 {
@@ -107,9 +107,9 @@ func TestCalculateCVSS4_PhysicalAttackVector(t *testing.T) {
 		PrivilegesRequired: "H",
 		UserInteraction:    "A",
 		Scope:              "U",
-		Confidentiality:   "L",
-		Integrity:         "L",
-		Availability:      "N",
+		Confidentiality:    "L",
+		Integrity:          "L",
+		Availability:       "N",
 	}
 	score := CalculateCVSS4(vector)
 	if score > 5.0 {
@@ -125,9 +125,9 @@ func TestCalculateCVSS4_ScopeChanged(t *testing.T) {
 		PrivilegesRequired: "N",
 		UserInteraction:    "N",
 		Scope:              "C",
-		Confidentiality:   "H",
-		Integrity:         "N",
-		Availability:      "N",
+		Confidentiality:    "H",
+		Integrity:          "N",
+		Availability:       "N",
 	}
 	score := CalculateCVSS4(vector)
 	if score < 8.0 || score > 10.0 {
@@ -143,9 +143,9 @@ func TestCalculateCVSS4_LowPrivileges(t *testing.T) {
 		PrivilegesRequired: "L",
 		UserInteraction:    "N",
 		Scope:              "U",
-		Confidentiality:   "H",
-		Integrity:         "N",
-		Availability:      "N",
+		Confidentiality:    "H",
+		Integrity:          "N",
+		Availability:       "N",
 	}
 	score := CalculateCVSS4(vector)
 	if score < 7.0 || score > 9.0 {
@@ -155,11 +155,11 @@ func TestCalculateCVSS4_LowPrivileges(t *testing.T) {
 
 func TestInferCVSS4Vector(t *testing.T) {
 	tests := []struct {
-		scanner       string
-		wantAV        string
-		wantScope     string
-		wantMinScore  float64
-		wantMaxScore  float64
+		scanner      string
+		wantAV       string
+		wantScope    string
+		wantMinScore float64
+		wantMaxScore float64
 	}{
 		{"SQL Injection", "N", "C", 9.0, 10.0},
 		{"Cross-Site Scripting (XSS)", "N", "U", 3.0, 7.0},
@@ -232,9 +232,9 @@ func TestVectorString(t *testing.T) {
 		PrivilegesRequired: "N",
 		UserInteraction:    "N",
 		Scope:              "C",
-		Confidentiality:   "H",
-		Integrity:         "H",
-		Availability:      "H",
+		Confidentiality:    "H",
+		Integrity:          "H",
+		Availability:       "H",
 	}
 	want := "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/S:C/C:H/I:H/A:H"
 	got := vector.VectorString()
@@ -287,9 +287,9 @@ func TestCalculateCVSS4_Roundtrip(t *testing.T) {
 		PrivilegesRequired: "N",
 		UserInteraction:    "N",
 		Scope:              "C",
-		Confidentiality:   "H",
-		Integrity:         "H",
-		Availability:      "H",
+		Confidentiality:    "H",
+		Integrity:          "H",
+		Availability:       "H",
 	}
 	vectorStr := vector.VectorString()
 	parsed := ParseCVSS4Vector(vectorStr)

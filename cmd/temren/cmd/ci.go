@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cobra"
 	"github.com/temren/pkg/httpengine"
 	"github.com/temren/pkg/report"
 	"github.com/temren/pkg/scanner"
 	"github.com/temren/pkg/spider"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -61,8 +61,8 @@ var severityOrder = map[scanner.Severity]int{
 	scanner.SeverityCritical: 4,
 	scanner.SeverityHigh:     3,
 	scanner.SeverityMedium:   2,
-	scanner.SeverityLow:    1,
-	scanner.SeverityInfo:    0,
+	scanner.SeverityLow:      1,
+	scanner.SeverityInfo:     0,
 }
 
 func thresholdSeverity(threshold string) scanner.Severity {
@@ -81,14 +81,14 @@ func thresholdSeverity(threshold string) scanner.Severity {
 }
 
 type ciScanResult struct {
-	Target              string            `json:"target"`
-	Timestamp           string            `json:"timestamp"`
-	Threshold          string            `json:"threshold"`
-	TotalFindings      int               `json:"total_findings"`
-	SeverityCounts      map[string]int    `json:"severity_counts"`
-	FindingsAboveThreshold int            `json:"findings_above_threshold"`
-	Passed             bool              `json:"passed"`
-	Findings           []scanner.Finding `json:"findings"`
+	Target                 string            `json:"target"`
+	Timestamp              string            `json:"timestamp"`
+	Threshold              string            `json:"threshold"`
+	TotalFindings          int               `json:"total_findings"`
+	SeverityCounts         map[string]int    `json:"severity_counts"`
+	FindingsAboveThreshold int               `json:"findings_above_threshold"`
+	Passed                 bool              `json:"passed"`
+	Findings               []scanner.Finding `json:"findings"`
 }
 
 func runCI(cmd *cobra.Command, args []string) {
@@ -177,13 +177,13 @@ func runCI(cmd *cobra.Command, args []string) {
 
 	result := ciScanResult{
 		Target:                 ciTarget,
-		Timestamp:             time.Now().UTC().Format(time.RFC3339),
-		Threshold:             ciThreshold,
-		TotalFindings:         len(findings),
-		SeverityCounts:        severityCounts,
+		Timestamp:              time.Now().UTC().Format(time.RFC3339),
+		Threshold:              ciThreshold,
+		TotalFindings:          len(findings),
+		SeverityCounts:         severityCounts,
 		FindingsAboveThreshold: findingsAboveThreshold,
-		Passed:                passed,
-		Findings:              findings,
+		Passed:                 passed,
+		Findings:               findings,
 	}
 
 	switch ciFormat {

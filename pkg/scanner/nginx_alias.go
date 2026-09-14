@@ -39,8 +39,8 @@ func (s *NginxAliasTraversalScanner) Scan(ctx context.Context, target string, cl
 			findings = append(findings, Finding{
 				URL: probe, Title: "Nginx Alias Traversal",
 				Description: "Missing trailing slash on Nginx \"alias\" directive allowed traversal out of the static-serve directory. Patch the config and add ^~ matchers.",
-				Severity: SeverityCritical, Confidence: ConfidenceHigh, Scanner: s.Name(),
-				Evidence: "/etc/passwd contents reflected",
+				Severity:    SeverityCritical, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Evidence:  "/etc/passwd contents reflected",
 				Timestamp: time.Now(), OWASPCategory: "A01:2021-Broken Access Control", CVSSScore: 9.8,
 			})
 			return findings, nil

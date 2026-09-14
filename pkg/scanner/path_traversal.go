@@ -92,4 +92,3 @@ func (s *PathTraversalScanner) detectPathTraversal(body string) bool {
 	}
 	return false
 }
-

@@ -33,7 +33,7 @@ func (s *SCIMEnumerationScanner) Scan(ctx context.Context, target string, client
 			findings = append(findings, Finding{
 				URL: target + p, Title: "Unauthenticated SCIM Endpoint",
 				Description: "SCIM endpoint responded to an unauthenticated request. Attackers can enumerate users, groups, or even create accounts depending on the schema.",
-				Severity: SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
+				Severity:    SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
 				Timestamp: time.Now(), OWASPCategory: "A01:2021-Broken Access Control", CVSSScore: 7.5,
 			})
 		}

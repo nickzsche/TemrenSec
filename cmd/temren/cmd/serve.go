@@ -6,8 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/temren/pkg/server"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/server"
 )
 
 var serveAddr string

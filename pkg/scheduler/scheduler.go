@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/temren/pkg/httpengine"
-	"github.com/temren/pkg/scanner"
 	"github.com/go-co-op/gocron"
 	"github.com/google/uuid"
+	"github.com/temren/pkg/httpengine"
+	"github.com/temren/pkg/scanner"
 )
 
 // ScanSchedule represents a scheduled scan configuration
@@ -50,9 +50,9 @@ type ScanConfig struct {
 
 // ScanResult holds the result of a scheduled scan execution
 type ScanResult struct {
-	ScheduleID string           `json:"schedule_id"`
-	TargetURL  string           `json:"target_url"`
-	Timestamp  time.Time        `json:"timestamp"`
+	ScheduleID string            `json:"schedule_id"`
+	TargetURL  string            `json:"target_url"`
+	Timestamp  time.Time         `json:"timestamp"`
 	Findings   []scanner.Finding `json:"findings"`
 	Error      string            `json:"error,omitempty"`
 }

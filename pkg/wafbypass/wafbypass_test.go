@@ -35,9 +35,9 @@ func TestNewBypasser(t *testing.T) {
 
 func TestWAFDetector(t *testing.T) {
 	tests := []struct {
-		name       string
-		headers    map[string]string
-		expected   WAFType
+		name     string
+		headers  map[string]string
+		expected WAFType
 	}{
 		{
 			name: "Cloudflare detection",
@@ -74,7 +74,7 @@ func TestWAFDetector(t *testing.T) {
 				recorder.Header().Set(k, v)
 			}
 			resp := recorder.Result()
-			
+
 			wafType := WAFDetector(resp)
 			if wafType != tt.expected {
 				t.Errorf("Expected %s, got %s", tt.expected, wafType)
@@ -100,11 +100,11 @@ func TestApplyRandom(t *testing.T) {
 func TestGetRandomUserAgent(t *testing.T) {
 	ua1 := GetRandomUserAgent()
 	ua2 := GetRandomUserAgent()
-	
+
 	if ua1 == "" {
 		t.Error("Expected non-empty user agent")
 	}
-	
+
 	found := false
 	for _, ua := range UserAgents {
 		if ua == ua1 {
@@ -115,7 +115,7 @@ func TestGetRandomUserAgent(t *testing.T) {
 	if !found {
 		t.Error("User agent not in list")
 	}
-	
+
 	if ua1 == ua2 {
 		t.Log("Note: Same user agent selected (random chance)")
 	}
@@ -168,7 +168,7 @@ func TestGetAllURLMutations(t *testing.T) {
 	if len(mutations) == 0 {
 		t.Error("Expected mutations to be returned")
 	}
-	
+
 	expected := []string{"Path Encoding", "Case Tampering", "Comment Injection", "Path Traversal", "Double Encoding", "Null Byte"}
 	if len(mutations) != len(expected) {
 		t.Errorf("Expected %d mutations, got %d", len(expected), len(mutations))
@@ -184,7 +184,7 @@ func TestGenerateAllMutations(t *testing.T) {
 	if len(results) == 0 {
 		t.Error("Expected mutations to be generated")
 	}
-	
+
 	for _, r := range results {
 		if r == "" {
 			t.Error("Expected non-empty mutation")

@@ -41,7 +41,7 @@ func (s *EmailAuthScanner) Scan(ctx context.Context, target string, _ *httpengin
 	return []Finding{{
 		URL: target, Title: "Weak Email Authentication for " + domain,
 		Description: strings.Join(rep.Issues, "; "),
-		Severity: severity, Confidence: ConfidenceHigh, Scanner: s.Name(),
+		Severity:    severity, Confidence: ConfidenceHigh, Scanner: s.Name(),
 		Timestamp: time.Now(), OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 5.3,
 	}}, nil
 }

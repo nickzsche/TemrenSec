@@ -26,11 +26,11 @@ func NewFileUploadBypassScanner(uploadURL string) *FileUploadBypassScanner {
 func (s *FileUploadBypassScanner) Name() string { return "File Upload Validation Bypass" }
 
 type uploadCase struct {
-	name    string
-	field   string
-	body    []byte
-	ctype   string
-	risk    string
+	name  string
+	field string
+	body  []byte
+	ctype string
+	risk  string
 }
 
 func (s *FileUploadBypassScanner) Scan(ctx context.Context, target string, client *httpengine.Client) ([]Finding, error) {
@@ -69,7 +69,7 @@ func (s *FileUploadBypassScanner) Scan(ctx context.Context, target string, clien
 			findings = append(findings, Finding{
 				URL: endpoint, Title: fmt.Sprintf("Upload Accepted: %s (%s)", c.name, c.risk),
 				Description: "Server accepted an upload with content/extension pattern that commonly bypasses naive validators. Verify whether the file is stored, executable, or reflectable.",
-				Severity: SeverityHigh, Confidence: ConfidenceLow, Scanner: s.Name(),
+				Severity:    SeverityHigh, Confidence: ConfidenceLow, Scanner: s.Name(),
 				Payload:   c.name + " (" + c.ctype + ")",
 				Evidence:  strings.TrimSpace(string(body[:minInt(160, len(body))])),
 				Timestamp: time.Now(), OWASPCategory: "A04:2021-Insecure Design", CVSSScore: 7.5,

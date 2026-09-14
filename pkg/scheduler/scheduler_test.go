@@ -128,9 +128,9 @@ func TestCreateSchedule_InvalidCron(t *testing.T) {
 	sm := NewScheduleManager(nil)
 
 	schedule := &ScanSchedule{
-		Name:      "Bad Cron",
-		TargetURL: "https://example.com",
-		CronExpr:  "not-a-cron",
+		Name:       "Bad Cron",
+		TargetURL:  "https://example.com",
+		CronExpr:   "not-a-cron",
 		ScanConfig: ScanConfig{},
 		Enabled:    true,
 	}
@@ -286,12 +286,12 @@ func TestCreateSchedule_WithExistingID(t *testing.T) {
 	sm := NewScheduleManager(nil)
 
 	schedule := &ScanSchedule{
-		ID:        "custom-id-123",
-		Name:      "Custom ID Schedule",
-		TargetURL: "https://example.com",
-		CronExpr:  "0 2 * * *",
+		ID:         "custom-id-123",
+		Name:       "Custom ID Schedule",
+		TargetURL:  "https://example.com",
+		CronExpr:   "0 2 * * *",
 		ScanConfig: ScanConfig{},
-		Enabled:   true,
+		Enabled:    true,
 	}
 
 	err := sm.CreateSchedule(schedule)

@@ -28,15 +28,15 @@ type DiscoveryConfig struct {
 
 // APIEndpoint represents a discovered API endpoint.
 type APIEndpoint struct {
-	Method       string             `json:"method"`
-	Path         string             `json:"path"`
-	Description  string             `json:"description"`
-	Parameters   []APIParameter     `json:"parameters"`
-	RequestBody  *RequestBody      `json:"requestBody,omitempty"`
+	Method       string               `json:"method"`
+	Path         string               `json:"path"`
+	Description  string               `json:"description"`
+	Parameters   []APIParameter       `json:"parameters"`
+	RequestBody  *RequestBody         `json:"requestBody,omitempty"`
 	Responses    map[int]ResponseSpec `json:"responses"`
-	Tags         []string           `json:"tags"`
-	Security     []string           `json:"security"`
-	SeverityHint string             `json:"severity_hint"`
+	Tags         []string             `json:"tags"`
+	Security     []string             `json:"security"`
+	SeverityHint string               `json:"severity_hint"`
 }
 
 // APIParameter represents a parameter for an API endpoint.
@@ -335,8 +335,8 @@ func isGenericAPIEndpoint(path, body, contentType string) bool {
 func parseSpecContent(data []byte) ([]APIEndpoint, error) {
 	var spec struct {
 		Paths map[string]map[string]struct {
-			Summary     string `json:"summary"`
-			Description string `json:"description"`
+			Summary     string   `json:"summary"`
+			Description string   `json:"description"`
 			Tags        []string `json:"tags"`
 		} `json:"paths"`
 	}
@@ -345,8 +345,8 @@ func parseSpecContent(data []byte) ([]APIEndpoint, error) {
 		// Try Swagger 2.0 format
 		var swagger2 struct {
 			Paths map[string]map[string]struct {
-				Summary     string `json:"summary"`
-				Description string `json:"description"`
+				Summary     string   `json:"summary"`
+				Description string   `json:"description"`
 				Tags        []string `json:"tags"`
 			} `json:"paths"`
 		}

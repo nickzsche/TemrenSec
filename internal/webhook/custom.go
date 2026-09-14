@@ -13,25 +13,25 @@ import (
 )
 
 type WebhookEndpoint struct {
-	ID          string    `json:"id"`
-	UserID      string    `json:"user_id"`
-	URL         string    `json:"url"`
-	Secret      string    `json:"-"`
-	Events      []string  `json:"events"`
-	Active      bool      `json:"active"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID        string    `json:"id"`
+	UserID    string    `json:"user_id"`
+	URL       string    `json:"url"`
+	Secret    string    `json:"-"`
+	Events    []string  `json:"events"`
+	Active    bool      `json:"active"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Delivery struct {
-	ID         string `json:"id"`
-	EndpointID string `json:"endpoint_id"`
-	Event      string `json:"event"`
-	Payload    string `json:"payload"`
-	StatusCode int    `json:"status_code"`
-	Response   string `json:"response"`
-	Duration   int    `json:"duration_ms"`
-	Success    bool   `json:"success"`
+	ID         string    `json:"id"`
+	EndpointID string    `json:"endpoint_id"`
+	Event      string    `json:"event"`
+	Payload    string    `json:"payload"`
+	StatusCode int       `json:"status_code"`
+	Response   string    `json:"response"`
+	Duration   int       `json:"duration_ms"`
+	Success    bool      `json:"success"`
 	CreatedAt  time.Time `json:"created_at"`
 }
 
@@ -54,7 +54,7 @@ func (m *CustomWebhookManager) CreateEndpoint(endpoint *WebhookEndpoint) error {
 		INSERT INTO webhook_endpoints (id, user_id, url, secret, events, active, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	`
-	
+
 	if endpoint.ID == "" {
 		endpoint.ID = generateWebhookID()
 	}
@@ -62,9 +62,9 @@ func (m *CustomWebhookManager) CreateEndpoint(endpoint *WebhookEndpoint) error {
 		endpoint.CreatedAt = time.Now()
 	}
 	endpoint.UpdatedAt = time.Now()
-	
+
 	eventsJSON, _ := json.Marshal(endpoint.Events)
-	
+
 	_, err := m.db.Exec(query,
 		endpoint.ID,
 		endpoint.UserID,
@@ -75,16 +75,16 @@ func (m *CustomWebhookManager) CreateEndpoint(endpoint *WebhookEndpoint) error {
 		endpoint.CreatedAt,
 		endpoint.UpdatedAt,
 	)
-	
+
 	return err
 }
 
 func (m *CustomWebhookManager) GetEndpoint(id string) (*WebhookEndpoint, error) {
 	query := `SELECT id, user_id, url, secret, events, active, created_at, updated_at FROM webhook_endpoints WHERE id = $1`
-	
+
 	row := m.db.QueryRow(query, id)
 	endpoint := &WebhookEndpoint{}
-	
+
 	var eventsJSON []byte
 	err := row.Scan(
 		&endpoint.ID,
@@ -96,33 +96,33 @@ func (m *CustomWebhookManager) GetEndpoint(id string) (*WebhookEndpoint, error) 
 		&endpoint.CreatedAt,
 		&endpoint.UpdatedAt,
 	)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("webhook not found")
 		}
 		return nil, err
 	}
-	
+
 	json.Unmarshal(eventsJSON, &endpoint.Events)
 	return endpoint, nil
 }
 
 func (m *CustomWebhookManager) ListEndpoints(userID string) ([]*WebhookEndpoint, error) {
 	query := `SELECT id, user_id, url, secret, events, active, created_at, updated_at FROM webhook_endpoints WHERE user_id = $1`
-	
+
 	rows, err := m.db.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var endpoints []*WebhookEndpoint
-	
+
 	for rows.Next() {
 		endpoint := &WebhookEndpoint{}
 		var eventsJSON []byte
-		
+
 		err := rows.Scan(
 			&endpoint.ID,
 			&endpoint.UserID,
@@ -133,15 +133,15 @@ func (m *CustomWebhookManager) ListEndpoints(userID string) ([]*WebhookEndpoint,
 			&endpoint.CreatedAt,
 			&endpoint.UpdatedAt,
 		)
-		
+
 		if err != nil {
 			return nil, err
 		}
-		
+
 		json.Unmarshal(eventsJSON, &endpoint.Events)
 		endpoints = append(endpoints, endpoint)
 	}
-	
+
 	return endpoints, rows.Err()
 }
 
@@ -157,10 +157,10 @@ func (m *CustomWebhookManager) UpdateEndpoint(endpoint *WebhookEndpoint) error {
 		SET url = $1, secret = $2, events = $3, active = $4, updated_at = $5
 		WHERE id = $6
 	`
-	
+
 	endpoint.UpdatedAt = time.Now()
 	eventsJSON, _ := json.Marshal(endpoint.Events)
-	
+
 	_, err := m.db.Exec(query,
 		endpoint.URL,
 		endpoint.Secret,
@@ -169,7 +169,7 @@ func (m *CustomWebhookManager) UpdateEndpoint(endpoint *WebhookEndpoint) error {
 		endpoint.UpdatedAt,
 		endpoint.ID,
 	)
-	
+
 	return err
 }
 
@@ -243,7 +243,7 @@ func (m *CustomWebhookManager) saveDelivery(delivery *Delivery) {
 		INSERT INTO webhook_deliveries (id, endpoint_id, event, payload, status_code, response, duration, success, created_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
-	
+
 	m.db.Exec(query,
 		delivery.ID,
 		delivery.EndpointID,
@@ -265,15 +265,15 @@ func (m *CustomWebhookManager) GetDeliveries(endpointID string, limit int) ([]*D
 		ORDER BY created_at DESC
 		LIMIT $2
 	`
-	
+
 	rows, err := m.db.Query(query, endpointID, limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	var deliveries []*Delivery
-	
+
 	for rows.Next() {
 		d := &Delivery{}
 		err := rows.Scan(
@@ -292,17 +292,17 @@ func (m *CustomWebhookManager) GetDeliveries(endpointID string, limit int) ([]*D
 		}
 		deliveries = append(deliveries, d)
 	}
-	
+
 	return deliveries, rows.Err()
 }
 
 func (m *CustomWebhookManager) TestEndpoint(endpoint *WebhookEndpoint) (*Delivery, error) {
 	testPayload := map[string]interface{}{
-		"test":    true,
-		"message": "This is a test webhook from Temren",
+		"test":      true,
+		"message":   "This is a test webhook from Temren",
 		"timestamp": time.Now().Unix(),
 	}
-	
+
 	return m.SendEvent(endpoint, "test", testPayload)
 }
 
@@ -334,7 +334,7 @@ func InitSchema(db *sql.DB) error {
 	CREATE INDEX IF NOT EXISTS idx_webhook_endpoints_user ON webhook_endpoints(user_id);
 	CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_endpoint ON webhook_deliveries(endpoint_id);
 	`
-	
+
 	_, err := db.Exec(query)
 	return err
 }

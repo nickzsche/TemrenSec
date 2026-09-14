@@ -18,11 +18,11 @@ func NewSSRFCloudMetadataScanner() *SSRFCloudMetadataScanner { return &SSRFCloud
 func (s *SSRFCloudMetadataScanner) Name() string { return "SSRF — Cloud Metadata" }
 
 var ssrfTargets = []string{
-	"http://169.254.169.254/latest/meta-data/",                       // AWS
-	"http://169.254.169.254/computeMetadata/v1/?recursive=true",      // GCP (needs header but worth probing)
+	"http://169.254.169.254/latest/meta-data/",                        // AWS
+	"http://169.254.169.254/computeMetadata/v1/?recursive=true",       // GCP (needs header but worth probing)
 	"http://169.254.169.254/metadata/instance?api-version=2021-02-01", // Azure
 	"http://metadata.google.internal/computeMetadata/v1/instance/",
-	"http://100.100.100.200/latest/meta-data/", // Alibaba
+	"http://100.100.100.200/latest/meta-data/",               // Alibaba
 	"http://169.254.169.254/openstack/latest/meta_data.json", // OpenStack
 }
 
@@ -90,7 +90,9 @@ func (s *SSRFCloudMetadataScanner) Scan(ctx context.Context, target string, clie
 // words like "instance-id" or "compute" hit HTML routinely.
 //
 // AWS plain-text: 200, body is a newline-separated list ending in
-//   `iam/`, `instance-id`, `placement/`, etc.
+//
+//	`iam/`, `instance-id`, `placement/`, etc.
+//
 // AWS / Azure / GCP JSON: contains specific key combinations.
 func looksLikeRealMetadataResponse(body []byte) bool {
 	s := string(body)

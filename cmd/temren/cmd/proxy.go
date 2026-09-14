@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/temren/pkg/proxy"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/proxy"
 )
 
 var (

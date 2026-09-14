@@ -7,15 +7,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/temren/pkg/depscan"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/depscan"
 )
 
 var sbomPath string
 
 var sbomCmd = &cobra.Command{
-	Use:   "sbom",
-	Short: "Generate a CycloneDX 1.6 software bill of materials from project lockfiles",
+	Use:     "sbom",
+	Short:   "Generate a CycloneDX 1.6 software bill of materials from project lockfiles",
 	Example: `  temren sbom --path . > sbom.json`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if sbomPath == "" {
@@ -32,11 +32,11 @@ var sbomCmd = &cobra.Command{
 		components := make([]map[string]any, 0, len(pkgs))
 		for i, p := range pkgs {
 			components = append(components, map[string]any{
-				"bom-ref":   fmt.Sprintf("pkg:%s/%s@%s", p.Ecosystem, p.Name, p.Version),
-				"type":      "library",
-				"name":      p.Name,
-				"version":   p.Version,
-				"purl":      fmt.Sprintf("pkg:%s/%s@%s", p.Ecosystem, p.Name, p.Version),
+				"bom-ref":    fmt.Sprintf("pkg:%s/%s@%s", p.Ecosystem, p.Name, p.Version),
+				"type":       "library",
+				"name":       p.Name,
+				"version":    p.Version,
+				"purl":       fmt.Sprintf("pkg:%s/%s@%s", p.Ecosystem, p.Name, p.Version),
 				"properties": []map[string]string{{"name": "lockfile", "value": p.Lockfile}},
 				"externalReferences": []map[string]string{
 					{"type": "distribution", "url": ""},

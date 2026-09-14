@@ -41,7 +41,7 @@ func (s *HTTPParameterPollutionScanner) Scan(ctx context.Context, target string,
 		return []Finding{{
 			URL: target, Title: "HTTP Parameter Pollution Behaviour Differs",
 			Description: "Duplicating every query parameter changed the server's response. Authorization, access-control, or pricing logic may differ when the backend picks the unexpected occurrence.",
-			Severity: SeverityMedium, Confidence: ConfidenceLow, Scanner: s.Name(),
+			Severity:    SeverityMedium, Confidence: ConfidenceLow, Scanner: s.Name(),
 			Payload: pollutedURL, Evidence: "control != polluted",
 			Timestamp: time.Now(), OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 5.3,
 		}}, nil

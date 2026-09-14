@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hibiken/asynq"
 	"github.com/temren/internal/config"
 	"github.com/temren/internal/database"
 	"github.com/temren/internal/model"
@@ -23,7 +24,6 @@ import (
 	"github.com/temren/pkg/scanner"
 	"github.com/temren/pkg/spider"
 	"github.com/temren/pkg/triage"
-	"github.com/hibiken/asynq"
 )
 
 type Worker struct {

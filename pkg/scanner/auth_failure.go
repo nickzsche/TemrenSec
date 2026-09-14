@@ -64,18 +64,18 @@ func (s *AuthFailureScanner) Scan(ctx context.Context, target string, client *ht
 					}
 					resp.Body.Close()
 
-if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusFound {
-					findings = append(findings, Finding{
-						URL:         testURL,
-						Title:       "Default Credentials Possible",
-						Description: "Login page found - check for default credentials",
-						Severity:    SeverityHigh,
-						Confidence:  ConfidenceMedium,
-						Payload:     cred,
-						Evidence:    "Login form accepts authentication",
-						Scanner:     s.Name(),
-						Timestamp:   time.Now(),
-					})
+					if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusFound {
+						findings = append(findings, Finding{
+							URL:         testURL,
+							Title:       "Default Credentials Possible",
+							Description: "Login page found - check for default credentials",
+							Severity:    SeverityHigh,
+							Confidence:  ConfidenceMedium,
+							Payload:     cred,
+							Evidence:    "Login form accepts authentication",
+							Scanner:     s.Name(),
+							Timestamp:   time.Now(),
+						})
 						break
 					}
 				}
@@ -85,4 +85,3 @@ if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusFound {
 
 	return findings, nil
 }
-

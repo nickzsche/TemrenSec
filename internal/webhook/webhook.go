@@ -13,11 +13,11 @@ import (
 )
 
 type WebhookPayload struct {
-	Event     string      `json:"event"`
-	Timestamp string      `json:"timestamp"`
-	Scan      *model.Scan `json:"scan,omitempty"`
+	Event     string        `json:"event"`
+	Timestamp string        `json:"timestamp"`
+	Scan      *model.Scan   `json:"scan,omitempty"`
 	Target    *model.Target `json:"target,omitempty"`
-	UserID    string      `json:"user_id,omitempty"`
+	UserID    string        `json:"user_id,omitempty"`
 }
 
 type SlackMessage struct {
@@ -27,7 +27,7 @@ type SlackMessage struct {
 }
 
 type SlackBlock struct {
-	Type string `json:"type"`
+	Type string     `json:"type"`
 	Text *SlackText `json:"text,omitempty"`
 }
 
@@ -37,16 +37,16 @@ type SlackText struct {
 }
 
 type SlackAttachment struct {
-	Color  string `json:"color"`
+	Color  string       `json:"color"`
 	Blocks []SlackBlock `json:"blocks,omitempty"`
 }
 
 type DiscordEmbed struct {
-	Title       string  `json:"title"`
-	Description string  `json:"description"`
-	Color       int     `json:"color"`
+	Title       string         `json:"title"`
+	Description string         `json:"description"`
+	Color       int            `json:"color"`
 	Fields      []DiscordField `json:"fields,omitempty"`
-	Timestamp   string  `json:"timestamp"`
+	Timestamp   string         `json:"timestamp"`
 }
 
 type DiscordField struct {
@@ -56,13 +56,13 @@ type DiscordField struct {
 }
 
 type DiscordPayload struct {
-	Username string        `json:"username"`
+	Username string         `json:"username"`
 	Embeds   []DiscordEmbed `json:"embeds,omitempty"`
 }
 
 func SendScanCompleteNotification(ctx context.Context, scan *model.Scan, target *model.Target, userID string) error {
 	cfg := config.AppConfig
-	
+
 	webhookURLs := getWebhookURLs(cfg)
 	if len(webhookURLs) == 0 {
 		return nil

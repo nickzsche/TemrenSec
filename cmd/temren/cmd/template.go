@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/temren/pkg/scantemplate"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/scantemplate"
 )
 
 var templateFile string
 
 var templateCmd = &cobra.Command{
-	Use:   "template",
-	Short: "Validate and pretty-print a scan template YAML",
+	Use:     "template",
+	Short:   "Validate and pretty-print a scan template YAML",
 	Example: `  temren template --file scans/nightly.yaml`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		t, err := scantemplate.LoadFile(templateFile)

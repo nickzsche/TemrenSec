@@ -3,15 +3,15 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/temren/pkg/auditlog"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/auditlog"
 )
 
 var auditFile string
 
 var auditCmd = &cobra.Command{
-	Use:   "audit-verify",
-	Short: "Verify the integrity of an Temren hash-chain audit log",
+	Use:     "audit-verify",
+	Short:   "Verify the integrity of an Temren hash-chain audit log",
 	Example: `  temren audit-verify --file /var/log/temren/audit.log`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		line, err := auditlog.Verify(auditFile)

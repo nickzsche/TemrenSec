@@ -6,21 +6,21 @@ import (
 	"io"
 	"os"
 
+	"github.com/spf13/cobra"
 	"github.com/temren/pkg/risk"
 	"github.com/temren/pkg/scanner"
-	"github.com/spf13/cobra"
 )
 
 var (
-	riskInput     string
-	riskExposure  string
-	riskTier      string
-	riskWAF       bool
+	riskInput    string
+	riskExposure string
+	riskTier     string
+	riskWAF      bool
 )
 
 var riskCmd = &cobra.Command{
-	Use:   "risk",
-	Short: "Compute blended risk scores (CVSS + EPSS + KEV + asset context)",
+	Use:     "risk",
+	Short:   "Compute blended risk scores (CVSS + EPSS + KEV + asset context)",
 	Example: `  temren risk -i findings.json --exposure internet --tier tier1`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var r io.Reader = os.Stdin

@@ -7,15 +7,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/temren/pkg/llmscan"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/llmscan"
 )
 
 var llmEndpoint string
 
 var llmCmd = &cobra.Command{
-	Use:   "llm",
-	Short: "Probe an LLM-backed endpoint for prompt injection, system-prompt leak, jailbreak, output XSS",
+	Use:     "llm",
+	Short:   "Probe an LLM-backed endpoint for prompt injection, system-prompt leak, jailbreak, output XSS",
 	Example: `  temren llm --endpoint http://localhost:8080/chat`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if llmEndpoint == "" {

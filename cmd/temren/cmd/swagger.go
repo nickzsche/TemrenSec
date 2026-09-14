@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/temren/pkg/openapi"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/openapi"
 )
 
 var (

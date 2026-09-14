@@ -3,10 +3,10 @@ package handler
 import (
 	"strconv"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/temren/internal/middleware"
 	"github.com/temren/internal/model"
 	"github.com/temren/internal/queue"
-	"github.com/gofiber/fiber/v2"
 )
 
 func (h *Handler) StartScan(c *fiber.Ctx) error {

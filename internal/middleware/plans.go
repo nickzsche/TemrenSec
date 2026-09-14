@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/temren/internal/model"
 	"github.com/gofiber/fiber/v2"
+	"github.com/temren/internal/model"
 )
 
 func CheckPlanLimit(resource string) fiber.Handler {

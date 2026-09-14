@@ -71,7 +71,7 @@ func (s *DirectoryBruteForceScanner) Scan(ctx context.Context, target string, cl
 	for _, path := range adminPaths {
 		select {
 		case <-ctx.Done():
-			break
+			return findings, ctx.Err()
 		default:
 		}
 

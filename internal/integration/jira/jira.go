@@ -24,10 +24,10 @@ type Client struct {
 }
 
 type Issue struct {
-	ID          string `json:"id,omitempty"`
-	Key         string `json:"key,omitempty"`
-	Self        string `json:"self,omitempty"`
-	Fields      Fields `json:"fields"`
+	ID     string `json:"id,omitempty"`
+	Key    string `json:"key,omitempty"`
+	Self   string `json:"self,omitempty"`
+	Fields Fields `json:"fields"`
 }
 
 type Fields struct {
@@ -52,15 +52,15 @@ type Priority struct {
 }
 
 type Description struct {
-	Type    string   `json:"type"`
-	Version int      `json:"version"`
+	Type    string    `json:"type"`
+	Version int       `json:"version"`
 	Content []DocNode `json:"content"`
 }
 
 type DocNode struct {
-	Type    string    `json:"type"`
-	Content []TextNode `json:"content,omitempty"`
-	Text    string    `json:"text,omitempty"`
+	Type    string                 `json:"type"`
+	Content []TextNode             `json:"content,omitempty"`
+	Text    string                 `json:"text,omitempty"`
 	Attrs   map[string]interface{} `json:"attrs,omitempty"`
 }
 
@@ -81,12 +81,12 @@ func NewClient(config *Config) *Client {
 func (c *Client) CreateIssue(vuln *model.Vulnerability, targetURL string) (*Issue, error) {
 	issue := &Issue{
 		Fields: Fields{
-			Project: Project{Key: c.config.Project},
-			Summary: fmt.Sprintf("[%s] %s", vuln.Severity, vuln.Title),
+			Project:     Project{Key: c.config.Project},
+			Summary:     fmt.Sprintf("[%s] %s", vuln.Severity, vuln.Title),
 			Description: c.buildDescription(vuln, targetURL),
-			Issuetype: Issuetype{Name: "Bug"},
-			Priority:  c.mapSeverityToPriority(vuln.Severity),
-			Labels:    []string{"temren-security", vuln.OWASPCategory},
+			Issuetype:   Issuetype{Name: "Bug"},
+			Priority:    c.mapSeverityToPriority(vuln.Severity),
+			Labels:      []string{"temren-security", vuln.OWASPCategory},
 		},
 	}
 

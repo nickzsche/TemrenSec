@@ -38,7 +38,7 @@ func (s *GraphQLBatchingScanner) Scan(ctx context.Context, target string, client
 		return []Finding{{
 			URL: target, Title: "GraphQL Query Batching Enabled",
 			Description: "Server processes batched GraphQL requests. Attackers can bypass per-request rate limits, brute-force credentials, or craft N+1 DoS by batching hundreds of operations in a single HTTP request.",
-			Severity: SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
+			Severity:    SeverityHigh, Confidence: ConfidenceHigh, Scanner: s.Name(),
 			Timestamp: time.Now(), OWASPCategory: "A04:2021-Insecure Design", CVSSScore: 7.5,
 		}}, nil
 	}
@@ -59,7 +59,7 @@ func (s *GraphQLBatchingScanner) Scan(ctx context.Context, target string, client
 		return []Finding{{
 			URL: target, Title: "GraphQL Alias Overloading Possible",
 			Description: "Server permits 50 aliased fields in a single query. This enables credential brute force and resource exhaustion that bypasses per-request limits.",
-			Severity: SeverityHigh, Confidence: ConfidenceMedium, Scanner: s.Name(),
+			Severity:    SeverityHigh, Confidence: ConfidenceMedium, Scanner: s.Name(),
 			Timestamp: time.Now(), OWASPCategory: "A04:2021-Insecure Design", CVSSScore: 7.5,
 		}}, nil
 	}

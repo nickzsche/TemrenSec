@@ -10,13 +10,13 @@ import (
 
 // sarifLog represents the top-level SARIF v2.1.0 structure.
 type sarifLog struct {
-	Schema  string    `json:"$schema"`
-	Version string    `json:"version"`
+	Schema  string     `json:"$schema"`
+	Version string     `json:"version"`
 	Runs    []sarifRun `json:"runs"`
 }
 
 type sarifRun struct {
-	Tool    sarifTool    `json:"tool"`
+	Tool    sarifTool     `json:"tool"`
 	Results []sarifResult `json:"results"`
 }
 
@@ -25,10 +25,10 @@ type sarifTool struct {
 }
 
 type sarifDriver struct {
-	Name           string       `json:"name"`
-	Version        string       `json:"version"`
-	InformationURI string       `json:"informationUri"`
-	Rules          []sarifRule  `json:"rules"`
+	Name           string      `json:"name"`
+	Version        string      `json:"version"`
+	InformationURI string      `json:"informationUri"`
+	Rules          []sarifRule `json:"rules"`
 }
 
 type sarifRule struct {
@@ -44,13 +44,13 @@ type sarifRule struct {
 }
 
 type sarifResult struct {
-	RuleID       string              `json:"ruleId"`
-	RuleIndex    int                 `json:"ruleIndex"`
-	Level        string              `json:"level"`
-	Message      sarifMessage        `json:"message"`
-	Locations    []sarifLocation     `json:"locations"`
-	Fingerprints map[string]string  `json:"fingerprints,omitempty"`
-	Properties   *sarifProperties    `json:"properties,omitempty"`
+	RuleID       string            `json:"ruleId"`
+	RuleIndex    int               `json:"ruleIndex"`
+	Level        string            `json:"level"`
+	Message      sarifMessage      `json:"message"`
+	Locations    []sarifLocation   `json:"locations"`
+	Fingerprints map[string]string `json:"fingerprints,omitempty"`
+	Properties   *sarifProperties  `json:"properties,omitempty"`
 }
 
 type sarifProperties struct {
@@ -164,7 +164,7 @@ func (r *Report) GenerateSARIF() string {
 	}
 
 	log := sarifLog{
-		Schema: "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+		Schema:  "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
 		Version: "2.1.0",
 		Runs: []sarifRun{
 			{

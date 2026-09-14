@@ -31,7 +31,7 @@ func (s *ClickjackingScanner) Scan(ctx context.Context, target string, client *h
 		return []Finding{{
 			URL: target, Title: "Clickjacking — No Frame Protection",
 			Description: "Neither X-Frame-Options nor CSP frame-ancestors is set. An attacker site can iframe this page and trick users into clicking on it.",
-			Severity: SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
+			Severity:    SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
 			Timestamp: time.Now(), OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 6.1,
 		}}, nil
 	}

@@ -223,7 +223,7 @@ func padBase64(s string) string {
 	switch len(s) % 4 {
 	case 2:
 		return s + "=="
-case 3:
+	case 3:
 		return s + "="
 	default:
 		return s

@@ -7,14 +7,14 @@ import (
 	"os"
 	"time"
 
-	"github.com/temren/pkg/dnsenum"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/dnsenum"
 )
 
 var (
-	dnsApex      string
-	dnsCT        bool
-	dnsWordlist  string
+	dnsApex     string
+	dnsCT       bool
+	dnsWordlist string
 )
 
 var dnsCmd = &cobra.Command{

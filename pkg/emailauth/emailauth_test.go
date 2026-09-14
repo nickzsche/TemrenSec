@@ -20,8 +20,8 @@ func (s *stubResolver) LookupTXT(ctx context.Context, host string) ([]string, er
 
 func TestStrictDMARCPasses(t *testing.T) {
 	r := &stubResolver{txt: map[string][]string{
-		"example.com":         {"v=spf1 ip4:1.2.3.4 -all"},
-		"_dmarc.example.com":  {"v=DMARC1; p=quarantine; rua=mailto:reports@example.com"},
+		"example.com":               {"v=spf1 ip4:1.2.3.4 -all"},
+		"_dmarc.example.com":        {"v=DMARC1; p=quarantine; rua=mailto:reports@example.com"},
 		"k1._domainkey.example.com": {"v=DKIM1; k=rsa; p=Mg…"},
 	}}
 	rep, err := Inspect(context.Background(), r, "example.com", []string{"k1"})

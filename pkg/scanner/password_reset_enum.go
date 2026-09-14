@@ -42,7 +42,7 @@ func (s *PasswordResetEnumScanner) Scan(ctx context.Context, target string, clie
 			findings = append(findings, Finding{
 				URL: full, Title: "Account Enumeration via Password Reset",
 				Description: "Endpoint reveals whether an email is registered by returning different statuses or response bodies. Always reply with a generic message regardless of email validity.",
-				Severity: SeverityMedium, Confidence: ConfidenceMedium, Scanner: s.Name(),
+				Severity:    SeverityMedium, Confidence: ConfidenceMedium, Scanner: s.Name(),
 				Evidence: "good_status=" + itoa(good.status) + " miss_status=" + itoa(miss.status) +
 					" body_diff=" + itoa(abs(len(good.body)-len(miss.body))),
 				Timestamp: time.Now(), OWASPCategory: "A07:2021-Identification and Authentication Failures", CVSSScore: 5.3,
@@ -70,7 +70,12 @@ func postReset(ctx context.Context, client *httpengine.Client, url, email string
 	return resp{status: r.StatusCode, body: b}, nil
 }
 
-func abs(i int) int { if i < 0 { return -i }; return i }
+func abs(i int) int {
+	if i < 0 {
+		return -i
+	}
+	return i
+}
 func itoa(i int) string {
 	if i == 0 {
 		return "0"

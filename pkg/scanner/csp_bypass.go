@@ -58,7 +58,7 @@ func (s *CSPBypassScanner) Scan(ctx context.Context, target string, client *http
 	return []Finding{{
 		URL: target, Title: "CSP Has Bypass Surface",
 		Description: "Content-Security-Policy contains directives that nullify XSS protection: " + strings.Join(notes, "; "),
-		Severity: SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
+		Severity:    SeverityMedium, Confidence: ConfidenceHigh, Scanner: s.Name(),
 		Evidence: csp, Timestamp: time.Now(),
 		OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 5.4,
 	}}, nil

@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/temren/pkg/scanner"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/scanner"
 )
 
 var (

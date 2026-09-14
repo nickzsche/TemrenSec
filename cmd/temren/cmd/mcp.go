@@ -7,15 +7,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/temren/pkg/mcp"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/mcp"
 )
 
 var mcpEndpoint string
 
 var mcpCmd = &cobra.Command{
-	Use:   "mcp",
-	Short: "Audit an MCP (Model Context Protocol) HTTP server for unauth tools/resources",
+	Use:     "mcp",
+	Short:   "Audit an MCP (Model Context Protocol) HTTP server for unauth tools/resources",
 	Example: `  temren mcp --endpoint http://localhost:9000/mcp`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if mcpEndpoint == "" {

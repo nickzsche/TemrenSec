@@ -3,9 +3,9 @@ package middleware
 import (
 	"strings"
 
-	"github.com/temren/internal/config"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/temren/internal/config"
 )
 
 func AuthRequired() fiber.Handler {

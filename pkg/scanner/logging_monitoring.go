@@ -90,4 +90,3 @@ func (s *LoggingMonitoringScanner) Scan(ctx context.Context, target string, clie
 
 	return findings, nil
 }
-

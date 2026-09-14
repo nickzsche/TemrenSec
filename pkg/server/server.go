@@ -104,5 +104,8 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if _, err := fs.Stat(h.Root, path); err != nil {
 		path = "index.html"
 	}
+	// Serve the resolved path (SPA fallback to index.html). Rewriting
+	// r.URL.Path ensures the FileServer serves `path`, not the original.
+	r.URL.Path = "/" + path
 	http.FileServer(http.FS(h.Root)).ServeHTTP(w, r)
 }

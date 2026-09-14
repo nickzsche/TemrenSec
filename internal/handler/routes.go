@@ -6,17 +6,17 @@ import (
 	"os"
 	"time"
 
+	wsfiber "github.com/gofiber/contrib/websocket"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/temren/internal/config"
 	"github.com/temren/internal/middleware"
 	"github.com/temren/internal/model"
 	"github.com/temren/internal/queue"
 	"github.com/temren/internal/service"
 	"github.com/temren/internal/websocket"
-	wsfiber "github.com/gofiber/contrib/websocket"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 var scanQueue *queue.Queue

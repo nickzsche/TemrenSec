@@ -30,11 +30,11 @@ const (
 )
 
 type AssetContext struct {
-	Exposure          Exposure
-	Tier              Tier
-	HasWAF            bool
-	HasMFA            bool
-	HasNetworkPolicy  bool
+	Exposure         Exposure
+	Tier             Tier
+	HasWAF           bool
+	HasMFA           bool
+	HasNetworkPolicy bool
 }
 
 type Intel struct {

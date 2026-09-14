@@ -401,12 +401,12 @@ func TestProofVerifier_Verify_UnverifiedFindingType(t *testing.T) {
 
 	findings := []Finding{
 		{
-			URL:         server.URL,
-			Title:       "Exposed Secret: AWS Access Key",
-			Severity:    SeverityCritical,
-			Confidence:  ConfidenceHigh,
-			Scanner:     "Secret Scanner",
-			Timestamp:   time.Now(),
+			URL:           server.URL,
+			Title:         "Exposed Secret: AWS Access Key",
+			Severity:      SeverityCritical,
+			Confidence:    ConfidenceHigh,
+			Scanner:       "Secret Scanner",
+			Timestamp:     time.Now(),
 			OWASPCategory: "A07:2021-Security Misconfiguration",
 		},
 	}

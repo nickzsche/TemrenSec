@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/temren/pkg/notify"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/notify"
 )
 
 var (

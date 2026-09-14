@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/temren/pkg/depscan"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/depscan"
 )
 
 var (

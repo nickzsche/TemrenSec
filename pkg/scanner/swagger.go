@@ -103,4 +103,3 @@ func (s *SwaggerScanner) Scan(ctx context.Context, target string, client *httpen
 
 	return findings, nil
 }
-

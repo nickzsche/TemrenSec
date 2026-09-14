@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/temren/internal/config"
-	"github.com/temren/pkg/scanner"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/temren/internal/config"
+	"github.com/temren/pkg/scanner"
 )
 
 const testJWTSecret = "test-secret-for-v2-handler-tests-0123456789"

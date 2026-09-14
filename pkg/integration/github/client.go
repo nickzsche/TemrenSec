@@ -251,7 +251,7 @@ func (c *Client) CreateIssue(ctx context.Context, finding scanner.Finding) (*Iss
 		"security-high":     "e67e22",
 		"security-medium":   "f1c40f",
 		"security-low":      "2ecc71",
-		"security-info":      "3498db",
+		"security-info":     "3498db",
 	}
 	if color, ok := labelColors[label]; ok {
 		_ = c.ensureLabel(ctx, label, color)

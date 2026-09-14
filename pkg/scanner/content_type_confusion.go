@@ -48,7 +48,7 @@ func (s *ContentTypeConfusionScanner) Scan(ctx context.Context, target string, c
 			findings = append(findings, Finding{
 				URL: target, Title: "Content-Type Confusion (" + p.ctype + ")",
 				Description: "Endpoint accepted body in unintended format and parsed it. XML opens XXE risk; YAML opens deserialization; form-encoded opens parameter pollution.",
-				Severity: SeverityHigh, Confidence: ConfidenceLow, Scanner: s.Name(),
+				Severity:    SeverityHigh, Confidence: ConfidenceLow, Scanner: s.Name(),
 				Payload: p.ctype, Evidence: p.label,
 				Timestamp: time.Now(), OWASPCategory: "A05:2021-Security Misconfiguration", CVSSScore: 6.5,
 			})

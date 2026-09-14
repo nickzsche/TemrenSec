@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/temren/pkg/threatintel"
 	"github.com/spf13/cobra"
+	"github.com/temren/pkg/threatintel"
 )
 
 var intelCmd = &cobra.Command{

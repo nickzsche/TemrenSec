@@ -25,7 +25,7 @@ func TestPerHostRateLimitIsolatesHosts(t *testing.T) {
 	defer srvB.Close()
 
 	cfg := DefaultConfig()
-	cfg.RateLimit = 1000  // global is generous
+	cfg.RateLimit = 1000   // global is generous
 	cfg.PerHostRate = 1000 // per-host is generous too — we're not testing throttling here
 	c := NewClient(cfg)
 

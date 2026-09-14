@@ -1,10 +1,10 @@
 package handler
 
 import (
+	"github.com/gofiber/fiber/v2"
 	"github.com/temren/internal/middleware"
 	"github.com/temren/internal/model"
 	"github.com/temren/internal/service"
-	"github.com/gofiber/fiber/v2"
 )
 
 type Handler struct {

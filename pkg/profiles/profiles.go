@@ -6,20 +6,20 @@ package profiles
 import "sort"
 
 type Profile struct {
-	Name             string   `json:"name"`
-	Description      string   `json:"description"`
-	Scanners         []string `json:"scanners"`
-	Depth            int      `json:"depth"`
-	RatePerSec       int      `json:"rate_per_sec"`
-	IncludeExperimental bool  `json:"include_experimental"`
-	Timeout          string   `json:"timeout,omitempty"`
+	Name                string   `json:"name"`
+	Description         string   `json:"description"`
+	Scanners            []string `json:"scanners"`
+	Depth               int      `json:"depth"`
+	RatePerSec          int      `json:"rate_per_sec"`
+	IncludeExperimental bool     `json:"include_experimental"`
+	Timeout             string   `json:"timeout,omitempty"`
 }
 
 var all = map[string]Profile{
 	"quick": {
 		Name: "quick", Description: "Passive checks only. <30 s.",
 		Scanners: []string{"headers", "cors", "security_headers", "hsts_preload", "exposed_endpoints"},
-		Depth: 0, RatePerSec: 30, Timeout: "60s",
+		Depth:    0, RatePerSec: 30, Timeout: "60s",
 	},
 	"standard": {
 		Name: "standard", Description: "OWASP Top 10 + common misconfigs. ~5 min.",
@@ -68,12 +68,12 @@ var all = map[string]Profile{
 	"llm-only": {
 		Name: "llm-only", Description: "Probe an LLM-backed endpoint for OWASP LLM Top 10.",
 		Scanners: []string{"llmscan"},
-		Depth: 0, RatePerSec: 5, Timeout: "5m",
+		Depth:    0, RatePerSec: 5, Timeout: "5m",
 	},
 	"mcp-only": {
 		Name: "mcp-only", Description: "Audit an MCP server (tools, resources, auth).",
 		Scanners: []string{"mcp"},
-		Depth: 0, RatePerSec: 5, Timeout: "2m",
+		Depth:    0, RatePerSec: 5, Timeout: "2m",
 	},
 }
 

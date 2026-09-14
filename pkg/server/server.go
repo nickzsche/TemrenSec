@@ -9,8 +9,11 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"io"
 	"io/fs"
+	"mime"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -97,15 +100,28 @@ func (s *Server) handleProfiles(w http.ResponseWriter, r *http.Request) {
 type spaHandler struct{ Root fs.FS }
 
 func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	path := strings.TrimPrefix(r.URL.Path, "/")
-	if path == "" {
-		path = "index.html"
+	name := strings.TrimPrefix(r.URL.Path, "/")
+	if name == "" {
+		name = "index.html"
 	}
-	if _, err := fs.Stat(h.Root, path); err != nil {
-		path = "index.html"
+	// SPA fallback: unknown routes serve index.html so client-side routing
+	// works on refresh/deep-links.
+	if _, err := fs.Stat(h.Root, name); err != nil {
+		name = "index.html"
 	}
-	// Serve the resolved path (SPA fallback to index.html). Rewriting
-	// r.URL.Path ensures the FileServer serves `path`, not the original.
-	r.URL.Path = "/" + path
-	http.FileServer(http.FS(h.Root)).ServeHTTP(w, r)
+	// Serve the file directly rather than via http.FileServer, which redirects
+	// requests for "index.html" back to "./" and would loop on the fallback.
+	f, err := h.Root.Open(name)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	defer f.Close()
+
+	ctype := mime.TypeByExtension(filepath.Ext(name))
+	if ctype == "" {
+		ctype = "text/html; charset=utf-8"
+	}
+	w.Header().Set("Content-Type", ctype)
+	_, _ = io.Copy(w, f)
 }

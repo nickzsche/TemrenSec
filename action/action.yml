@@ -1,0 +1,62 @@
+name: 'TemrenSec OWASP Security Scan'
+description: 'Scan your web application for OWASP Top 10 vulnerabilities with TemrenSec'
+author: 'nickzsche'
+branding:
+  icon: 'shield'
+  color: 'blue'
+inputs:
+  target:
+    description: 'Target URL to scan'
+    required: true
+  depth:
+    description: 'Crawl depth'
+    required: false
+    default: '2'
+  format:
+    description: 'Output format (text, json, sarif, junit)'
+    required: false
+    default: 'sarif'
+  output:
+    description: 'Output file path (relative to the workspace)'
+    required: false
+    default: 'temren-results.sarif'
+  timeout:
+    description: 'Per-request timeout in seconds'
+    required: false
+    default: '30'
+  rate:
+    description: 'Requests per second'
+    required: false
+    default: '10'
+  max_pages:
+    description: 'Maximum pages to crawl'
+    required: false
+    default: '50'
+  auth_token:
+    description: 'Bearer token for authenticated scanning'
+    required: false
+    default: ''
+  auth_cookie:
+    description: 'Cookie for authenticated scanning (name=value; separate several with ";")'
+    required: false
+    default: ''
+  extra_args:
+    description: 'Additional raw flags appended to `temren scan` (e.g. "--verify --headless")'
+    required: false
+    default: ''
+runs:
+  using: 'docker'
+  # Prebuilt CLI image published by .github/workflows/cd.yml (root Dockerfile, target `cli`).
+  # Pin a version tag (e.g. docker://ghcr.io/nickzsche/temrensec-cli:1.0.0) for reproducible scans.
+  image: 'docker://ghcr.io/nickzsche/temrensec-cli:latest'
+  args:
+    - ${{ inputs.target }}
+    - ${{ inputs.depth }}
+    - ${{ inputs.format }}
+    - ${{ inputs.output }}
+    - ${{ inputs.timeout }}
+    - ${{ inputs.rate }}
+    - ${{ inputs.max_pages }}
+    - ${{ inputs.auth_token }}
+    - ${{ inputs.auth_cookie }}
+    - ${{ inputs.extra_args }}

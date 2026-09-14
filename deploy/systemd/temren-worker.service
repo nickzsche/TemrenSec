@@ -1,0 +1,30 @@
+[Unit]
+Description=TemrenSec scan worker
+Documentation=https://github.com/nickzsche/TemrenSec
+After=network-online.target postgresql.service redis.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=temren
+Group=temren
+WorkingDirectory=/opt/temren
+# /opt/temren/.env: DATABASE_URL, REDIS_URL, TEMREN_WS_REDIS, WORKER_CONCURRENCY, ...
+EnvironmentFile=/opt/temren/.env
+ExecStart=/usr/local/bin/temren-worker
+Restart=on-failure
+RestartSec=5s
+
+# Hardening — the worker makes outbound HTTP requests to scan targets only.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/temren
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

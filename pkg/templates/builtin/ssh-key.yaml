@@ -1,0 +1,19 @@
+id: exposed-ssh-private-key
+info:
+  name: Exposed SSH Private Key
+  severity: critical
+  description: SSH özel anahtarı web kökünden erişilebilir.
+  tags: exposure,secret
+  owasp: "A05:2021"
+  remediation: Anahtarı kaldırın ve derhal döndürün (yeni anahtar üretin).
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/.ssh/id_rsa", "{{BaseURL}}/id_rsa"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["BEGIN RSA PRIVATE KEY", "BEGIN OPENSSH PRIVATE KEY", "BEGIN PRIVATE KEY"]
+        condition: or

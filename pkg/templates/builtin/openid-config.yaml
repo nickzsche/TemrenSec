@@ -1,0 +1,24 @@
+id: openid-configuration
+info:
+  name: OpenID Configuration Disclosed
+  severity: info
+  description: /.well-known/openid-configuration OIDC uçlarını listeliyor (bilgilendirme).
+  tags: discovery,oauth
+  owasp: "A05:2021"
+  remediation: Genelde gerekli; yetkilendirme ve akış yapılandırmasını gözden geçirin.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/.well-known/openid-configuration"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["authorization_endpoint", "token_endpoint", "jwks_uri"]
+        condition: and
+    extractors:
+      - type: regex
+        part: body
+        regex: ["\"issuer\"\\s*:\\s*\"([^\"]+)\""]
+        group: 1

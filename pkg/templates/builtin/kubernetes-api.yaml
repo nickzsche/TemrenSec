@@ -1,0 +1,19 @@
+id: kubernetes-api-exposed
+info:
+  name: Kubernetes API Exposed
+  severity: high
+  description: Kubernetes API sunucusu anonim erişime açık olabilir.
+  tags: exposure,k8s
+  owasp: "A05:2021"
+  remediation: Anonim erişimi kapatın (--anonymous-auth=false), RBAC uygulayın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/api/v1/namespaces", "{{BaseURL}}/version"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["NamespaceList", "\"gitVersion\"", "\"major\""]
+        condition: or

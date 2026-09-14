@@ -1,0 +1,23 @@
+id: spring-actuator-exposure
+info:
+  name: Spring Boot Actuator Exposed
+  author: temren
+  severity: medium
+  description: Spring Boot actuator uçları (env, health, mappings) kimlik doğrulamasız erişilebilir.
+  tags: exposure,spring,actuator
+  owasp: "A05:2021"
+  remediation: Actuator uçlarını kimlik doğrulamayla koruyun veya management.endpoints ile kısıtlayın.
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/actuator"
+      - "{{BaseURL}}/actuator/env"
+      - "{{BaseURL}}/actuator/health"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ['"status":"UP"', '_links', 'activeProfiles', 'propertySources']
+        condition: or

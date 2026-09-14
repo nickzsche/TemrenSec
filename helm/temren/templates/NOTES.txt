@@ -1,0 +1,30 @@
+TemrenSec {{ .Chart.AppVersion }} has been deployed as release "{{ .Release.Name }}" in namespace "{{ .Release.Namespace }}".
+
+Images:
+  api:    {{ include "temren.apiImage" . }}
+  worker: {{ include "temren.workerImage" . }}
+
+Database: {{ if .Values.postgresql.enabled }}bundled PostgreSQL ({{ include "temren.postgresqlHost" . }}){{ else }}external ({{ .Values.config.databaseUrl }}){{ end }}
+Redis:    {{ if .Values.redis.enabled }}bundled Redis ({{ include "temren.redisHost" . }}){{ else }}external ({{ .Values.config.redisUrl }}){{ end }}
+
+{{- if .Values.api.ingress.enabled }}
+
+The API is exposed at:
+  http{{ if .Values.api.ingress.tls.enabled }}s{{ end }}://{{ .Values.api.ingress.host }}{{ .Values.api.ingress.path }}
+{{- else }}
+
+The API is not exposed outside the cluster (api.ingress.enabled=false). Port-forward to try it:
+
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "temren.fullname" . }}-api 8080:{{ .Values.api.service.port }}
+  curl http://localhost:8080/health
+{{- end }}
+
+Watch the rollout:
+
+  kubectl --namespace {{ .Release.Namespace }} rollout status deploy/{{ include "temren.fullname" . }}-api
+  kubectl --namespace {{ .Release.Namespace }} rollout status deploy/{{ include "temren.fullname" . }}-worker
+
+Secrets (JWT_SECRET, DATABASE_URL, REDIS_URL) live in Secret "{{ include "temren.secretName" . }}".
+Rotate JWT_SECRET with:
+
+  helm upgrade {{ .Release.Name }} ./helm/temren --reuse-values --set secrets.jwtSecret=$(openssl rand -hex 32)

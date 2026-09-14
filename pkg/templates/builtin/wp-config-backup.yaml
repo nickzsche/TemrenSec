@@ -1,0 +1,23 @@
+id: wp-config-backup
+info:
+  name: WordPress wp-config Backup Exposed
+  author: temren
+  severity: critical
+  description: wp-config yedeği (wp-config.php.bak, .old) veritabanı kimlik bilgilerini ifşa ediyor.
+  tags: exposure,wordpress
+  owasp: "A05:2021"
+  remediation: wp-config yedek dosyalarını kaldırın.
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/wp-config.php.bak"
+      - "{{BaseURL}}/wp-config.php.old"
+      - "{{BaseURL}}/wp-config.php~"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["DB_PASSWORD", "DB_NAME"]
+        condition: or

@@ -1,0 +1,144 @@
+# Default values for the TemrenSec chart.
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  # Images are published by .github/workflows/cd.yml as
+  #   <repository>-api:<tag> and <repository>-worker:<tag>
+  # e.g. ghcr.io/nickzsche/temrensec-api:1.0.0
+  repository: ghcr.io/nickzsche/temrensec
+  # Defaults to .Chart.AppVersion when empty.
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: true
+  # Defaults to the release fullname when empty.
+  name: ""
+  annotations: {}
+
+podAnnotations: {}
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+api:
+  # WebSocket NOTE: the in-process Hub is single-pod by default. When
+  # config.wsRedis is true (default) TEMREN_WS_REDIS is set to the Redis
+  # address so every API pod bridges broadcasts via Redis pub/sub and
+  # replicaCount > 1 is safe. Without it, clients connected to pod-B will not
+  # see real-time scan progress events emitted by pod-A.
+  replicaCount: 1
+  imageSuffix: api
+  service:
+    type: ClusterIP
+    port: 80
+  ingress:
+    enabled: false
+    className: nginx
+    annotations: {}
+    #  cert-manager.io/cluster-issuer: letsencrypt-prod
+    host: api.temren.example.com
+    path: /
+    pathType: Prefix
+    tls:
+      enabled: false
+      secretName: temren-api-tls
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  # Extra environment variables (list of {name, value} / {name, valueFrom}).
+  extraEnv: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+worker:
+  replicaCount: 3
+  imageSuffix: worker
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+  extraEnv: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+config:
+  environment: production
+  frontendUrl: http://localhost:3000
+  jwtExpiry: 24h
+  scanTimeout: 30
+  workerConcurrency: 5
+  # Bridge WebSocket broadcasts through Redis (sets TEMREN_WS_REDIS).
+  wsRedis: true
+  wsRedisChannel: temren:ws:broadcast
+  # External services — only used when postgresql.enabled / redis.enabled are false.
+  # databaseUrl: postgres://temren:secret@db.internal:5432/temren?sslmode=require
+  databaseUrl: ""
+  # redisUrl: redis://redis.internal:6379
+  redisUrl: ""
+  # host:port for TEMREN_WS_REDIS when redis.enabled=false (derived from redisUrl if empty).
+  wsRedisAddr: ""
+
+secrets:
+  # Required. Generate with: openssl rand -hex 32
+  jwtSecret: ""
+  # Use a pre-existing Secret instead of rendering one. It must contain the keys
+  # JWT_SECRET, DATABASE_URL and REDIS_URL.
+  existingSecret: ""
+
+# ---------------------------------------------------------------------------
+# Bundled dependencies (Bitnami subcharts). Run `helm dependency update` first.
+# ---------------------------------------------------------------------------
+postgresql:
+  enabled: true
+  auth:
+    username: temren
+    # Required when postgresql.enabled=true; no default on purpose.
+    # helm install ... --set postgresql.auth.password=$(openssl rand -hex 16)
+    password: ""
+    database: temren
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: 1Gi

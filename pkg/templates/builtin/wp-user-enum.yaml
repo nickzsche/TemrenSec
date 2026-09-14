@@ -1,0 +1,19 @@
+id: wordpress-user-enumeration
+info:
+  name: WordPress User Enumeration (REST)
+  severity: low
+  description: /wp-json/wp/v2/users kullanıcı adlarını listeliyor; brute-force'a zemin.
+  tags: wordpress,enum
+  owasp: "A01:2021"
+  remediation: REST users uç noktasını kimlik doğrulamayla kısıtlayın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/wp-json/wp/v2/users"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: regex
+        part: body
+        regex: ["\"slug\"\\s*:", "\"id\"\\s*:\\s*\\d+"]
+        condition: and

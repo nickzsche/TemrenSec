@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Temren — embedded dashboard</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Temren</h1>
+    <span class="subtitle">Embedded laptop dashboard. For the full UI run <code>cd frontend && npm run dev</code>.</span>
+  </header>
+
+  <main>
+    <section>
+      <h2>Available scan profiles</h2>
+      <ul id="profiles"></ul>
+    </section>
+
+    <section>
+      <h2>Findings (<span id="count">0</span>)</h2>
+      <table id="findings">
+        <thead><tr><th>Severity</th><th>Scanner</th><th>Title</th><th>URL</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

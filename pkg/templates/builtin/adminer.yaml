@@ -1,0 +1,19 @@
+id: adminer-exposure
+info:
+  name: Adminer Database Tool Exposed
+  severity: medium
+  description: Adminer veritabanı yönetim aracı açık.
+  tags: exposure,panel
+  owasp: "A05:2021"
+  remediation: Adminer'i kaldırın veya erişimi kısıtlayın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/adminer.php", "{{BaseURL}}/adminer/"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["Adminer", "Login - Adminer"]
+        condition: or

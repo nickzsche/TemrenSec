@@ -1,0 +1,19 @@
+id: laravel-telescope-debug
+info:
+  name: Laravel Telescope / Debug Exposed
+  severity: high
+  description: Laravel Telescope veya debug arayüzü açık; sorgular, istekler ve sırlar görülebilir.
+  tags: exposure,laravel
+  owasp: "A05:2021"
+  remediation: Telescope'u üretimde kapatın (APP_DEBUG=false, telescope.enabled=false).
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/telescope/requests", "{{BaseURL}}/_ignition/health-check"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["Telescope", "ignition", "can_execute_commands"]
+        condition: or

@@ -1,0 +1,19 @@
+id: phpmyadmin-exposure
+info:
+  name: phpMyAdmin Exposed
+  severity: medium
+  description: phpMyAdmin giriş sayfası internete açık.
+  tags: exposure,panel
+  owasp: "A05:2021"
+  remediation: phpMyAdmin'i IP ile kısıtlayın veya VPN arkasına alın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/phpmyadmin/", "{{BaseURL}}/pma/", "{{BaseURL}}/phpMyAdmin/"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["phpMyAdmin", "pma_username"]
+        condition: or

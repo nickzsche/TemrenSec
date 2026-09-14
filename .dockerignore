@@ -1,0 +1,30 @@
+# Build context for the root Dockerfile (Go binaries only).
+.git
+.github
+.claude
+.gocache
+.gomodcache
+bin/
+dist/
+coverage.out
+coverage.html
+*.test
+.env
+
+# Frontend is built from its own context (frontend/Dockerfile).
+frontend/node_modules
+frontend/.next
+frontend/out
+frontend/tsconfig.tsbuildinfo
+vscode-extension/node_modules
+vscode-extension/dist
+
+# Not needed inside the image.
+docs/
+helm/
+k8s/
+examples/
+benchmarks/
+specs/
+*.md
+!README.md

@@ -1,0 +1,19 @@
+id: exposed-vscode-sftp
+info:
+  name: Exposed .vscode/sftp.json
+  severity: high
+  description: VS Code SFTP yapılandırması erişilebilir; sunucu kimlik bilgileri sızabilir.
+  tags: exposure,secret
+  owasp: "A05:2021"
+  remediation: .vscode dizinini web kökünden kaldırın, kimlik bilgilerini döndürün.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/.vscode/sftp.json"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["\"password\"", "\"host\"", "\"privateKeyPath\""]
+        condition: or

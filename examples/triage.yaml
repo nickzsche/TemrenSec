@@ -1,0 +1,22 @@
+# temren triage example. Apply with:
+#   temren triage --input findings.json --config triage.yaml --output triaged.json
+suppressions:
+  - scanner: "Storybook / MSW"      # we ship Storybook intentionally on docs.x.com
+    url: "https://docs.example.com/*"
+    reason: "documentation site"
+
+  - scanner: "Missing/Weak Header: Permissions-Policy"
+    reason: "covered by upstream WAF policy"
+
+  - url: "https://internal.example.com/admin/*"
+    reason: "internal-only host; covered by network policy"
+
+overrides:
+  # bump anything on the payments service to CRITICAL
+  - url: "https://payments.example.com/*"
+    to: CRITICAL
+
+  # downgrade noisy informational subdomain takeover hints on dev tenants
+  - scanner: "Subdomain Takeover (Dangling DNS)"
+    url: "https://*.dev.example.com/*"
+    to: LOW

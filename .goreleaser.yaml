@@ -1,0 +1,95 @@
+version: 2
+project_name: temren
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: temren
+    main: ./cmd/temren
+    binary: temren
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X github.com/temren/cmd/temren/cmd.Version={{ .Version }}
+      - -X github.com/temren/cmd/temren/cmd.Build={{ .ShortCommit }}
+
+  - id: temren-api
+    main: ./cmd/api
+    binary: temren-api
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+
+  - id: temren-worker
+    main: ./cmd/worker
+    binary: temren-worker
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+
+archives:
+  # CLI: one archive per OS/arch, the thing most users download.
+  - id: cli
+    ids: [temren]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - LICENSE
+      - README.md
+
+  # Server bundle: api + worker + migrations for bare-metal installs.
+  - id: server
+    ids: [temren-api, temren-worker]
+    name_template: "{{ .ProjectName }}-server_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - LICENSE
+      - .env.example
+      - migrations/*.sql
+      - deploy/systemd/*.service
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-snapshot"
+
+changelog:
+  use: github
+  sort: asc
+  groups:
+    - title: Features
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: Fixes
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: Others
+      order: 999
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "Merge pull request"
+
+release:
+  github:
+    owner: nickzsche
+    name: TemrenSec
+  draft: false
+  prerelease: auto

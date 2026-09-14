@@ -1,0 +1,57 @@
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - misspell
+    - revive
+    - gocritic
+    - gosec
+    - unconvert
+    - unparam
+    - prealloc
+    - dupl
+  settings:
+    revive:
+      rules:
+        - name: var-naming
+        - name: package-comments
+        - name: indent-error-flow
+    gosec:
+      excludes:
+        - G104 # errors unhandled — covered by errcheck
+        - G404 # math/rand for non-crypto contexts is fine in tests
+    gocritic:
+      enabled-tags: [diagnostic, performance, style, opinionated]
+      disabled-checks: [paramTypeCombine, hugeParam]
+  exclusions:
+    generated: lax
+    paths:
+      - vendor
+    rules:
+      - path: _test\.go
+        linters: [gosec, dupl, prealloc, unparam]
+      - linters: [errcheck]
+        text: "Close" # OK to ignore .Close() returns
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/temren
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

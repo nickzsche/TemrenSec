@@ -1,0 +1,20 @@
+id: graphql-endpoint-detected
+info:
+  name: GraphQL Endpoint Detected
+  severity: info
+  description: Bir GraphQL uç noktası tespit edildi; introspection ve yetkilendirme kontrolü önerilir.
+  tags: graphql,discovery
+  owasp: "A05:2021"
+  remediation: Üretimde introspection'ı kapatın, alan seviyesinde yetkilendirme uygulayın.
+requests:
+  - method: POST
+    path: ["{{BaseURL}}/graphql", "{{BaseURL}}/api/graphql"]
+    headers:
+      Content-Type: application/json
+    body: '{"query":"{__typename}"}'
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words: ["__typename", "\"data\"", "errors"]
+        condition: or

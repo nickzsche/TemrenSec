@@ -1,0 +1,19 @@
+id: exposed-firebase-config
+info:
+  name: Exposed Firebase / Service Account JSON
+  severity: critical
+  description: Firebase servis hesabı veya benzeri anahtar JSON'u erişilebilir.
+  tags: exposure,secret,cloud
+  owasp: "A05:2021"
+  remediation: Servis hesabı dosyalarını web kökünden kaldırın, anahtarları döndürün.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/service-account.json", "{{BaseURL}}/firebase-adminsdk.json", "{{BaseURL}}/serviceAccountKey.json"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["private_key", "service_account", "client_email"]
+        condition: or

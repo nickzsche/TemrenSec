@@ -1,0 +1,20 @@
+id: server-version-disclosure
+info:
+  name: Server Version Disclosure
+  severity: info
+  description: Server/X-Powered-By başlıkları tam sürüm numarası ifşa ediyor; bilinen açıkların hedeflenmesini kolaylaştırır.
+  tags: exposure,fingerprint
+  owasp: "A05:2021"
+  remediation: Server ve X-Powered-By başlıklarından sürüm bilgisini kaldırın (ör. ServerTokens Prod, expose_php Off).
+requests:
+  - method: GET
+    path: ["{{BaseURL}}"]
+    matchers-condition: and
+    matchers:
+      - type: regex
+        part: header
+        regex:
+          - "(?i)(Server|X-Powered-By):\\s*\\S+/\\d+\\.\\d+"
+    extractors:
+      - type: kval
+        kval: ["Server", "X-Powered-By"]

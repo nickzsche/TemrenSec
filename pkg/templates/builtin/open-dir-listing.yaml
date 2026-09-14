@@ -1,0 +1,19 @@
+id: open-directory-listing
+info:
+  name: Open Directory Listing
+  severity: low
+  description: Dizin listeleme açık; dosya yapısı ve gizli dosyalar görülebiliyor.
+  tags: exposure,misconfig
+  owasp: "A05:2021"
+  remediation: Web sunucusunda dizin listelemeyi (autoindex/Options -Indexes) kapatın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/", "{{BaseURL}}/uploads/", "{{BaseURL}}/files/", "{{BaseURL}}/backup/"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["<title>Index of /", "Directory listing for", "[To Parent Directory]"]
+        condition: or

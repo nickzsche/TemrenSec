@@ -1,0 +1,19 @@
+id: composer-package-exposure
+info:
+  name: Exposed composer.json / package.json
+  severity: low
+  description: Bağımlılık manifestleri erişilebilir; kullanılan kütüphaneler ve sürümler sızıyor.
+  tags: exposure,fingerprint
+  owasp: "A05:2021"
+  remediation: Manifest dosyalarını web kökünden kaldırın (yalnız build sürecinde kullanın).
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/composer.json", "{{BaseURL}}/package.json"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["\"require\"", "\"dependencies\"", "\"devDependencies\""]
+        condition: or

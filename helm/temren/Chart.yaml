@@ -1,0 +1,29 @@
+apiVersion: v2
+name: temren
+description: TemrenSec — self-hosted OWASP Top 10 security scanner (API, worker, optional PostgreSQL/Redis)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+home: https://github.com/nickzsche/TemrenSec
+sources:
+  - https://github.com/nickzsche/TemrenSec
+keywords:
+  - security
+  - owasp
+  - scanner
+  - dast
+maintainers:
+  - name: nickzsche
+    url: https://github.com/nickzsche
+# Run `helm dependency update helm/temren` before installing with the bundled
+# PostgreSQL / Redis. Set postgresql.enabled=false / redis.enabled=false and
+# config.databaseUrl / config.redisUrl to use external services instead.
+dependencies:
+  - name: postgresql
+    version: "16.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: redis
+    version: "20.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled

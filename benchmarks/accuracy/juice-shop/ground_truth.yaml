@@ -1,0 +1,92 @@
+# Juice Shop v15.0.0 ground truth — a representative subset of the
+# challenges. NOT exhaustive: only includes issues we expect Temren's
+# current scanner set (XSS, SQLi, IDOR, security headers, broken auth,
+# directory listing, exposed JS, sensitive data leak, etc.) to find.
+#
+# Schema:
+#   - id:        stable identifier (slug)
+#     url:       full path or regex (use ^/api/Users.* for prefix match)
+#     parameter: HTTP parameter the issue lives on (optional)
+#     scanner:   Temren scanner expected to flag it (canonical name)
+#     cwe:       CWE-XXX
+#     owasp_2025: A0X:2025-...
+#     severity:  CRITICAL | HIGH | MEDIUM | LOW
+#     fp_ok:     true if the scanner *also* reporting an extra related URL
+#                shouldn't be counted as a false positive (Juice Shop has
+#                lots of pages that flap)
+
+findings:
+  - id: dom-xss-search
+    url: ^/#/search\?q=.*
+    parameter: q
+    scanner: XSS Scanner
+    cwe: CWE-79
+    owasp_2025: A05:2025-Injection
+    severity: HIGH
+
+  - id: sqli-login
+    url: ^/rest/user/login
+    parameter: email
+    scanner: SQL Injection Scanner
+    cwe: CWE-89
+    owasp_2025: A05:2025-Injection
+    severity: CRITICAL
+
+  - id: idor-basket
+    url: ^/api/Baskets/\d+
+    scanner: IDOR Scanner
+    cwe: CWE-639
+    owasp_2025: A01:2025-Broken Access Control
+    severity: HIGH
+
+  - id: missing-csp
+    url: /
+    scanner: Security Headers Scanner
+    cwe: CWE-693
+    owasp_2025: A02:2025-Security Misconfiguration
+    severity: MEDIUM
+    fp_ok: true
+
+  - id: missing-x-frame
+    url: /
+    scanner: Security Headers Scanner
+    cwe: CWE-1021
+    owasp_2025: A02:2025-Security Misconfiguration
+    severity: MEDIUM
+    fp_ok: true
+
+  - id: dir-listing-ftp
+    url: ^/ftp(/)?$
+    scanner: Directory Listing Scanner
+    cwe: CWE-548
+    owasp_2025: A02:2025-Security Misconfiguration
+    severity: HIGH
+
+  - id: exposed-package-json
+    url: ^/package\.json
+    scanner: Sensitive File Scanner
+    cwe: CWE-200
+    owasp_2025: A03:2025-Software Supply Chain Failures
+    severity: MEDIUM
+
+  - id: weak-bcrypt-admin
+    url: ^/rest/user/login
+    scanner: Password Policy Scanner
+    cwe: CWE-521
+    owasp_2025: A07:2025-Authentication Failures
+    severity: HIGH
+
+  - id: jwt-none-alg
+    url: ^/rest/.*
+    scanner: JWT Scanner
+    cwe: CWE-347
+    owasp_2025: A07:2025-Authentication Failures
+    severity: CRITICAL
+
+  - id: open-redirect
+    url: ^/redirect
+    parameter: to
+    scanner: Open Redirect Scanner
+    cwe: CWE-601
+    owasp_2025: A05:2025-Injection
+    severity: MEDIUM

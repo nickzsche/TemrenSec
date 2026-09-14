@@ -1,0 +1,30 @@
+[Unit]
+Description=TemrenSec API server
+Documentation=https://github.com/nickzsche/TemrenSec
+After=network-online.target postgresql.service redis.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=temren
+Group=temren
+WorkingDirectory=/opt/temren
+# /opt/temren/.env: DATABASE_URL, REDIS_URL, JWT_SECRET, ... (see .env.example)
+EnvironmentFile=/opt/temren/.env
+ExecStart=/usr/local/bin/temren-api
+Restart=on-failure
+RestartSec=5s
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/temren
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,277 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: temren
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: temren-config
+  namespace: temren
+data:
+  PORT: "8080"
+  ENVIRONMENT: "production"
+  FRONTEND_URL: "http://localhost:3000"
+  JWT_EXPIRY: "24h"
+  WORKER_CONCURRENCY: "5"
+  SCAN_TIMEOUT: "30"
+  # WebSocket pub/sub bridge so every API replica and the worker share live scan events.
+  TEMREN_WS_REDIS: "redis:6379"
+  TEMREN_WS_REDIS_CHANNEL: "temren:ws:broadcast"
+---
+# Replace every placeholder before applying, e.g. with kustomize secretGenerator,
+# sealed-secrets or external-secrets. JWT_SECRET must not be empty: the API
+# refuses to start without it.
+#   JWT_SECRET:        openssl rand -hex 32
+#   POSTGRES_PASSWORD: openssl rand -hex 16 (must match the password in DATABASE_URL)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: temren-secrets
+  namespace: temren
+type: Opaque
+stringData:
+  JWT_SECRET: "CHANGE_ME_openssl_rand_hex_32"
+  POSTGRES_PASSWORD: "CHANGE_ME_db_password"
+  DATABASE_URL: "postgres://temren:CHANGE_ME_db_password@postgres:5432/temren?sslmode=disable"
+  REDIS_URL: "redis://redis:6379"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temren-api
+  namespace: temren
+  labels:
+    app: temren-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: temren-api
+  template:
+    metadata:
+      labels:
+        app: temren-api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: api
+          # Published by .github/workflows/cd.yml; pin a version tag in production.
+          image: ghcr.io/nickzsche/temrensec-api:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: temren-config
+            - secretRef:
+                name: temren-secrets
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: temren-worker
+  namespace: temren
+  labels:
+    app: temren-worker
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: temren-worker
+  template:
+    metadata:
+      labels:
+        app: temren-worker
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: worker
+          image: ghcr.io/nickzsche/temrensec-worker:latest
+          envFrom:
+            - configMapRef:
+                name: temren-config
+            - secretRef:
+                name: temren-secrets
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            exec:
+              command: ["pgrep", "temren-worker"]
+            initialDelaySeconds: 15
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: temren-api
+  namespace: temren
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: temren-api
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: temren-ingress
+  namespace: temren
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - api.temren.example.com
+      secretName: temren-tls
+  rules:
+    - host: api.temren.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: temren-api
+                port:
+                  number: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: temren
+spec:
+  clusterIP: None
+  ports:
+    - port: 5432
+  selector:
+    app: postgres
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: temren
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          env:
+            - name: POSTGRES_USER
+              value: temren
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: temren-secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              value: temren
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: temren
+spec:
+  clusterIP: None
+  ports:
+    - port: 6379
+  selector:
+    app: redis
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: temren
+spec:
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

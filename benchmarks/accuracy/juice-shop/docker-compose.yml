@@ -1,0 +1,13 @@
+# OWASP Juice Shop pinned target for Temren accuracy benchmarks.
+# v15.0.0 is the last stable release at the time of writing — pin to keep
+# ground_truth.yaml stable. Bump deliberately (re-run ground-truth review).
+version: "3.8"
+services:
+  juice-shop:
+    image: bkimminich/juice-shop:v15.0.0
+    container_name: temren-bench-juice-shop
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=unsafe
+    restart: unless-stopped

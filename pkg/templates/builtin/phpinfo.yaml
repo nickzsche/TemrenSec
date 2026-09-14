@@ -1,0 +1,22 @@
+id: phpinfo-exposure
+info:
+  name: phpinfo() Exposure
+  author: temren
+  severity: medium
+  description: phpinfo() çıktısı sunucu yapılandırmasını, yollarını ve modüllerini ifşa ediyor.
+  tags: exposure,php
+  owasp: "A05:2021"
+  remediation: phpinfo() çağrılarını üretimden kaldırın.
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/phpinfo.php"
+      - "{{BaseURL}}/info.php"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: word
+        part: body
+        words: ["PHP Version", "<title>phpinfo()"]
+        condition: or

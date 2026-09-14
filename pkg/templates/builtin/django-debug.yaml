@@ -1,0 +1,17 @@
+id: django-debug-mode
+info:
+  name: Django DEBUG Mode Enabled
+  severity: medium
+  description: Django hata sayfası (DEBUG=True) ayarları, yolları ve iz bilgisini ifşa ediyor.
+  tags: misconfig,django
+  owasp: "A05:2021"
+  remediation: Üretimde DEBUG=False ayarlayın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/temren-nonexistent-probe-404xyz"]
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words: ["You're seeing this error because you have", "DJANGO_SETTINGS_MODULE", "Django Version"]
+        condition: or

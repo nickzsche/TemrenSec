@@ -1,0 +1,18 @@
+id: exposed-git-head
+info:
+  name: Exposed .git/HEAD
+  severity: high
+  description: .git/HEAD erişilebilir; tüm depo indirilebilir.
+  tags: exposure,git
+  owasp: "A05:2021"
+  remediation: .git dizinini web kökünden kaldırın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/.git/HEAD"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: regex
+        part: body
+        regex: ["ref:\\s+refs/heads/"]

@@ -1,0 +1,16 @@
+id: hashicorp-vault-ui
+info:
+  name: HashiCorp Vault / Consul UI Exposed
+  severity: medium
+  description: Vault veya Consul arayüzü erişilebilir.
+  tags: exposure,panel
+  owasp: "A05:2021"
+  remediation: Yönetim arayüzlerine erişimi iç ağa/kimlik doğrulamaya kısıtlayın.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/ui/", "{{BaseURL}}/v1/sys/health"]
+    matchers:
+      - type: word
+        part: all
+        words: ["Vault", "consul", "\"sealed\"", "\"initialized\""]
+        condition: or

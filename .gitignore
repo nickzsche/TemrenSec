@@ -1,0 +1,42 @@
+# Binaries (in root only, not cmd/ source dirs)
+/temren
+/temren-api
+/temren-worker
+/api
+/worker
+
+# Environment
+.env
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# OS
+.DS_Store
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test
+*.test
+*.out
+coverage.txt
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude Code workspace
+.claude/
+
+# Build cache & outputs
+.gocache/
+.gomodcache/
+bin/
+dist/
+coverage.html

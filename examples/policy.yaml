@@ -1,0 +1,25 @@
+# temren policy example — fail CI on critical findings against production targets,
+# notify on high-severity injection, tag known-public leaks.
+rules:
+  - name: block-prod-criticals
+    when: severity == "CRITICAL" && asset.tag contains "prod"
+    action: fail
+    message: "Critical finding on a production asset — blocking the deploy."
+
+  - name: block-known-exploited
+    when: cvss >= 9 && owasp contains "Software and Data Integrity Failures"
+    action: fail
+    message: "CISA KEV-style finding cannot ship."
+
+  - name: notify-on-high-injection
+    when: severity == "HIGH" && owasp contains "Injection"
+    action: notify
+
+  - name: warn-on-headers
+    when: scanner == "Security Headers Audit" && severity == "MEDIUM"
+    action: warn
+
+  - name: tag-public-leaks
+    when: scanner == "Telemetry DSN / Public Key Leak"
+    action: tag
+    tag: "public-leak"

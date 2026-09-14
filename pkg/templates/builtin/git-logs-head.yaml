@@ -1,0 +1,18 @@
+id: exposed-git-logs
+info:
+  name: Exposed .git/logs/HEAD
+  severity: high
+  description: Git commit geçmişi (.git/logs/HEAD) erişilebilir; depo yeniden oluşturulabilir.
+  tags: exposure,git
+  owasp: "A05:2021"
+  remediation: .git dizinine web erişimini engelleyin.
+requests:
+  - method: GET
+    path: ["{{BaseURL}}/.git/logs/HEAD"]
+    matchers-condition: and
+    matchers:
+      - type: status
+        status: [200]
+      - type: regex
+        part: body
+        regex: ["[0-9a-f]{40}\\s+[0-9a-f]{40}"]

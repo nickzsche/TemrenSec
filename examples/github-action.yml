@@ -1,0 +1,69 @@
+# Drop this in .github/workflows/temren.yml to run TemrenSec on every PR.
+#
+# Flow:
+#   1. The action scans the target and writes a JSON report (results.json).
+#   2. `jq` extracts the findings array -> findings.json (what `temren export`
+#      and `temren policy` consume).
+#   3. The CLI image converts findings.json to SARIF for GitHub code scanning
+#      and evaluates examples/policy.yaml to gate the PR.
+name: TemrenSec Security Scan
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 4 * * *"
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+env:
+  TEMREN_IMAGE: ghcr.io/nickzsche/temrensec-cli:latest
+
+jobs:
+  temren:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Run TemrenSec scanner
+        uses: nickzsche/TemrenSec/action@v1
+        with:
+          target: ${{ secrets.STAGING_URL }}
+          format: json
+          output: results.json
+          depth: 2
+          max_pages: 50
+          # auth_token: ${{ secrets.STAGING_BEARER_TOKEN }}
+
+      - name: Extract findings array
+        run: jq '.findings // []' results.json > findings.json
+
+      - name: Convert to SARIF
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work "$TEMREN_IMAGE" \
+            export -f sarif -i findings.json -o temren.sarif
+
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: temren.sarif
+          category: temren
+
+      - name: Apply policy (fails the job on `fail` decisions)
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work "$TEMREN_IMAGE" \
+            policy --policy examples/policy.yaml --input findings.json --tags prod
+
+      - name: Keep raw reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: temren-reports
+          path: |
+            results.json
+            findings.json
+            temren.sarif

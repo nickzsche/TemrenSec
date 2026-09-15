@@ -34,10 +34,15 @@ type uploadCase struct {
 }
 
 func (s *FileUploadBypassScanner) Scan(ctx context.Context, target string, client *httpengine.Client) ([]Finding, error) {
-	endpoint := s.UploadURL
-	if endpoint == "" {
-		endpoint = target
+	// No-op without an explicit upload endpoint. Blindly POSTing multipart
+	// shells to every crawled URL flags any endpoint that returns 2xx (static
+	// files, SPA routes) as "upload accepted" — pure false positives. Real
+	// upload testing needs a known upload endpoint (set via UploadURL / a
+	// discovered upload form).
+	if s.UploadURL == "" {
+		return nil, nil
 	}
+	endpoint := s.UploadURL
 	jpegMagic := []byte{0xFF, 0xD8, 0xFF, 0xE0}
 	cases := []uploadCase{
 		{name: "shell.php.jpg", field: "file", body: append(jpegMagic, []byte("<?php phpinfo(); ?>")...), ctype: "image/jpeg", risk: "double-extension shell"},
@@ -65,7 +70,21 @@ func (s *FileUploadBypassScanner) Scan(ctx context.Context, target string, clien
 		}
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 64*1024))
 		resp.Body.Close()
-		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		// A 2xx alone is not proof of acceptance — a static endpoint returns 2xx
+		// while ignoring the body. Require evidence the upload was actually
+		// processed: the response echoes the filename, or carries an
+		// upload-success indicator (stored path / URL / success flag).
+		low := strings.ToLower(string(body))
+		reflectsName := strings.Contains(low, strings.ToLower(strings.TrimSpace(c.name)))
+		markers := []string{"\"url\"", "\"path\"", "\"filename\"", "\"location\"", "uploaded", "upload success", "\"success\":true", "file saved"}
+		hasMarker := false
+		for _, mk := range markers {
+			if strings.Contains(low, mk) {
+				hasMarker = true
+				break
+			}
+		}
+		if resp.StatusCode >= 200 && resp.StatusCode < 300 && (reflectsName || hasMarker) {
 			findings = append(findings, Finding{
 				URL: endpoint, Title: fmt.Sprintf("Upload Accepted: %s (%s)", c.name, c.risk),
 				Description: "Server accepted an upload with content/extension pattern that commonly bypasses naive validators. Verify whether the file is stored, executable, or reflectable.",

@@ -184,11 +184,20 @@ func siblingControlURL(url string) string {
 		q = url[i:]
 		url = url[:i]
 	}
+	// Drop a trailing slash so the swap targets the last *named* segment. Without
+	// this, ".../campaigns/phpMyAdmin/" would swap the empty segment after the
+	// slash (probing one level deeper) instead of a sibling of "phpMyAdmin" —
+	// missing soft-200 "not found" pages served at that level.
+	trailing := ""
+	if strings.HasSuffix(url, "/") {
+		trailing = "/"
+		url = strings.TrimRight(url, "/")
+	}
 	tok := "temren-404-" + randToken()
 	if i := strings.LastIndexByte(url, '/'); i >= 0 && i >= len("https://") {
-		return url[:i+1] + tok + q
+		return url[:i+1] + tok + trailing + q
 	}
-	return url + "/" + tok + q
+	return url + "/" + tok + trailing + q
 }
 
 var softTokenCounter uint64

@@ -68,3 +68,29 @@ func TestSoftGuard_SuppressesReflectedWord(t *testing.T) {
 		t.Fatalf("reflected-word soft-404 must be suppressed, got %+v", m)
 	}
 }
+
+func TestSoftGuard_SuppressesTrailingSlashSoft200(t *testing.T) {
+	// Directory-style soft-200: /campaigns/<anything>/ returns a 200 "not found"
+	// page that reflects the slug (so "phpMyAdmin" appears), while deeper paths
+	// 404. The sibling must be tested at the same level (/campaigns/<rand>/).
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		p := r.URL.Path
+		// two segments under /campaigns/ with trailing slash -> soft 200
+		if strings.HasPrefix(p, "/campaigns/") && strings.Count(strings.Trim(p, "/"), "/") == 1 && strings.HasSuffix(p, "/") {
+			w.WriteHeader(200)
+			_, _ = w.Write([]byte("<html><body>Kampanya bulunamadi: " + p + " " + strings.Repeat("x ", 1500) + "</body></html>"))
+			return
+		}
+		w.WriteHeader(404)
+		_, _ = w.Write([]byte("deep 404"))
+	}))
+	defer srv.Close()
+	tpl := Template{ID: "pma", Info: Info{Name: "phpMyAdmin", Severity: "medium"}, Requests: []Request{{
+		Method: "GET", Path: []string{"{{BaseURL}}/campaigns/phpMyAdmin/"},
+		Matchers: []Matcher{{Type: "word", Part: "all", Words: []string{"phpMyAdmin"}}},
+	}}}
+	m := engineWith(tpl).Run(context.Background(), srv.URL, httpengine.NewClient(httpengine.DefaultConfig()))
+	if len(m) != 0 {
+		t.Fatalf("directory soft-200 reflected-slug must be suppressed, got %+v", m)
+	}
+}

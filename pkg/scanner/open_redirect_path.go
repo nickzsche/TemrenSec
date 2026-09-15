@@ -3,6 +3,7 @@ package scanner
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -47,7 +48,13 @@ func (s *OpenRedirectPathScanner) Scan(ctx context.Context, target string, clien
 			}
 			loc := resp.Header.Get("Location")
 			resp.Body.Close()
-			if resp.StatusCode >= 300 && resp.StatusCode < 400 && strings.Contains(loc, "evil.example") {
+			// A real open redirect sends the browser OFF-ORIGIN to the attacker
+			// host. Resolve Location against the request URL and require the
+			// resulting host to actually be evil.example — otherwise a same-origin
+			// normalization redirect (e.g. "//evil.example" collapsed to the
+			// relative path "/redirect/evil.example") is a false positive even
+			// though the string "evil.example" appears in it.
+			if resp.StatusCode >= 300 && resp.StatusCode < 400 && redirectsToHost(full, loc, "evil.example") {
 				findings = append(findings, Finding{
 					URL: full, Title: "Open Redirect via Path Segment",
 					Description: "Server issued a 3xx redirect to attacker-controlled host. Useful in phishing chains and OAuth account takeover.",
@@ -59,4 +66,24 @@ func (s *OpenRedirectPathScanner) Scan(ctx context.Context, target string, clien
 		}
 	}
 	return findings, nil
+}
+
+// redirectsToHost resolves a Location header against the request URL and reports
+// whether the browser would actually be sent to wantHost (off-origin). This
+// distinguishes a genuine open redirect from a same-origin normalization
+// redirect whose path merely contains the marker string.
+func redirectsToHost(requestURL, location, wantHost string) bool {
+	if location == "" {
+		return false
+	}
+	base, err := url.Parse(requestURL)
+	if err != nil {
+		return false
+	}
+	loc, err := url.Parse(strings.TrimSpace(location))
+	if err != nil {
+		return false
+	}
+	resolved := base.ResolveReference(loc)
+	return strings.EqualFold(resolved.Hostname(), wantHost)
 }

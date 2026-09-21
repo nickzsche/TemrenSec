@@ -26,7 +26,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
       -ldflags="-s -w -X github.com/temren/cmd/temren/cmd.Version=${VERSION}" -o /temren-cli ./cmd/temren
 
 # ---------------------------------------------------------------- api
-FROM alpine:3.19 AS api
+FROM alpine:3.20 AS api
 RUN apk add --no-cache ca-certificates tzdata && \
     addgroup -S temren && adduser -S temren -G temren
 WORKDIR /app
@@ -39,7 +39,7 @@ HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
 CMD ["temren-api"]
 
 # ---------------------------------------------------------------- worker
-FROM alpine:3.19 AS worker
+FROM alpine:3.20 AS worker
 RUN apk add --no-cache ca-certificates tzdata && \
     addgroup -S temren && adduser -S temren -G temren
 WORKDIR /app
@@ -54,7 +54,7 @@ CMD ["temren-worker"]
 # Also used by the GitHub Action (action/action.yml -> docker://ghcr.io/nickzsche/temrensec-cli).
 # entrypoint.sh runs a scan when the first argument is a URL and otherwise
 # forwards all arguments to `temren`, so `docker run <image> export -f sarif ...` works too.
-FROM alpine:3.19 AS cli
+FROM alpine:3.20 AS cli
 RUN apk add --no-cache ca-certificates tzdata jq
 WORKDIR /work
 COPY --from=builder /temren-cli /usr/local/bin/temren

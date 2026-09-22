@@ -44,6 +44,18 @@ inputs:
     description: 'Additional raw flags appended to `temren scan` (e.g. "--verify --headless")'
     required: false
     default: ''
+  api_url:
+    description: 'Temren server URL to upload results to (upload runs only when api_url, api_key and target_id are all set)'
+    required: false
+    default: ''
+  api_key:
+    description: 'Temren API key (tsk_...) from Settings > API Keys. Pass it from a secret.'
+    required: false
+    default: ''
+  target_id:
+    description: 'Dashboard target ID the uploaded scan is attached to'
+    required: false
+    default: ''
 runs:
   using: 'docker'
   # Prebuilt CLI image published by .github/workflows/cd.yml (root Dockerfile, target `cli`).
@@ -60,3 +72,8 @@ runs:
     - ${{ inputs.auth_token }}
     - ${{ inputs.auth_cookie }}
     - ${{ inputs.extra_args }}
+  # Passed as env, not args, so the key never shows up in the logged command line.
+  env:
+    TEMREN_API_URL: ${{ inputs.api_url }}
+    TEMREN_API_KEY: ${{ inputs.api_key }}
+    TEMREN_TARGET_ID: ${{ inputs.target_id }}

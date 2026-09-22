@@ -189,8 +189,8 @@ type vulnerabilitiesResponse struct {
 type cliScanResponse struct {
 	// in:body
 	Body struct {
-		Message   string `json:"message"`
-		ReportID  string `json:"report_id"`
-		ReportURL string `json:"report_url"`
+		Message       string `json:"message"`
+		ScanID        string `json:"scan_id"`
+		TotalFindings int    `json:"total_findings"`
 	}
 }

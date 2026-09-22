@@ -70,6 +70,7 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("/auth/login", rateLimiter.LimitByIP(), h.Login)
 	api.Post("/auth/refresh", h.RefreshToken)
 
+	middleware.APIKeyAuth = h.apiKeySvc.Authenticate
 	authed := api.Group("", middleware.AuthRequired())
 
 	authed.Post("/auth/logout", h.Logout)
@@ -116,6 +117,10 @@ func SetupRoutes(app *fiber.App) {
 	authed.Post("/integrations/github/test", h.TestGitHub)
 
 	authed.Post("/cli/scan-results", h.ReceiveCLIScan)
+
+	authed.Get("/api-keys", middleware.SessionOnly(), h.ListAPIKeys)
+	authed.Post("/api-keys", middleware.SessionOnly(), h.CreateAPIKey)
+	authed.Delete("/api-keys/:id", middleware.SessionOnly(), h.RevokeAPIKey)
 
 	_ = service.ErrForbidden
 	_ = service.ErrPlanLimit

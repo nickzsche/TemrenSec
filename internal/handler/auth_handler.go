@@ -12,6 +12,7 @@ type Handler struct {
 	projectSvc *service.ProjectService
 	targetSvc  *service.TargetService
 	scanSvc    *service.ScanService
+	apiKeySvc  *service.APIKeyService
 }
 
 func NewHandler() *Handler {
@@ -20,6 +21,7 @@ func NewHandler() *Handler {
 		projectSvc: service.NewProjectService(),
 		targetSvc:  service.NewTargetService(),
 		scanSvc:    service.NewScanService(),
+		apiKeySvc:  service.NewAPIKeyService(),
 	}
 }
 

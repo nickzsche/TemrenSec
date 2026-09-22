@@ -99,6 +99,11 @@ var (
 	gitlabToken   string
 	gitlabProject string
 	gitlabBaseURL string
+
+	uploadEnabled  bool
+	uploadAPIURL   string
+	uploadAPIKey   string
+	uploadTargetID string
 )
 
 var scanCmd = &cobra.Command{
@@ -190,6 +195,11 @@ func init() {
 	scanCmd.Flags().StringVar(&gitlabProject, "gitlab-project", "", "GitLab project ID or path for creating issues")
 	scanCmd.Flags().StringVar(&gitlabBaseURL, "gitlab-url", "https://gitlab.com/api/v4", "GitLab API base URL")
 
+	scanCmd.Flags().BoolVar(&uploadEnabled, "upload", false, "Upload results to a Temren server (needs --api-url, --api-key, --target-id)")
+	scanCmd.Flags().StringVar(&uploadAPIURL, "api-url", os.Getenv("TEMREN_API_URL"), "Temren API base URL, e.g. https://temren.example.com (env TEMREN_API_URL)")
+	scanCmd.Flags().StringVar(&uploadAPIKey, "api-key", os.Getenv("TEMREN_API_KEY"), "Temren API key, tsk_... (env TEMREN_API_KEY)")
+	scanCmd.Flags().StringVar(&uploadTargetID, "target-id", os.Getenv("TEMREN_TARGET_ID"), "Dashboard target ID to attach the uploaded scan to (env TEMREN_TARGET_ID)")
+
 	scanCmd.MarkFlagRequired("target")
 }
 
@@ -206,6 +216,8 @@ func runScan(cmd *cobra.Command, args []string) {
 		printBanner()
 		fmt.Println()
 	}
+
+	scanStart := time.Now()
 
 	// Validate target URL
 	if !strings.HasPrefix(targetURL, "http://") && !strings.HasPrefix(targetURL, "https://") {
@@ -674,6 +686,18 @@ func runScan(cmd *cobra.Command, args []string) {
 			}
 		} else if !silent {
 			fmt.Println("[*] Teams notification sent")
+		}
+	}
+
+	// Upload to a Temren server. Failures only warn: they must not change the
+	// scan's exit code in CI.
+	if uploadEnabled {
+		if uploadAPIURL == "" || uploadAPIKey == "" || uploadTargetID == "" {
+			fmt.Println("[!] --upload needs --api-url, --api-key and --target-id; skipping upload")
+		} else if res, err := uploadScanResults(ctx, uploadAPIURL, uploadAPIKey, uploadTargetID, findings, len(urlsToScan), time.Since(scanStart)); err != nil {
+			fmt.Printf("[!] Upload failed: %v\n", err)
+		} else if !silent {
+			fmt.Printf("[*] Uploaded %d findings as scan %s\n", res.TotalFindings, res.ScanID)
 		}
 	}
 

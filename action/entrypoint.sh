@@ -44,6 +44,11 @@ if [ -n "$AUTH_COOKIE" ]; then
   IFS=$OLDIFS
 fi
 
+# --api-url/--api-key/--target-id default to these env vars inside temren.
+if [ -n "$TEMREN_API_URL" ] && [ -n "$TEMREN_API_KEY" ] && [ -n "$TEMREN_TARGET_ID" ]; then
+  set -- "$@" --upload
+fi
+
 if [ -n "$EXTRA_ARGS" ]; then
   # Intentional word splitting of user-supplied flags.
   # shellcheck disable=SC2086

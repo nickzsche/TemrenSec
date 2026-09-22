@@ -6,6 +6,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **API keys** — Settings → API Keys now creates, lists and revokes real keys
+  (`tsk_…`, stored as SHA-256, shown once). They are accepted anywhere a JWT is,
+  except the key-management routes themselves.
+- **`temren scan --upload`** (`--api-url`, `--api-key`, `--target-id`, or
+  `TEMREN_API_*` env) pushes CLI results into the dashboard; the GitHub Action
+  gains `api_url` / `api_key` / `target_id` inputs.
+
+### Fixed
+
+- **`POST /cli/scan-results`** accepted a client-supplied `scan_id` without an
+  ownership check, so a user could write findings into another user's scan. The
+  server now creates the scan on a `target_id` the caller owns.
+
 ## [1.0.0] - 2026-09-14
 
 First stable release of TemrenSec — a self-hosted OWASP Top 10 2025 DAST + ASPM

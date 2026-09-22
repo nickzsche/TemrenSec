@@ -24,6 +24,15 @@ type RefreshToken struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type APIKey struct {
+	ID         string     `json:"id"`
+	UserID     string     `json:"-"`
+	Name       string     `json:"name"`
+	Prefix     string     `json:"prefix"`
+	LastUsedAt *time.Time `json:"last_used_at"`
+	CreatedAt  time.Time  `json:"created_at"`
+}
+
 type Project struct {
 	ID          string    `json:"id"`
 	UserID      string    `json:"user_id"`

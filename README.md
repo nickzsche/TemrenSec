@@ -175,7 +175,7 @@ TemrenSec/
 - [x] Scanner benchmark corpus (`benchmarks/accuracy/`)
 - [x] Pluggable egress (`EgressProvider`: direct, rotating proxy list, Tor)
 - [ ] Residential proxy provider integrations (Smartproxy / Bright Data)
-- [ ] API key management
+- [x] API key management (`tsk_…` keys + `temren scan --upload` for CI)
 - [ ] SAML/SSO support
 - [ ] Mobile app (React Native)
 

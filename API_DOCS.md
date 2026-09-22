@@ -41,6 +41,24 @@
 - `POST /api/v1/webhooks/:id/test` - Test webhook
   - Response: `{ "message": "webhook test sent", "status": "success" }`
 
+### API Keys
+Long-lived keys for the CLI and CI. Send them like a JWT: `Authorization: Bearer tsk_...`.
+They work on every authenticated route **except** the three below, which need a login session.
+
+- `POST /api/v1/api-keys` - Create a key
+  - Body: `{ "name": "ci-runner" }`
+  - Response (201): `{ "id", "name", "prefix", "created_at", "key" }`. `key` is returned only here.
+- `GET /api/v1/api-keys` - List active keys (never includes the key itself)
+- `DELETE /api/v1/api-keys/:id` - Revoke a key (204)
+
+### CLI / CI Upload
+- `POST /api/v1/cli/scan-results` - Store a scan that ran in the CLI as a new completed scan
+  - Body: `{ "target_id": "...", "pages_crawled": 12, "duration_sec": 90, "findings": [{ "title", "severity", "url", "parameter", "payload", "evidence", "owasp_category", "proof" }] }`
+  - `target_id` must belong to the caller (404 otherwise). At most 10,000 findings per upload.
+  - Response: `{ "message", "scan_id", "total_findings" }`
+  - Client: `temren scan -t URL --upload --api-url URL --api-key tsk_... --target-id ID`
+    (or env `TEMREN_API_URL` / `TEMREN_API_KEY` / `TEMREN_TARGET_ID`)
+
 ### Integrations
 
 #### Jira

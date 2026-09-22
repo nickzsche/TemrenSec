@@ -46,6 +46,7 @@ class ApiClient {
       throw new Error('Unauthorized')
     }
 
+    if (res.status === 204) return null
     const data = await res.json()
     if (!res.ok) {
       throw new Error(data.error || 'Request failed')
@@ -119,6 +120,10 @@ class ApiClient {
   async toggleSchedule(id: string, enabled: boolean) {
     return this.request('PATCH', `/schedules/${id}`, { enabled })
   }
+
+  async listApiKeys() { return this.request('GET', '/api-keys') }
+  async createApiKey(name: string) { return this.request('POST', '/api-keys', { name }) }
+  async revokeApiKey(id: string) { return this.request('DELETE', `/api-keys/${id}`) }
 
   logout() {
     this.clearToken()

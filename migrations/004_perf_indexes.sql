@@ -52,9 +52,9 @@ CREATE INDEX IF NOT EXISTS brin_scans_created_at
 -- ── refresh_tokens ──────────────────────────────────────────────────────────
 
 -- Janitor job that purges expired tokens.
+-- Plain index: Postgres rejects NOW() in a partial-index predicate (not IMMUTABLE).
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires
-    ON refresh_tokens (expires_at)
-    WHERE expires_at < NOW() + INTERVAL '7 days';
+    ON refresh_tokens (expires_at);
 
 -- ── scan_alerts ─────────────────────────────────────────────────────────────
 

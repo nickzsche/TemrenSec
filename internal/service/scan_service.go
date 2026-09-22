@@ -248,27 +248,66 @@ func (s *ScanService) checkScanOwnership(ctx context.Context, scan *model.Scan, 
 	return nil
 }
 
-func (s *ScanService) SaveVulnerabilityFromCLI(ctx context.Context, scanID string, vuln *model.Vulnerability) error {
-	vuln.ScanID = scanID
-	return s.vulnDB.Create(ctx, vuln)
-}
-
-func (s *ScanService) CompleteCLIScan(ctx context.Context, scanID string, pagesCrawled, durationSec, critical, high, medium, low, info int) error {
-	scan := &model.Scan{
-		ID:              scanID,
-		PagesCrawled:    pagesCrawled,
-		DurationSeconds: durationSec,
-		CriticalCount:   critical,
-		HighCount:       high,
-		MediumCount:     medium,
-		LowCount:        low,
-		InfoCount:       info,
-		TotalFindings:   critical + high + medium + low + info,
-		Status:          "completed",
+// ImportCLIScan stores a scan that ran in the CLI (e.g. in CI) as a new,
+// completed scan on a target the caller owns. The server always creates the
+// scan row: accepting a client-supplied scan ID would let one user write into
+// another user's scan.
+func (s *ScanService) ImportCLIScan(ctx context.Context, userID, targetID string, vulns []*model.Vulnerability, pagesCrawled, durationSec int) (*model.Scan, error) {
+	target, err := s.targetDB.GetByID(ctx, targetID)
+	if err != nil {
+		return nil, fmt.Errorf("target not found")
 	}
-	now := time.Now()
-	scan.CompletedAt = &now
-	startedAt := now.Add(-time.Duration(durationSec) * time.Second)
+	p, err := s.projectDB.GetByID(ctx, target.ProjectID)
+	if err != nil {
+		return nil, err
+	}
+	if p.UserID != userID {
+		// Same answer as a missing target, so IDs of other users' targets can't be probed.
+		return nil, fmt.Errorf("target not found")
+	}
+
+	scanCount, err := s.scanDB.CountByUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if scanCount >= model.PlanConfig[s.getUserPlan(ctx, userID)].MaxScans {
+		return nil, ErrPlanLimit
+	}
+
+	scan := &model.Scan{TargetID: targetID, Status: "running", Config: `{"source":"cli"}`}
+	if err := s.scanDB.Create(ctx, scan); err != nil {
+		return nil, err
+	}
+
+	for _, v := range vulns {
+		v.ScanID = scan.ID
+		v.TargetID = targetID
+		switch v.Severity {
+		case "CRITICAL":
+			scan.CriticalCount++
+		case "HIGH":
+			scan.HighCount++
+		case "MEDIUM":
+			scan.MediumCount++
+		case "LOW":
+			scan.LowCount++
+		default:
+			v.Severity = "INFO"
+			scan.InfoCount++
+		}
+		if err := s.vulnDB.Create(ctx, v); err != nil {
+			_ = s.scanDB.FailScan(ctx, scan.ID, "import failed: "+err.Error())
+			return nil, err
+		}
+	}
+
+	scan.PagesCrawled = pagesCrawled
+	scan.TotalFindings = len(vulns)
+	scan.Status = "completed"
+	startedAt := time.Now().Add(-time.Duration(durationSec) * time.Second)
 	scan.StartedAt = &startedAt
-	return s.scanDB.CompleteScan(ctx, scan)
+	if err := s.scanDB.CompleteScan(ctx, scan); err != nil {
+		return nil, err
+	}
+	return scan, nil
 }

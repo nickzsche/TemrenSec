@@ -3,7 +3,7 @@
 # Multi-target build. Select the image with `--target api|worker|cli`
 # (docker-compose and cd.yml do this); the builder cross-compiles on the
 # build platform so linux/arm64 images don't need QEMU-emulated Go.
-FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS builder
 
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64

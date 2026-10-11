@@ -22,7 +22,7 @@ function ScanProgressContent() {
   useEffect(() => {
     if (!scanId) return
 
-    const wsUrl = `${process.env.NEXT_PUBLIC_API_URL?.replace('http', 'ws') || 'ws://localhost:8080'}/ws?client_id=frontend_${scanId}&scan_id=${scanId}`
+    const wsUrl = `${process.env.NEXT_PUBLIC_API_URL?.replace('http', 'ws') || (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host}/ws?client_id=frontend_${scanId}&scan_id=${scanId}`
     const ws = new WebSocket(wsUrl)
 
     ws.onopen = () => {

@@ -87,6 +87,17 @@ services:
     depends_on:
       - api
 
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "8089:80"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - api
+      - frontend
+
 volumes:
   postgres_data:
   redis_data:

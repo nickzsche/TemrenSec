@@ -1,5 +1,4 @@
-version: "3.8"
-
+version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
@@ -8,23 +7,28 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD gerekli (.env)}
       POSTGRES_DB: temren
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+    - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U temren"]
+      test:
+      - CMD-SHELL
+      - pg_isready -U temren
       interval: 5s
       timeout: 5s
       retries: 5
-
+    restart: unless-stopped
   redis:
     image: redis:7-alpine
     volumes:
-      - redis_data:/data
+    - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test:
+      - CMD
+      - redis-cli
+      - ping
       interval: 5s
       timeout: 5s
       retries: 5
-
+    restart: unless-stopped
   api:
     build:
       context: .
@@ -32,9 +36,9 @@ services:
       target: api
     command: temren-api
     ports:
-      - "8080:8080"
+    - 8080:8080
     environment:
-      PORT: "8080"
+      PORT: '8080'
       DATABASE_URL: postgres://temren:${POSTGRES_PASSWORD}@postgres:5432/temren?sslmode=disable
       REDIS_URL: redis://redis:6379
       TEMREN_WS_REDIS: redis:6379
@@ -52,8 +56,8 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./migrations:/app/migrations
-
+    - ./migrations:/app/migrations
+    restart: unless-stopped
   worker:
     build:
       context: .
@@ -65,39 +69,38 @@ services:
       REDIS_URL: redis://redis:6379
       TEMREN_WS_REDIS: redis:6379
       JWT_SECRET: ${JWT_SECRET}
-      WORKER_CONCURRENCY: "5"
-      SCAN_TIMEOUT: "30"
+      WORKER_CONCURRENCY: '5'
+      SCAN_TIMEOUT: '30'
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
-      - ./migrations:/app/migrations
-
+    - ./migrations:/app/migrations
+    restart: unless-stopped
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+    - 3000:3000
     environment:
       API_URL: http://api:8080
       NEXT_PUBLIC_API_URL: http://localhost:8080
     depends_on:
-      - api
-
+    - api
+    restart: unless-stopped
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
     ports:
-      - "8089:80"
+    - 8089:80
     volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+    - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
     depends_on:
-      - api
-      - frontend
-
+    - api
+    - frontend
 volumes:
-  postgres_data:
-  redis_data:
+  postgres_data: null
+  redis_data: null

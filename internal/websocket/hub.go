@@ -405,9 +405,13 @@ func (c *Client) writePump() {
 
 func HandleWebSocket(hub *Hub) func(*websocket.Conn) {
 	return func(c *websocket.Conn) {
+		// /ws is public (tarayıcı WS Authorization başlığı yollayamaz); user_id
+		// yoksa panic yerine boş kullanıcıyla bağlan. İlerleme topic (scan:<id>)
+		// aboneliğiyle akar. (Güvenlik sertleştirmesi: query-param token auth — sonra.)
+		uid, _ := c.Locals("user_id").(string)
 		client := &Client{
 			ID:     c.Query("client_id", generateClientID()),
-			UserID: c.Locals("user_id").(string),
+			UserID: uid,
 			hub:    hub,
 			conn:   c,
 			send:   make(chan []byte, 256),
